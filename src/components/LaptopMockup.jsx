@@ -1,5 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { motion } from 'framer-motion';
 import cssLogo from '../assets/logos/css3.png';
 import dartLogo from '../assets/logos/dart.png';
 import djangoLogo from '../assets/logos/django.png';
@@ -21,42 +20,8 @@ import tailwindLogo from '../assets/logos/tailwind.png';
 import viteLogo from '../assets/logos/vite.png';
 import vscodeLogo from '../assets/logos/vscode.png';
 import xcodeLogo from '../assets/logos/xcode.png';
-import alumniPreview from '../assets/projects/alumni-api/alumni-thumb.png';
-import financePreview from '../assets/projects/finance/finance-money.jpg';
-import premPreview from '../assets/projects/prem-predictor/prem-predictor-thumb.png';
-import skyPreview from '../assets/projects/skyhealth/skyhealth-thumb.png';
-import { quickEase, smoothEase, viewportOnce } from '../lib/motion.js';
-
-const desktopProjects = [
-  {
-    name: 'Prem Predictor',
-    description: 'A browser app for prediction leagues, full table submissions, leaderboard scoring, and PDF reports.',
-    stack: ['HTML', 'JavaScript', 'Tailwind', 'jsPDF'],
-    accent: 'finance',
-    image: premPreview,
-  },
-  {
-    name: 'Alumni API',
-    description: 'A two-service alumni platform with authentication, profiles, blind bidding, winner selection, and Swagger docs.',
-    stack: ['Node.js', 'Express', 'SQLite', 'JWT'],
-    accent: 'portfolio',
-    image: alumniPreview,
-  },
-  {
-    name: 'SkyHealth',
-    description: 'An aviation-inspired health and safety project focused on structured status views and operational workflows.',
-    stack: ['Django', 'Python', 'SQLite', 'Dashboards'],
-    accent: 'sky',
-    image: skyPreview,
-  },
-  {
-    name: 'Portfolio Optimiser',
-    description: 'A Django finance optimiser for stock inputs, CSV uploads, risk controls, and portfolio allocation results.',
-    stack: ['Django', 'Python', 'PyPortfolioOpt', 'SQLite'],
-    accent: 'finance',
-    image: financePreview,
-  },
-];
+import { desktopProjects } from '../data/projects.js';
+import { smoothEase, viewportOnce } from '../lib/motion.js';
 
 const techGroups = [
   {
@@ -156,32 +121,9 @@ const techLogoMap = {
   Xcode: xcodeLogo,
 };
 
-const projectVariants = {
-  initial: { opacity: 0, y: 18, scale: 0.98 },
-  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.38, ease: smoothEase } },
-  exit: { opacity: 0, y: -14, scale: 0.98, transition: { duration: 0.2, ease: quickEase } },
-};
-
-function ProjectPreview({ accent, image, name }) {
+function ProjectLaptopScreen({ activeProject }) {
   return (
-    <div className={`laptop-ui-preview laptop-ui-${accent}`} aria-hidden="true">
-      <img src={image} alt={`${name} preview`} loading="lazy" />
-    </div>
-  );
-}
-
-function ProjectLaptopScreen({ activeProject, activeIndex, setActiveIndex }) {
-  const showPrevious = () => setActiveIndex((activeIndex - 1 + desktopProjects.length) % desktopProjects.length);
-  const showNext = () => setActiveIndex((activeIndex + 1) % desktopProjects.length);
-
-  const handleWheel = (event) => {
-    if (Math.abs(event.deltaY) < 12) return;
-    if (event.deltaY > 0) showNext();
-    if (event.deltaY < 0) showPrevious();
-  };
-
-  return (
-    <div className="laptop-project-os" onWheel={handleWheel}>
+    <div className="laptop-project-os">
       <div className="laptop-window-bar">
         <div className="window-dots" aria-hidden="true">
           <span />
@@ -194,54 +136,15 @@ function ProjectLaptopScreen({ activeProject, activeIndex, setActiveIndex }) {
           <span />
         </div>
       </div>
-
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.article
-          key={activeProject.name}
-          className="laptop-project-panel"
-          variants={projectVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-        >
-          <div className="laptop-project-copy">
-            <p className="device-kicker">Desktop/Web Project</p>
-            <h3>{activeProject.name}</h3>
-            <p>{activeProject.description}</p>
-            <div className="device-stack" aria-label={`${activeProject.name} tech stack`}>
-              {activeProject.stack.map((item) => (
-                <span key={item}>{item}</span>
-              ))}
-            </div>
-            <div className="project-actions">
-              <a href="#projects">GitHub</a>
-              <a href="#projects">Demo</a>
-            </div>
-          </div>
-          <ProjectPreview accent={activeProject.accent} image={activeProject.image} name={activeProject.name} />
-        </motion.article>
-      </AnimatePresence>
-
-      <div className="device-switcher" aria-label="Switch desktop projects">
-        <button type="button" onClick={showPrevious}>
-          Prev
-        </button>
-        <div>
-          {desktopProjects.map((project, index) => (
-            <button
-              key={project.name}
-              type="button"
-              className={index === activeIndex ? 'is-active' : ''}
-              aria-label={`Show ${project.name}`}
-              aria-pressed={index === activeIndex}
-              onClick={() => setActiveIndex(index)}
-            />
-          ))}
-        </div>
-        <button type="button" onClick={showNext}>
-          Next
-        </button>
-      </div>
+      <motion.div
+        className="laptop-project-shot"
+        key={activeProject.id}
+        initial={{ opacity: 0, y: 10, scale: 0.99 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.28, ease: smoothEase }}
+      >
+        <img src={activeProject.deviceImage} alt={`${activeProject.title} screenshot`} loading="lazy" />
+      </motion.div>
     </div>
   );
 }
@@ -338,9 +241,8 @@ function TechLaptopScreen() {
   );
 }
 
-export default function LaptopMockup({ variant = 'projects', className = '' }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeProject = desktopProjects[activeIndex];
+export default function LaptopMockup({ variant = 'projects', className = '', activeProject }) {
+  const selectedProject = activeProject || desktopProjects[0];
   const isProjects = variant === 'projects';
   const isTech = variant === 'tech';
 
@@ -356,11 +258,7 @@ export default function LaptopMockup({ variant = 'projects', className = '' }) {
       >
         <div className="laptop-screen">
           {isProjects ? (
-            <ProjectLaptopScreen
-              activeProject={activeProject}
-              activeIndex={activeIndex}
-              setActiveIndex={setActiveIndex}
-            />
+            <ProjectLaptopScreen activeProject={selectedProject} />
           ) : isTech ? (
             <TechLaptopScreen />
           ) : (

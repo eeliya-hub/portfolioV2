@@ -1,16 +1,7 @@
 import { MotionConfig, motion } from 'framer-motion';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import dartLogo from './assets/logos/dart.png';
-import firebaseLogo from './assets/logos/firebase.png';
-import flutterLogo from './assets/logos/flutter.png';
-import googleCloudLogo from './assets/logos/google-cloud.png';
-import html5Logo from './assets/logos/html5.png';
-import javascriptLogo from './assets/logos/javascript.png';
-import nodejsLogo from './assets/logos/nodejs.png';
-import premPredictorThumb from './assets/projects/prem-predictor/prem-predictor-thumb.png';
-import traverseThumb from './assets/projects/traverse/traverse-thumb.png';
-import tailwindLogo from './assets/logos/tailwind.png';
 import IPhoneMockup from './components/IPhoneMockup.jsx';
+import { desktopProjects, mobileProjects } from './data/projects.js';
 import { cardItem, sectionContainer, sectionItem, viewportOnce } from './lib/motion.js';
 
 const LaptopMockup = lazy(() => import('./components/LaptopMockup.jsx'));
@@ -33,55 +24,16 @@ const aboutProofPoints = [
   },
 ];
 
-const mobileProjectSpotlight = {
-  name: 'Traverse',
-  intro: 'Mobile travel companion for routes, places, and trip details.',
-  label: 'Travel App',
-  image: traverseThumb,
-  overview:
-    'Traverse is my final year project: a cross-platform travel planner that brings flight search, hotel search, itinerary planning, budgeting, and an AI travel assistant into one app.',
-  highlights: [
-    'Searches flights and hotels through backend-proxied travel APIs.',
-    'Saves trips, itinerary items, budgets, expenses, and user preferences in Firestore.',
-    'Includes FlyAI, a travel-focused assistant powered through a secured backend route.',
-  ],
-  stack: [
-    { label: 'Flutter', icon: 'F', logo: flutterLogo, tone: 'cyan' },
-    { label: 'Dart', icon: 'D', logo: dartLogo, tone: 'blue' },
-    { label: 'Firebase', icon: 'F', logo: firebaseLogo, tone: 'amber' },
-    { label: 'Node.js', icon: 'JS', logo: nodejsLogo, tone: 'green' },
-    { label: 'Express', icon: 'E', tone: 'navy' },
-    { label: 'Google Places API', icon: 'G', logo: googleCloudLogo, tone: 'gold' },
-    { label: 'Amadeus API', icon: 'A', tone: 'gold' },
-  ],
-};
-
-const desktopProjectSpotlight = {
-  name: 'Prem Predictor',
-  intro: 'Browser-based Premier League prediction leagues with scoring and reports.',
-  label: 'Web App',
-  image: premPredictorThumb,
-  overview:
-    'Prem Predictor is a client-side web app for creating prediction leagues, submitting full Premier League tables, scoring entries against the real table, and generating PDF reports.',
-  highlights: [
-    'League creation, player prediction entry, editing, deletion, and local persistence.',
-    'Validation for all 20 teams, duplicate prevention, and automatic leaderboard scoring.',
-    'PDF report generation with predicted versus actual table comparisons.',
-  ],
-  stack: [
-    { label: 'HTML5', icon: 'H', logo: html5Logo, tone: 'cyan' },
-    { label: 'JavaScript', icon: 'JS', logo: javascriptLogo, tone: 'blue' },
-    { label: 'Tailwind', icon: 'T', logo: tailwindLogo, tone: 'cyan' },
-    { label: 'jsPDF', icon: 'PDF', tone: 'green' },
-    { label: 'localStorage', icon: 'DB', tone: 'navy' },
-  ],
-};
-
 const journeyNotes = [
   'Customer-facing work at B&Q shaped how I think about communication, patience, and software that is genuinely usable.',
   'University projects gave me the foundation, while SkyHealth, finance, weather, and Traverse pushed that foundation into product work.',
   'Final year is about sharpening the portfolio and becoming stronger across full-stack and mobile development.',
 ];
+
+const initialDesktopProjectIndex = Math.max(
+  desktopProjects.findIndex((project) => project.id === 'sky-health'),
+  0,
+);
 
 function useActiveSection(ids) {
   const [activeSection, setActiveSection] = useState(ids[0]);
@@ -229,6 +181,183 @@ function ProjectInfoPanel({ project }) {
   );
 }
 
+function ProjectButtonIcon({ type }) {
+  if (type === 'gallery') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="5" width="16" height="14" rx="2" />
+        <path d="M8 13l2.4-2.4 3.1 3.1 1.8-1.8L20 16.6" />
+        <circle cx="8.5" cy="8.5" r="1.2" />
+      </svg>
+    );
+  }
+
+  if (type === 'docs') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 3h7l4 4v14H7z" />
+        <path d="M14 3v5h5" />
+        <path d="M9.5 12h5M9.5 15h5M9.5 18h3" />
+      </svg>
+    );
+  }
+
+  if (type === 'github') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 19c-4 1.2-4-2-5.5-2.5" />
+        <path d="M15 22v-3.5c0-1 .1-1.4-.5-2 2-.2 4.2-1 4.2-4.5a3.5 3.5 0 0 0-1-2.5 3.2 3.2 0 0 0-.1-2.5s-.8-.3-2.6 1a9 9 0 0 0-4.8 0c-1.8-1.3-2.6-1-2.6-1a3.2 3.2 0 0 0-.1 2.5 3.5 3.5 0 0 0-1 2.5c0 3.5 2.1 4.3 4.1 4.5-.5.5-.7.9-.7 1.8V22" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 17L17 7" />
+      <path d="M9 7h8v8" />
+    </svg>
+  );
+}
+
+function ArrowIcon({ direction }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      {direction === 'previous' ? <path d="M15 6l-6 6 6 6" /> : <path d="M9 6l6 6-6 6" />}
+    </svg>
+  );
+}
+
+function getActionIconType(label) {
+  const normalized = label.toLowerCase();
+  if (normalized.includes('git')) return 'github';
+  if (normalized.includes('doc')) return 'docs';
+  if (normalized.includes('gallery')) return 'gallery';
+  return 'external';
+}
+
+function ProjectActions({ project, onGallery, className = '' }) {
+  return (
+    <div className={`project-action-row ${className}`}>
+      {project.actions.map((action) =>
+        action.href ? (
+          <a
+            href={action.href}
+            key={action.label}
+            target={action.href.startsWith('http') ? '_blank' : undefined}
+            rel={action.href.startsWith('http') ? 'noreferrer' : undefined}
+            download={action.download}
+          >
+            <ProjectButtonIcon type={getActionIconType(action.label)} />
+            {action.label}
+          </a>
+        ) : (
+          <button className="is-disabled" disabled key={action.label} type="button">
+            <ProjectButtonIcon type={getActionIconType(action.label)} />
+            {action.label}
+          </button>
+        ),
+      )}
+      <button type="button" onClick={() => onGallery(project)}>
+        <ProjectButtonIcon type="gallery" />
+        Gallery
+      </button>
+    </div>
+  );
+}
+
+function ProjectSelector({ projects, activeIndex, onChange, className = '' }) {
+  const showPrevious = () => onChange((activeIndex - 1 + projects.length) % projects.length);
+  const showNext = () => onChange((activeIndex + 1) % projects.length);
+
+  return (
+    <div className={`project-selector ${className}`} aria-label="Switch projects">
+      <button type="button" onClick={showPrevious} aria-label="Previous project">
+        <ArrowIcon direction="previous" />
+      </button>
+      <button type="button" onClick={showNext} aria-label="Next project">
+        <ArrowIcon direction="next" />
+      </button>
+    </div>
+  );
+}
+
+function ProjectGalleryModal({ project, onClose }) {
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const images = project?.gallery || [];
+  const activeImage = images[activeImageIndex];
+  const showPrevious = () => setActiveImageIndex((activeImageIndex - 1 + images.length) % images.length);
+  const showNext = () => setActiveImageIndex((activeImageIndex + 1) % images.length);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [project?.id]);
+
+  useEffect(() => {
+    if (!project) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+      if (event.key === 'ArrowLeft') {
+        setActiveImageIndex((index) => (index - 1 + images.length) % images.length);
+      }
+      if (event.key === 'ArrowRight') {
+        setActiveImageIndex((index) => (index + 1) % images.length);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [images.length, onClose, project]);
+
+  if (!project || !activeImage) return null;
+
+  return (
+    <div className="project-gallery-backdrop" role="presentation" onMouseDown={onClose}>
+      <motion.div
+        className="project-gallery-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${project.title} gallery`}
+        initial={{ opacity: 0, y: 18, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 12, scale: 0.98 }}
+        transition={{ duration: 0.22 }}
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="project-gallery-header">
+          <div>
+            <p>{project.category}</p>
+            <h3>{project.title} Gallery</h3>
+            <span>{activeImageIndex + 1} / {images.length}</span>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close gallery">
+            Close
+          </button>
+        </div>
+        <div className="project-gallery-carousel">
+          <button type="button" onClick={showPrevious} aria-label="Previous image">
+            <ArrowIcon direction="previous" />
+          </button>
+          <figure>
+            <motion.img
+              key={activeImage.src}
+              src={activeImage.src}
+              alt={activeImage.alt}
+              loading="lazy"
+              initial={{ opacity: 0, scale: 0.985 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2 }}
+            />
+          </figure>
+          <button type="button" onClick={showNext} aria-label="Next image">
+            <ArrowIcon direction="next" />
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function Home() {
   return (
     <section
@@ -327,7 +456,23 @@ function About() {
   );
 }
 
-function Projects() {
+function Projects({
+  activeSection,
+  mobileProjectIndex,
+  setMobileProjectIndex,
+  desktopProjectIndex,
+  setDesktopProjectIndex,
+  onGallery,
+}) {
+  const mobileProject = mobileProjects[mobileProjectIndex];
+  const desktopProject = desktopProjects[desktopProjectIndex];
+  const mobileSelectorClass = `project-selector-mobile project-device-selector ${
+    activeSection === 'projects' ? 'is-visible' : ''
+  }`;
+  const desktopSelectorClass = `project-selector-desktop project-device-selector ${
+    activeSection === 'projects-desktop' ? 'is-visible' : ''
+  }`;
+
   return (
     <>
       <section
@@ -336,7 +481,13 @@ function Projects() {
       >
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(155,124,255,0.05),transparent_30%,rgba(255,255,255,0.03))]" />
         <div className="mobile-static-phone project-static-phone">
-          <IPhoneMockup activeSection="projects" staticMode />
+          <IPhoneMockup activeSection="projects" project={mobileProject} staticMode />
+          <ProjectSelector
+            projects={mobileProjects}
+            activeIndex={mobileProjectIndex}
+            onChange={setMobileProjectIndex}
+            className={mobileSelectorClass}
+          />
         </div>
         <motion.div
           className="project-mobile-layout mx-auto grid w-full max-w-7xl items-center gap-10"
@@ -347,19 +498,22 @@ function Projects() {
         >
           <motion.div className="project-title-block" variants={sectionItem}>
             <p className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Mobile Project</p>
-            <h2>{mobileProjectSpotlight.name}</h2>
-            <p>{mobileProjectSpotlight.intro}</p>
-            <div className="project-action-row project-action-row-left">
-              <a href="#projects">GitHub</a>
-              <a href="#projects">Live Demo</a>
-              <a href="#projects">Docs</a>
-            </div>
+            <h2>{mobileProject.title}</h2>
+            <p>{mobileProject.summary}</p>
+            <ProjectActions project={mobileProject} onGallery={onGallery} className="project-action-row-left" />
           </motion.div>
 
-          <div className="project-phone-slot" aria-hidden="true" />
+          <div className="project-phone-slot" aria-hidden="true">
+            <ProjectSelector
+              projects={mobileProjects}
+              activeIndex={mobileProjectIndex}
+              onChange={setMobileProjectIndex}
+              className={mobileSelectorClass}
+            />
+          </div>
 
           <motion.div className="project-detail-block" variants={cardItem}>
-            <ProjectInfoPanel project={mobileProjectSpotlight} />
+            <ProjectInfoPanel project={mobileProject} />
           </motion.div>
         </motion.div>
       </section>
@@ -378,22 +532,28 @@ function Projects() {
         >
           <motion.div className="project-title-block project-desktop-title" variants={sectionItem}>
             <p className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Desktop Project</p>
-            <h2>{desktopProjectSpotlight.name}</h2>
-            <p>{desktopProjectSpotlight.intro}</p>
+            <div className="project-title-heading-row">
+              <h2>{desktopProject.title}</h2>
+            </div>
+            <p>{desktopProject.summary}</p>
           </motion.div>
 
-          <motion.div className="project-action-row project-desktop-actions" variants={cardItem}>
-            <a href="#projects-desktop">GitHub</a>
-            <a href="#projects-desktop">Live Demo</a>
-            <a href="#projects-desktop">Docs</a>
+          <motion.div className="project-desktop-actions" variants={cardItem}>
+            <ProjectActions project={desktopProject} onGallery={onGallery} />
           </motion.div>
 
           <motion.div className="project-laptop-slot" variants={cardItem}>
-            <LazyLaptop variant="projects" />
+            <ProjectSelector
+              projects={desktopProjects}
+              activeIndex={desktopProjectIndex}
+              onChange={setDesktopProjectIndex}
+              className={desktopSelectorClass}
+            />
+            <LazyLaptop activeProject={desktopProject} variant="projects" />
           </motion.div>
 
           <motion.div className="project-detail-block project-desktop-detail" variants={cardItem}>
-            <ProjectInfoPanel project={desktopProjectSpotlight} />
+            <ProjectInfoPanel project={desktopProject} />
           </motion.div>
         </motion.div>
       </section>
@@ -602,20 +762,32 @@ function Contact() {
 
 export default function App() {
   const activeSection = useActiveSection(sectionIds);
+  const [mobileProjectIndex, setMobileProjectIndex] = useState(0);
+  const [desktopProjectIndex, setDesktopProjectIndex] = useState(initialDesktopProjectIndex);
+  const [galleryProject, setGalleryProject] = useState(null);
+  const activeMobileProject = mobileProjects[mobileProjectIndex];
 
   return (
     <MotionConfig reducedMotion="user">
       <div className="relative min-h-dvh overflow-x-hidden bg-ink bg-radial-soft text-frost">
         <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(115deg,rgba(6,9,18,0.68),rgba(11,16,32,0.9))]" />
-        <IPhoneMockup activeSection={activeSection} className="desktop-phone" />
+        <IPhoneMockup activeSection={activeSection} className="desktop-phone" project={activeMobileProject} />
         <main className="overflow-x-hidden">
           <Home />
           <About />
-          <Projects />
+          <Projects
+            activeSection={activeSection}
+            mobileProjectIndex={mobileProjectIndex}
+            setMobileProjectIndex={setMobileProjectIndex}
+            desktopProjectIndex={desktopProjectIndex}
+            setDesktopProjectIndex={setDesktopProjectIndex}
+            onGallery={setGalleryProject}
+          />
           <TechStack />
           <Journey />
           <Contact />
         </main>
+        <ProjectGalleryModal project={galleryProject} onClose={() => setGalleryProject(null)} />
       </div>
     </MotionConfig>
   );

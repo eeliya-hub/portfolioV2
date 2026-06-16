@@ -3,8 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import googleLogoMark from '../assets/Google-logo.png';
 import westminsterLogo from '../assets/UoW.jpeg';
 import homeWallpaper from '../assets/image.png';
-import traversePreview from '../assets/projects/traverse/traverse-thumb.png';
-import weatherPreview from '../assets/projects/weather/weather-thumb.png';
+import { mobileProjects } from '../data/projects.js';
 import { itemVariants, quickEase, screenVariants, smoothEase } from '../lib/motion.js';
 
 const googlePageVariants = {
@@ -25,25 +24,6 @@ const dockItems = [
   { label: 'Tech Stack', display: 'Tech', icon: 'code', href: '#tech-stack', tone: 'dock-green' },
   { label: 'Journey', icon: 'route', href: '#journey', tone: 'dock-amber' },
   { label: 'Contact', icon: 'mail', href: '#contact', tone: 'dock-rose' },
-];
-
-const mobileProjects = [
-  {
-    name: 'Traverse',
-    meta: 'Mobile travel planner',
-    description: 'A Flutter travel planner for flights, hotels, itineraries, budgets, and AI-assisted planning.',
-    stack: ['Flutter', 'Firebase', 'Amadeus'],
-    accent: 'dock-cyan',
-    image: traversePreview,
-  },
-  {
-    name: 'Weather App',
-    meta: 'Native iOS weather',
-    description: 'A SwiftUI dashboard for live weather, forecasts, maps, nearby places, and visited locations.',
-    stack: ['SwiftUI', 'MapKit', 'OpenWeather'],
-    accent: 'dock-violet',
-    image: weatherPreview,
-  },
 ];
 
 const stackItems = ['React', 'Vite', 'Tailwind', 'APIs', 'Node', 'Git'];
@@ -420,17 +400,6 @@ function CameraIcon() {
       <path d="M6.7 8.2h2.1l1.1-1.7h4.2l1.1 1.7h2.1a2 2 0 0 1 2 2v6.1a2 2 0 0 1-2 2H6.7a2 2 0 0 1-2-2v-6.1a2 2 0 0 1 2-2Z" />
       <circle cx="12" cy="13.2" r="2.6" />
       <path d="M17.3 11h.01" />
-    </svg>
-  );
-}
-
-function CellularIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M5 18.5h1.8" />
-      <path d="M9 16.2h1.8" />
-      <path d="M13 13.8h1.8" />
-      <path d="M17 11.4h1.8" />
     </svg>
   );
 }
@@ -1032,83 +1001,27 @@ function AboutGoogleScreen() {
   );
 }
 
-function ProjectsScreen({ mobileActiveIndex, setMobileActiveIndex }) {
-  const [internalIndex, setInternalIndex] = useState(0);
-  const activeIndex = mobileActiveIndex !== undefined ? mobileActiveIndex : internalIndex;
-  const setActiveIndex = (i) => {
-    if (typeof setMobileActiveIndex === 'function') setMobileActiveIndex(i);
-    else setInternalIndex(i);
-  };
-  const activeProject = mobileProjects[activeIndex];
-  const showPrevious = () => setActiveIndex((activeIndex - 1 + mobileProjects.length) % mobileProjects.length);
-  const showNext = () => setActiveIndex((activeIndex + 1) % mobileProjects.length);
+function ProjectsScreen({ project }) {
+  const activeProject = project || mobileProjects[0];
+  const screenshot = <img src={activeProject.deviceImage} alt={`${activeProject.title} screenshot`} loading="lazy" />;
 
   return (
     <motion.div
-      key="projects"
+      key={`projects-${activeProject.id}`}
       className="phone-screen-layer app-screen projects-app"
       variants={screenVariants}
       initial="initial"
       animate="animate"
       exit="exit"
     >
-      <motion.div className="app-topbar" variants={itemVariants}>
-        <p>Mobile</p>
-        <span>{activeIndex + 1}/{mobileProjects.length}</span>
-      </motion.div>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.article
-          className="phone-project-detail"
-          key={activeProject.name}
-          variants={screenVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-        >
-          <ProjectPhonePreview accent={activeProject.accent} image={activeProject.image} name={activeProject.name} />
-          <p className="device-kicker">{activeProject.meta}</p>
-          <h3>{activeProject.name}</h3>
-          <p>{activeProject.description}</p>
-          <div className="device-stack" aria-label={`${activeProject.name} tech stack`}>
-            {activeProject.stack.map((item) => (
-              <span key={item}>{item}</span>
-            ))}
-          </div>
-          <div className="project-actions">
-            <a href="#projects">GitHub</a>
-            <a href="#projects">Demo</a>
-          </div>
-        </motion.article>
-      </AnimatePresence>
-      <div className="phone-project-controls" aria-label="Switch mobile projects">
-        <button type="button" onClick={showPrevious}>
-          Prev
-        </button>
-        <div>
-          {mobileProjects.map((project, index) => (
-            <button
-              key={project.name}
-              type="button"
-              className={index === activeIndex ? 'is-active' : ''}
-              aria-label={`Show ${project.name}`}
-              aria-pressed={index === activeIndex}
-              onClick={() => setActiveIndex(index)}
-            />
-          ))}
-        </div>
-        <button type="button" onClick={showNext}>
-          Next
-        </button>
-      </div>
+      {activeProject.liveUrl ? (
+        <a className="phone-project-live-link" href={activeProject.liveUrl} target="_blank" rel="noreferrer">
+          {screenshot}
+        </a>
+      ) : (
+        screenshot
+      )}
     </motion.div>
-  );
-}
-
-function ProjectPhonePreview({ accent, image, name }) {
-  return (
-    <div className={`phone-ui-preview ${accent}`} aria-hidden="true">
-      <img src={image} alt={`${name} preview`} loading="lazy" />
-    </div>
   );
 }
 
@@ -1200,12 +1113,12 @@ function ContactScreen() {
   );
 }
 
-function getPhoneScreen(activeSection, mobileActiveIndex, setMobileActiveIndex) {
+function getPhoneScreen(activeSection, project) {
   switch (activeSection) {
     case 'about':
       return <AboutGoogleScreen />;
     case 'projects':
-      return <ProjectsScreen mobileActiveIndex={mobileActiveIndex} setMobileActiveIndex={setMobileActiveIndex} />;
+      return <ProjectsScreen project={project} />;
     case 'tech-stack':
       return <TechStackScreen />;
     case 'journey':
@@ -1222,7 +1135,7 @@ const staticStageVariants = {
   static: { opacity: 1, scale: 1, x: 0, y: 0 },
 };
 
-export default function IPhoneMockup({ activeSection = 'home', className = '', staticMode = false, controlledMobileIndex, onControlledMobileIndexChange }) {
+export default function IPhoneMockup({ activeSection = 'home', className = '', staticMode = false, project }) {
   const isCompact = useIsCompact();
   const variants = getStageVariants(isCompact);
   const screenKey = activeSection || 'home';
@@ -1255,9 +1168,6 @@ export default function IPhoneMockup({ activeSection = 'home', className = '', s
             <div className="phone-status" aria-hidden="true">
               <span>9:41</span>
               <span className="status-icons">
-                <span className="status-icon status-icon-cellular">
-                  <CellularIcon />
-                </span>
                 <span className="status-icon status-icon-wifi">
                   <WifiIcon />
                 </span>
@@ -1268,7 +1178,7 @@ export default function IPhoneMockup({ activeSection = 'home', className = '', s
             </div>
 
             <AnimatePresence mode="wait" initial={false}>
-              {getPhoneScreen(displayKey, controlledMobileIndex, onControlledMobileIndexChange)}
+              {getPhoneScreen(displayKey, project)}
             </AnimatePresence>
 
             <div className="iphone-glass" aria-hidden="true" />
