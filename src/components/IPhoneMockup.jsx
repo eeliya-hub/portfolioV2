@@ -257,10 +257,8 @@ function useProjectBoundaryOffset(enabled) {
           return;
         }
 
-        const projectBottom = projectSection.getBoundingClientRect().bottom;
-        const phoneHeight = stage.getBoundingClientRect().height;
-        const lockedPhoneBottom = window.innerHeight / 2 + phoneHeight / 2;
-        const nextOffset = Math.min(0, projectBottom - lockedPhoneBottom);
+        const projectTop = projectSection.getBoundingClientRect().top;
+        const nextOffset = Math.min(0, projectTop);
 
         setOffset((current) => (Math.abs(current - nextOffset) < 0.5 ? current : nextOffset));
       });
