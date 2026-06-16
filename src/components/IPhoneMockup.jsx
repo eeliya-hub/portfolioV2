@@ -234,34 +234,29 @@ function useIsCompact() {
   return isCompact;
 }
 
-function useProjectBoundaryOffset(enabled) {
+function useProjectBoundaryLock(enabled) {
   const stageRef = useRef(null);
-  const [offset, setOffset] = useState(0);
 
   useEffect(() => {
     if (!enabled) {
-      setOffset(0);
+      if (stageRef.current) {
+        stageRef.current.style.marginTop = '';
+      }
       return undefined;
     }
 
-    let frame = 0;
+    const stageElement = stageRef.current;
 
     const sync = () => {
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
-        const projectSection = document.getElementById('projects');
-        const stage = stageRef.current;
+      const projectSection = document.getElementById('projects');
+      const stage = stageRef.current;
 
-        if (!projectSection || !stage) {
-          setOffset(0);
-          return;
-        }
+      if (!projectSection || !stage) return;
 
-        const projectTop = projectSection.getBoundingClientRect().top;
-        const nextOffset = Math.min(0, projectTop);
+      const projectTop = projectSection.getBoundingClientRect().top;
+      const nextOffset = Math.min(0, projectTop);
 
-        setOffset((current) => (Math.abs(current - nextOffset) < 0.5 ? current : nextOffset));
-      });
+      stage.style.marginTop = `${nextOffset}px`;
     };
 
     sync();
@@ -269,13 +264,15 @@ function useProjectBoundaryOffset(enabled) {
     window.addEventListener('resize', sync);
 
     return () => {
-      window.cancelAnimationFrame(frame);
+      if (stageElement) {
+        stageElement.style.marginTop = '';
+      }
       window.removeEventListener('scroll', sync);
       window.removeEventListener('resize', sync);
     };
   }, [enabled]);
 
-  return [stageRef, offset];
+  return stageRef;
 }
 
 function getStageVariants(isCompact) {
@@ -1234,7 +1231,7 @@ export default function IPhoneMockup({ activeSection = 'home', className = '', s
   const isProjectBoundaryActive = !staticMode && projectBoundarySections.includes(screenKey);
   const isHidden = !staticMode && hiddenStageSections.includes(screenKey);
   const displayKey = isProjectBoundaryActive || isHidden ? 'projects' : screenKey;
-  const [stageRef, projectBoundaryOffset] = useProjectBoundaryOffset(isProjectBoundaryActive);
+  const stageRef = useProjectBoundaryLock(isProjectBoundaryActive);
 
   return (
     <motion.aside
@@ -1247,7 +1244,6 @@ export default function IPhoneMockup({ activeSection = 'home', className = '', s
       animate={staticMode ? 'static' : displayKey}
       variants={staticMode ? staticStageVariants : variants}
       initial={false}
-      style={!staticMode ? { marginTop: projectBoundaryOffset } : undefined}
       transition={{ duration: 1, ease: smoothEase }}
     >
       <div className="iphone-device">
