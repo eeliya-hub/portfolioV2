@@ -565,11 +565,11 @@ function TechStack() {
   return (
     <section
       id="tech-stack"
-      className="section-panel tech-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 pt-[30rem] sm:px-8 sm:pt-[34rem] lg:px-12 lg:py-28"
+      className="section-panel tech-section relative flex min-h-dvh snap-start items-center justify-center overflow-hidden px-5 py-12 text-center sm:px-8 sm:py-14 lg:px-12 lg:py-10"
     >
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(74,222,128,0.05),transparent_30%,rgba(255,255,255,0.03))]" />
       <motion.div
-        className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)]"
+        className="tech-section-inner mx-auto flex w-full max-w-7xl flex-col items-center justify-center gap-8"
         initial="hidden"
         whileInView="show"
         viewport={viewportOnce}
@@ -577,31 +577,15 @@ function TechStack() {
       >
         <motion.div className="tech-copy" variants={sectionItem}>
           <p className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Tech Stack</p>
-          <h2 className="max-w-3xl text-4xl font-semibold leading-tight text-frost sm:text-5xl lg:text-6xl">
-            A toolkit that connects mobile ideas, web dashboards, and API-driven products.
+          <h2 className="text-4xl font-semibold leading-tight text-frost sm:text-5xl lg:text-6xl">
+            Developer Toolkit
           </h2>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">
-            Eeliya uses frontend tools like React, Vite, and Tailwind to shape fast interfaces, Flutter and Swift
-            for mobile experiences, and backend/API tools like Django, Firebase, REST APIs, Amadeus, and Google
-            Places to connect products to real data. The stack is practical: pick the right tool, build the
-            workflow, then refine the user experience.
+          <p className="mt-6 text-lg leading-8 text-muted">
+            A focused look at the tools behind my mobile apps, web interfaces, backend APIs, and connected product
+            workflows.
           </p>
-          <div className="mt-7 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-            <div className="tech-summary-card">
-              <span>01</span>
-              <p>Mobile apps for travel, weather, and iOS-style product flows.</p>
-            </div>
-            <div className="tech-summary-card">
-              <span>02</span>
-              <p>Web dashboards for finance, portfolio work, and structured data views.</p>
-            </div>
-            <div className="tech-summary-card">
-              <span>03</span>
-              <p>APIs and tooling that turn prototypes into connected software.</p>
-            </div>
-          </div>
         </motion.div>
-        <motion.div variants={cardItem}>
+        <motion.div className="tech-laptop-slot" variants={cardItem}>
           <LazyLaptop variant="tech" />
         </motion.div>
       </motion.div>
