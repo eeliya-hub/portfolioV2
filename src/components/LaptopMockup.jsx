@@ -31,7 +31,8 @@ import xcodeLogo from '../assets/logos/xcode.png';
 import phpLogo from '../assets/logos/PHP-logo.svg.png';
 import androidStudioLogo from '../assets/logos/Android_Studio_Logo_(2023).svg.png';
 import { desktopProjects } from '../data/projects.js';
-import { smoothEase, viewportOnce } from '../lib/motion.js';
+import { journeyTimeline } from '../data/journey.js';
+import { smoothEase } from '../lib/motion.js';
 
 const chromeTechTabs = [
   {
@@ -91,44 +92,6 @@ const chromeTechTabs = [
       'Critical Thinking',
       'Project Management',
     ],
-  },
-];
-
-const journeyTimeline = [
-  {
-    command: 'init cs-degree',
-    title: 'Started Computer Science degree',
-    detail: 'Built the foundation: programming, systems thinking, problem solving, and better technical habits.',
-  },
-  {
-    command: 'ship uni-projects',
-    title: 'Built early university projects',
-    detail: 'Used coursework and experiments to learn how ideas move from brief to working software.',
-  },
-  {
-    command: 'work customer-facing',
-    title: 'Worked at B&Q',
-    detail: 'Developed practical customer-facing experience, communication, patience, and attention to real user needs.',
-  },
-  {
-    command: 'build skyhealth --django',
-    title: 'Built SkyHealth Django project',
-    detail: 'Explored backend structure, data flows, and aviation-inspired health and safety workflows.',
-  },
-  {
-    command: 'create finance-and-weather',
-    title: 'Built finance planner and weather app',
-    detail: 'Practised dashboard thinking, APIs, responsive layouts, and clearer user feedback.',
-  },
-  {
-    command: 'start traverse',
-    title: 'Started Traverse travel companion app',
-    detail: 'Began shaping a travel product around planning, places, routes, and mobile-first interaction.',
-  },
-  {
-    command: 'focus final-year',
-    title: 'Final year portfolio and full-stack/mobile focus',
-    detail: 'Now tightening the portfolio, improving project quality, and building stronger full-stack and mobile skills.',
   },
 ];
 
@@ -399,49 +362,85 @@ function ProjectLaptopScreen({ activeProject }) {
   );
 }
 
-function JourneyLaptopScreen() {
+// Gantt-style timeline: each event is a bar spanning its date range across a
+// shared year axis, so overlapping chapters line up and are easy to read.
+const TIMELINE_MIN = 2018.3;
+const TIMELINE_MAX = 2026.9;
+const TIMELINE_YEARS = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+const TIMELINE_NOW = 2026.46;
+const TIMELINE_MIN_DURATION = 0.32;
+const TIMELINE_GUTTER = 30; // % of the chart width reserved for event names
+const TIMELINE_COLORS = ['#56d9ff', '#a78bfa', '#fbbf24', '#4ade80', '#f472b6', '#60a5fa'];
+
+function timelineX(year) {
+  const t = (year - TIMELINE_MIN) / (TIMELINE_MAX - TIMELINE_MIN);
+  return TIMELINE_GUTTER + t * (98 - TIMELINE_GUTTER);
+}
+
+function JourneyTimelineScreen({ activeIndex = 0, onSelect }) {
+  const count = journeyTimeline.length;
+  const rowTop = 3; // %
+  const rowBandBottom = 84; // % (below this sits the year axis)
+  const rowHeight = (rowBandBottom - rowTop) / count;
+
   return (
-    <div className="journey-terminal-os">
-      <div className="laptop-window-bar">
-        <div className="window-dots" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-        <p>journey.terminal</p>
-        <div className="window-actions" aria-hidden="true">
-          <span />
-          <span />
-        </div>
+    <div className="journey-timeline">
+      <div className="journey-roadmap-head">
+        <p className="device-kicker">Timeline</p>
+        <h3>The journey so far</h3>
+        <span className="journey-roadmap-sub">{count} chapters · overlapping milestones</span>
       </div>
-      <div className="terminal-header">
-        <p className="device-kicker">Timeline Shell</p>
-        <h3>~/eeliya/journey</h3>
-        <span>Story-driven log of study, work, and project momentum.</span>
-      </div>
-      <div className="terminal-timeline" aria-label="Eeliya journey timeline">
-        {journeyTimeline.map((item, index) => (
-          <motion.article
-            className="terminal-step"
-            key={item.title}
-            initial={{ opacity: 0, x: index % 2 === 0 ? -18 : 18, y: 12 }}
-            whileInView={{ opacity: 1, x: 0, y: 0 }}
-            viewport={viewportOnce}
-            transition={{ duration: 0.42, delay: index * 0.035, ease: smoothEase }}
+      <div className="journey-gantt">
+        <div className="journey-gantt-grid" aria-hidden="true">
+          {TIMELINE_YEARS.map((year) => (
+            <div className="journey-gantt-year" key={year} style={{ left: `${timelineX(year)}%` }}>
+              <i style={{ top: `${rowTop}%`, bottom: `${100 - rowBandBottom}%` }} />
+              <span>{`'${String(year).slice(2)}`}</span>
+            </div>
+          ))}
+          <div
+            className="journey-gantt-now"
+            style={{ left: `${timelineX(TIMELINE_NOW)}%`, top: `${rowTop}%`, bottom: `${100 - rowBandBottom}%` }}
           >
-            <div className="terminal-command">
-              <span>$</span>
-              <code>{item.command}</code>
-            </div>
-            <div className="terminal-card">
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <div>
-                <h4>{item.title}</h4>
-                <p>{item.detail}</p>
-              </div>
-            </div>
-          </motion.article>
-        ))}
+            <span>now</span>
+          </div>
+        </div>
+
+        {journeyTimeline.map((ev, index) => {
+          const barEnd = Math.max(ev.end, ev.start + TIMELINE_MIN_DURATION);
+          const left = timelineX(ev.start);
+          const width = timelineX(barEnd) - left;
+          const top = rowTop + index * rowHeight;
+          const color = ev.color || TIMELINE_COLORS[index % TIMELINE_COLORS.length];
+
+          return (
+            <button
+              type="button"
+              key={ev.id}
+              className={`journey-gantt-row ${index === activeIndex ? 'is-active' : ''}`}
+              style={{ top: `${top}%`, height: `${rowHeight}%`, '--bar': color }}
+              onClick={() => onSelect?.(index)}
+              aria-pressed={index === activeIndex}
+              aria-label={`${ev.short}, ${ev.date}`}
+            >
+              <span className="journey-gantt-name">
+                <span className="journey-gantt-check" aria-hidden="true">
+                  <svg className="journey-gantt-tick" viewBox="0 0 24 24">
+                    <path d="M5 12.5l4.2 4.2L19 7" />
+                  </svg>
+                </span>
+                <span className="journey-gantt-name-info">
+                  <span className="journey-gantt-name-text">{ev.short}</span>
+                  <span className="journey-gantt-name-date">{ev.date}</span>
+                </span>
+              </span>
+              <span
+                className={`journey-gantt-bar ${ev.ongoing ? 'is-ongoing' : ''}`}
+                style={{ left: `${left}%`, width: `${width}%` }}
+              />
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -551,35 +550,47 @@ function TechLaptopScreen() {
   );
 }
 
-export default function LaptopMockup({ variant = 'projects', className = '', activeProject }) {
+export default function LaptopMockup({
+  variant = 'projects',
+  className = '',
+  activeProject,
+  activeJourneyIndex = 0,
+  onJourneySelect,
+  children,
+}) {
   const selectedProject = activeProject || desktopProjects[0];
   const isProjects = variant === 'projects';
   const isTech = variant === 'tech';
+  const isContact = variant === 'contact';
+  const isJourney = !isProjects && !isTech && !isContact;
 
   return (
     <div
       className={`laptop-focus ${isProjects ? 'laptop-projects' : ''} ${isTech ? 'laptop-tech' : ''} ${
-        !isProjects && !isTech ? 'laptop-journey' : ''
-      } ${className}`}
+        isContact ? 'laptop-contact' : ''
+      } ${isJourney ? 'laptop-journey' : ''} ${className}`}
     >
       <div
         className="laptop-lid"
-        aria-label={isProjects ? 'Desktop project laptop' : isTech ? 'Developer tech stack laptop' : 'Laptop journey focus'}
+        aria-label={
+          isProjects
+            ? 'Desktop project laptop'
+            : isTech
+              ? 'Developer tech stack laptop'
+              : isContact
+                ? 'Contact form desktop'
+                : 'Laptop journey focus'
+        }
       >
         <div className="laptop-screen">
           {isProjects ? (
             <ProjectLaptopScreen activeProject={selectedProject} />
           ) : isTech ? (
             <TechLaptopScreen />
+          ) : isContact ? (
+            children
           ) : (
-            <>
-              <div className="laptop-toolbar">
-                <span />
-                <span />
-                <span />
-              </div>
-              <JourneyLaptopScreen />
-            </>
+            <JourneyTimelineScreen activeIndex={activeJourneyIndex} onSelect={onJourneySelect} />
           )}
         </div>
       </div>

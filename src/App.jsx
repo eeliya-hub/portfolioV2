@@ -1,7 +1,8 @@
-import { MotionConfig, motion } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import IPhoneMockup from './components/IPhoneMockup.jsx';
 import { desktopProjects, mobileProjects } from './data/projects.js';
+import { journeyTimeline } from './data/journey.js';
 import { cardItem, sectionContainer, sectionItem, viewportOnce } from './lib/motion.js';
 
 const LaptopMockup = lazy(() => import('./components/LaptopMockup.jsx'));
@@ -22,12 +23,6 @@ const aboutProofPoints = [
     title: 'Open to opportunities',
     body: 'Open to internships, grad schemes, junior roles, freelance builds, and collaborative projects.',
   },
-];
-
-const journeyNotes = [
-  'Customer-facing work at B&Q shaped how I think about communication, patience, and software that is genuinely usable.',
-  'University projects gave me the foundation, while SkyHealth, finance, weather, and Traverse pushed that foundation into product work.',
-  'Final year is about sharpening the portfolio and becoming stronger across full-stack and mobile development.',
 ];
 
 const initialDesktopProjectIndex = Math.max(
@@ -594,6 +589,10 @@ function TechStack() {
 }
 
 function Journey() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeEvent = journeyTimeline[activeIndex];
+  const total = journeyTimeline.length;
+
   return (
     <section
       id="journey"
@@ -601,14 +600,14 @@ function Journey() {
     >
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(251,191,36,0.05),transparent_32%,rgba(255,255,255,0.03))]" />
       <motion.div
-        className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-[minmax(0,0.68fr)_minmax(0,1.32fr)]"
+        className="mx-auto grid w-full max-w-7xl items-stretch gap-10 lg:grid-cols-[minmax(0,0.68fr)_minmax(0,1.32fr)]"
         initial="hidden"
         whileInView="show"
         viewport={viewportOnce}
         variants={sectionContainer}
       >
         <motion.div
-          className="journey-copy"
+          className="journey-copy flex h-full flex-col justify-center"
           initial="hidden"
           whileInView="show"
           viewport={viewportOnce}
@@ -618,37 +617,52 @@ function Journey() {
             className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
             variants={sectionItem}
           >
-            Journey
+            The Roadmap
           </motion.p>
           <motion.h2
-            className="max-w-3xl text-4xl font-semibold leading-tight text-frost sm:text-5xl lg:text-6xl"
+            className="max-w-2xl text-4xl font-semibold leading-tight text-frost sm:text-5xl"
             variants={sectionItem}
           >
-            The path has been practical: study, work, build, improve.
+            My Journey.
           </motion.h2>
-          <motion.p
-            className="mt-6 max-w-2xl text-lg leading-8 text-muted"
-            variants={sectionItem}
-          >
-            Eeliya&apos;s journey is not just a list of projects. It is a mix of Computer Science fundamentals,
-            customer-facing work, and repeated practice turning ideas into apps. Each step adds a little more
-            confidence, technical range, and product sense.
+          <motion.p className="mt-4 max-w-xl text-lg leading-8 text-muted" variants={sectionItem}>
+            Pick a milestone on the roadmap to see what happened.
           </motion.p>
-          <div className="mt-7 grid gap-3">
-            {journeyNotes.map((note, index) => (
+
+          <motion.span className="journey-divider" variants={sectionItem} aria-hidden="true" />
+
+          <motion.div
+            className="journey-detail"
+            style={{ '--accent': activeEvent.color }}
+            variants={cardItem}
+          >
+            <AnimatePresence mode="wait">
               <motion.div
-                className="journey-note"
-                key={note}
-                variants={cardItem}
+                key={activeEvent.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.28 }}
               >
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <p>{note}</p>
+                <div className="journey-detail-meta">
+                  <span className="journey-detail-step">
+                    {String(activeIndex + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+                  </span>
+                  <span className="journey-detail-date">{activeEvent.date}</span>
+                </div>
+                <h3 className="journey-detail-title">{activeEvent.title}</h3>
+                <p className="journey-detail-text">{activeEvent.detail}</p>
+                <code className="journey-detail-cmd">$ {activeEvent.command}</code>
               </motion.div>
-            ))}
-          </div>
+            </AnimatePresence>
+          </motion.div>
         </motion.div>
         <motion.div variants={cardItem}>
-          <LazyLaptop variant="journey" />
+          <LazyLaptop
+            variant="journey"
+            activeJourneyIndex={activeIndex}
+            onJourneySelect={setActiveIndex}
+          />
         </motion.div>
       </motion.div>
     </section>
@@ -671,74 +685,79 @@ function Contact() {
     >
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(251,113,133,0.05),transparent_34%,rgba(86,217,255,0.04))]" />
       <motion.div
-        className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,0.92fr)_minmax(17rem,0.56fr)]"
+        className="contact-shell mx-auto w-full max-w-7xl"
         initial="hidden"
         whileInView="show"
         viewport={viewportOnce}
         variants={sectionContainer}
       >
-        <div className="contact-copy">
+        <div className="contact-head">
           <motion.p
-            className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
+            className="mb-4 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
             variants={sectionItem}
           >
             Contact
           </motion.p>
           <motion.h2
-            className="max-w-3xl text-4xl font-semibold leading-tight text-frost sm:text-5xl lg:text-6xl"
+            className="max-w-3xl text-4xl font-semibold leading-tight text-frost sm:text-5xl"
             variants={sectionItem}
           >
-            Let&apos;s turn the next idea into something real.
+            Get in Touch.
           </motion.h2>
-          <motion.p
-            className="mt-6 max-w-2xl text-lg leading-8 text-muted"
-            variants={sectionItem}
-          >
-            This is the closing point of the portfolio: a direct way to reach Eeliya for internships,
-            collaborations, project feedback, or software ideas around full-stack apps, mobile, AI, travel, and
-            aviation.
+          <motion.p className="mt-4 max-w-2xl text-lg leading-8 text-muted" variants={sectionItem}>
+            If you want to discuss a project, internship, collaboration, or a product idea, this panel is ready to open a new thread.
           </motion.p>
-          <motion.div
-            className="contact-direct-links"
-            variants={sectionItem}
-          >
-            <a href="mailto:eeliya@example.com">eeliya@example.com</a>
-            <a href="#home">Back to top</a>
-          </motion.div>
         </div>
-        <motion.form
-          className="contact-form-card"
-          onSubmit={handleSubmit}
-          variants={cardItem}
-        >
-          <div className="contact-form-heading">
-            <p>Send a Message</p>
-            <span>EmailJS-ready placeholder handler</span>
-          </div>
-          <label>
-            <span>Name</span>
-            <input name="name" type="text" autoComplete="name" placeholder="Your name" required />
-          </label>
-          <label>
-            <span>Email</span>
-            <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
-          </label>
-          <label>
-            <span>Subject</span>
-            <input name="subject" type="text" placeholder="Project, internship, collaboration..." required />
-          </label>
-          <label>
-            <span>Message</span>
-            <textarea name="message" rows="5" placeholder="Write your message..." required />
-          </label>
-          <button type="submit">Submit Message</button>
-          <p className="form-status" aria-live="polite">
-            {formStatus === 'sent'
-              ? 'Message captured locally. Connect EmailJS when ready.'
-              : 'Placeholder submit: no email is sent yet.'}
-          </p>
-        </motion.form>
-        <div className="hidden lg:block" aria-hidden="true" />
+
+        <div className="contact-stage grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.5fr)]">
+          <motion.div className="contact-device" variants={cardItem}>
+            <LazyLaptop variant="contact">
+              <div className="contact-form-os">
+                <div className="contact-form-bar" aria-hidden="true">
+                  <div className="window-dots">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <p>new-message</p>
+                  <div className="window-actions">
+                    <span />
+                    <span />
+                  </div>
+                </div>
+                <form className="contact-form" onSubmit={handleSubmit}>
+                  <div className="contact-form-row">
+                    <label className="contact-field">
+                      <span>Name</span>
+                      <input name="name" type="text" autoComplete="name" placeholder="Your name" required />
+                    </label>
+                    <label className="contact-field">
+                      <span>Email</span>
+                      <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
+                    </label>
+                  </div>
+                  <label className="contact-field">
+                    <span>Subject</span>
+                    <input name="subject" type="text" placeholder="Project, internship, collaboration..." required />
+                  </label>
+                  <label className="contact-field contact-field-grow">
+                    <span>Message</span>
+                    <textarea name="message" placeholder="Write your message..." required />
+                  </label>
+                  <div className="contact-form-foot">
+                    <button type="submit">Send Message</button>
+                    <p className="contact-form-note" aria-live="polite">
+                      {formStatus === 'sent'
+                        ? 'Captured locally — hook up sending later.'
+                        : 'Form is ready; sending logic comes next.'}
+                    </p>
+                  </div>
+                </form>
+              </div>
+            </LazyLaptop>
+          </motion.div>
+          <div className="hidden lg:block" aria-hidden="true" />
+        </div>
       </motion.div>
     </section>
   );
