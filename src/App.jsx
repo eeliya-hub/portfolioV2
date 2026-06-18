@@ -70,6 +70,47 @@ function useDesktopSlots() {
   return slots;
 }
 
+function useDesktopProjectBoundaryLock(enabled) {
+  const stageRef = useRef(null);
+
+  useEffect(() => {
+    if (!enabled) {
+      if (stageRef.current) {
+        stageRef.current.style.marginTop = '';
+      }
+      return undefined;
+    }
+
+    const stageElement = stageRef.current;
+
+    const sync = () => {
+      const projectSection = document.getElementById('projects-desktop');
+      const stage = stageRef.current;
+
+      if (!projectSection || !stage) return;
+
+      const projectTop = projectSection.getBoundingClientRect().top;
+      const nextOffset = Math.max(0, projectTop);
+
+      stage.style.marginTop = `${nextOffset}px`;
+    };
+
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+
+    return () => {
+      if (stageElement) {
+        stageElement.style.marginTop = '';
+      }
+      window.removeEventListener('scroll', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, [enabled]);
+
+  return stageRef;
+}
+
 const aboutProofPoints = [
   {
     label: 'Degree',
@@ -847,9 +888,11 @@ function DesktopDevice({ activeSection, desktopProject, journeyIndex, onJourneyS
   const contentSection = lastSectionRef.current;
   const variant = sectionToDesktopVariant[contentSection];
   const target = slots[contentSection];
+  const stageRef = useDesktopProjectBoundaryLock(isOn && contentSection === 'projects-desktop');
 
   return (
     <motion.div
+      ref={stageRef}
       className="desktop-device-float"
       initial={false}
       animate={
