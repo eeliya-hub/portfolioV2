@@ -2379,6 +2379,7 @@ body::after {
   width: 5.1rem;
   height: 5.1rem;
   margin-bottom: 0.35rem;
+  
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 999px;
@@ -3192,6 +3193,47 @@ body::after {
   width: min(100%, 43rem);
   margin-left: 0;
   transform: translateX(-1rem);
+}
+
+/* Single persistent desktop device that floats and slides between sections
+   (mirrors the desktop phone). Hidden on mobile, where the inline per-section
+   devices render instead. */
+.desktop-device-float {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .desktop-device-float {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 20;
+    display: block;
+    pointer-events: none;
+    will-change: left, top, width, opacity;
+  }
+
+  .desktop-device-float .laptop-focus {
+    margin-bottom: 0;
+  }
+
+  /* Match the inline projects laptop: fill the slot and centre it so it sits
+     exactly between (and equidistant from) the prev/next arrows. */
+  .desktop-device-float .laptop-projects {
+    width: 100%;
+    margin: 0 auto;
+    transform: none;
+  }
+
+  /* On desktop the inline devices only reserve layout space; the floating
+     device is the visible one. */
+  .device-inline {
+    visibility: hidden;
+  }
+
+  .device-inline * {
+    pointer-events: none !important;
+  }
 }
 
 .laptop-lid {

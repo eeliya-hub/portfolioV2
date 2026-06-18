@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import IPhoneMockup from './components/IPhoneMockup.jsx';
 import { desktopProjects, mobileProjects } from './data/projects.js';
 import { journeyTimeline } from './data/journey.js';
-import { cardItem, sectionContainer, sectionItem, viewportOnce } from './lib/motion.js';
+import { cardItem, sectionContainer, sectionItem, smoothEase, viewportOnce } from './lib/motion.js';
 
 const LaptopMockup = lazy(() => import('./components/LaptopMockup.jsx'));
 
@@ -11,6 +11,64 @@ const sectionIds = ['home', 'about', 'projects', 'projects-desktop', 'tech-stack
 const softLockDelayMs = 250;
 const softLockReleaseMs = 900;
 const snapDistanceThreshold = 28;
+
+// Sections where the persistent floating desktop device is visible. Once the
+// first one (projects-desktop) is in frame it stays on screen and slides to
+// each section's position — exactly like the desktop phone.
+const desktopDeviceSections = ['projects-desktop', 'tech-stack', 'journey', 'contact'];
+
+// Measures the layout space each desktop section already reserves for its
+// device (the hidden inline slot) and returns its settled viewport rect. The
+// floating device is positioned exactly onto that slot, so it can never cover
+// text — the slot is part of the normal layout flow at any screen size.
+function useDesktopSlots() {
+  const [slots, setSlots] = useState({});
+
+  useEffect(() => {
+    let raf = 0;
+
+    const measure = () => {
+      setSlots((prev) => {
+        const next = { ...prev };
+        let changed = false;
+        for (const id of desktopDeviceSections) {
+          const section = document.getElementById(id);
+          const slot = section?.querySelector('.device-inline');
+          if (!section || !slot) continue;
+          const s = slot.getBoundingClientRect();
+          const sec = section.getBoundingClientRect();
+          if (s.width < 1) continue;
+          // top is the slot's offset within its section; when the section is
+          // snapped to the top of the viewport this equals its viewport top.
+          const rect = { left: Math.round(s.left), top: Math.round(s.top - sec.top), width: Math.round(s.width) };
+          const old = prev[id];
+          if (!old || old.left !== rect.left || old.top !== rect.top || old.width !== rect.width) {
+            next[id] = rect;
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    };
+
+    measure();
+    // Re-measure as lazy devices/fonts settle and on resize.
+    const timers = [setTimeout(measure, 300), setTimeout(measure, 900), setTimeout(measure, 1800)];
+    const onResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(measure);
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  return slots;
+}
 
 const aboutProofPoints = [
   {
@@ -544,7 +602,9 @@ function Projects({
               onChange={setDesktopProjectIndex}
               className={desktopSelectorClass}
             />
-            <LazyLaptop activeProject={desktopProject} variant="projects" />
+            <div className="device-inline">
+              <LazyLaptop activeProject={desktopProject} variant="projects" />
+            </div>
           </motion.div>
 
           <motion.div className="project-detail-block project-desktop-detail" variants={cardItem}>
@@ -580,7 +640,7 @@ function TechStack() {
             workflows.
           </p>
         </motion.div>
-        <motion.div className="tech-laptop-slot" variants={cardItem}>
+        <motion.div className="tech-laptop-slot device-inline" variants={cardItem}>
           <LazyLaptop variant="tech" />
         </motion.div>
       </motion.div>
@@ -588,8 +648,7 @@ function TechStack() {
   );
 }
 
-function Journey() {
-  const [activeIndex, setActiveIndex] = useState(0);
+function Journey({ activeIndex = 0, onSelect }) {
   const activeEvent = journeyTimeline[activeIndex];
   const total = journeyTimeline.length;
 
@@ -657,11 +716,11 @@ function Journey() {
             </AnimatePresence>
           </motion.div>
         </motion.div>
-        <motion.div variants={cardItem}>
+        <motion.div className="device-inline" variants={cardItem}>
           <LazyLaptop
             variant="journey"
             activeJourneyIndex={activeIndex}
-            onJourneySelect={setActiveIndex}
+            onJourneySelect={onSelect}
           />
         </motion.div>
       </motion.div>
@@ -669,7 +728,7 @@ function Journey() {
   );
 }
 
-function Contact() {
+function ContactForm() {
   const [formStatus, setFormStatus] = useState('idle');
 
   const handleSubmit = (event) => {
@@ -678,6 +737,53 @@ function Contact() {
     event.currentTarget.reset();
   };
 
+  return (
+    <div className="contact-form-os">
+      <div className="contact-form-bar" aria-hidden="true">
+        <div className="window-dots">
+          <span />
+          <span />
+          <span />
+        </div>
+        <p>new-message</p>
+        <div className="window-actions">
+          <span />
+          <span />
+        </div>
+      </div>
+      <form className="contact-form" onSubmit={handleSubmit}>
+        <div className="contact-form-row">
+          <label className="contact-field">
+            <span>Name</span>
+            <input name="name" type="text" autoComplete="name" placeholder="Your name" required />
+          </label>
+          <label className="contact-field">
+            <span>Email</span>
+            <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
+          </label>
+        </div>
+        <label className="contact-field">
+          <span>Subject</span>
+          <input name="subject" type="text" placeholder="Project, internship, collaboration..." required />
+        </label>
+        <label className="contact-field contact-field-grow">
+          <span>Message</span>
+          <textarea name="message" placeholder="Write your message..." required />
+        </label>
+        <div className="contact-form-foot">
+          <button type="submit">Send Message</button>
+          <p className="contact-form-note" aria-live="polite">
+            {formStatus === 'sent'
+              ? 'Captured locally — hook up sending later.'
+              : 'Form is ready; sending logic comes next.'}
+          </p>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function Contact() {
   return (
     <section
       id="contact"
@@ -710,50 +816,9 @@ function Contact() {
         </div>
 
         <div className="contact-stage grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.5fr)]">
-          <motion.div className="contact-device" variants={cardItem}>
+          <motion.div className="contact-device device-inline" variants={cardItem}>
             <LazyLaptop variant="contact">
-              <div className="contact-form-os">
-                <div className="contact-form-bar" aria-hidden="true">
-                  <div className="window-dots">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                  <p>new-message</p>
-                  <div className="window-actions">
-                    <span />
-                    <span />
-                  </div>
-                </div>
-                <form className="contact-form" onSubmit={handleSubmit}>
-                  <div className="contact-form-row">
-                    <label className="contact-field">
-                      <span>Name</span>
-                      <input name="name" type="text" autoComplete="name" placeholder="Your name" required />
-                    </label>
-                    <label className="contact-field">
-                      <span>Email</span>
-                      <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
-                    </label>
-                  </div>
-                  <label className="contact-field">
-                    <span>Subject</span>
-                    <input name="subject" type="text" placeholder="Project, internship, collaboration..." required />
-                  </label>
-                  <label className="contact-field contact-field-grow">
-                    <span>Message</span>
-                    <textarea name="message" placeholder="Write your message..." required />
-                  </label>
-                  <div className="contact-form-foot">
-                    <button type="submit">Send Message</button>
-                    <p className="contact-form-note" aria-live="polite">
-                      {formStatus === 'sent'
-                        ? 'Captured locally — hook up sending later.'
-                        : 'Form is ready; sending logic comes next.'}
-                    </p>
-                  </div>
-                </form>
-              </div>
+              <ContactForm />
             </LazyLaptop>
           </motion.div>
           <div className="hidden lg:block" aria-hidden="true" />
@@ -763,18 +828,75 @@ function Contact() {
   );
 }
 
+const sectionToDesktopVariant = {
+  'projects-desktop': 'projects',
+  'tech-stack': 'tech',
+  journey: 'journey',
+  contact: 'contact',
+};
+
+// Single persistent desktop device that floats and slides between sections,
+// exactly like the desktop phone. The per-section inline devices stay for
+// mobile; on desktop they only reserve layout space (see .device-inline), and
+// the float is positioned precisely onto that reserved slot.
+function DesktopDevice({ activeSection, desktopProject, journeyIndex, onJourneySelect, slots }) {
+  const isOn = desktopDeviceSections.includes(activeSection);
+  const lastSectionRef = useRef('projects-desktop');
+  if (isOn) lastSectionRef.current = activeSection;
+
+  const contentSection = lastSectionRef.current;
+  const variant = sectionToDesktopVariant[contentSection];
+  const target = slots[contentSection];
+
+  return (
+    <motion.div
+      className="desktop-device-float"
+      initial={false}
+      animate={
+        target
+          ? { left: target.left, top: target.top, width: target.width, opacity: isOn ? 1 : 0 }
+          : { opacity: 0 }
+      }
+      style={{ pointerEvents: isOn ? 'auto' : 'none' }}
+      transition={{ duration: 0.7, ease: smoothEase }}
+      aria-hidden={!isOn}
+    >
+      <Suspense fallback={null}>
+        <LaptopMockup
+          variant={variant}
+          activeProject={desktopProject}
+          activeJourneyIndex={journeyIndex}
+          onJourneySelect={onJourneySelect}
+        >
+          {variant === 'contact' ? <ContactForm /> : null}
+        </LaptopMockup>
+      </Suspense>
+    </motion.div>
+  );
+}
+
 export default function App() {
   const activeSection = useActiveSection(sectionIds);
   const [mobileProjectIndex, setMobileProjectIndex] = useState(0);
   const [desktopProjectIndex, setDesktopProjectIndex] = useState(initialDesktopProjectIndex);
+  const [journeyIndex, setJourneyIndex] = useState(0);
   const [galleryProject, setGalleryProject] = useState(null);
   const activeMobileProject = mobileProjects[mobileProjectIndex];
+  const desktopProject = desktopProjects[desktopProjectIndex];
+  const desktopSlots = useDesktopSlots();
 
   return (
     <MotionConfig reducedMotion="user">
       <div className="relative min-h-dvh overflow-x-hidden bg-ink bg-radial-soft text-frost">
         <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(115deg,rgba(6,9,18,0.68),rgba(11,16,32,0.9))]" />
         <IPhoneMockup activeSection={activeSection} className="desktop-phone" project={activeMobileProject} />
+        <DesktopDevice
+          activeSection={activeSection}
+          desktopProject={desktopProject}
+          journeyIndex={journeyIndex}
+          onJourneySelect={setJourneyIndex}
+          slots={desktopSlots}
+        />
         <main className="overflow-x-hidden">
           <Home />
           <About />
@@ -787,7 +909,7 @@ export default function App() {
             onGallery={setGalleryProject}
           />
           <TechStack />
-          <Journey />
+          <Journey activeIndex={journeyIndex} onSelect={setJourneyIndex} />
           <Contact />
         </main>
         <ProjectGalleryModal project={galleryProject} onClose={() => setGalleryProject(null)} />
