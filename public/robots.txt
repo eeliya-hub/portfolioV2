@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://eeliyanayeri.com/sitemap.xml
