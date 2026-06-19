@@ -2343,129 +2343,218 @@ body::after {
 }
 
 .contacts-app {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.72rem;
-  padding: 4.05rem 0.86rem 2rem;
-  background:
-    radial-gradient(circle at 50% 8%, rgba(251, 113, 133, 0.24), transparent 28%),
-    linear-gradient(180deg, #12151d, #070910);
-  text-align: center;
-}
-
-.ios-contact-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: rgba(248, 251, 255, 0.88);
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.ios-contact-header strong {
-  color: #56d9ff;
-  font-size: 0.72rem;
-}
-
-.ios-contact-profile {
-  display: grid;
-  justify-items: center;
-  gap: 0.24rem;
-  padding: 0.8rem 0.6rem 0.55rem;
-}
-
-.ios-contact-avatar {
-  display: grid;
-  width: 5.1rem;
-  height: 5.1rem;
-  margin-bottom: 0.35rem;
-  
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 36% 26%, rgba(255, 255, 255, 0.28), transparent 18%),
-    linear-gradient(145deg, #56d9ff, #9b7cff 54%, #fb7185);
-  color: #fff;
-  font-size: 1.42rem;
-  font-weight: 900;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
-}
-
-.ios-contact-profile h3 {
-  margin: 0;
-  color: #fff;
-  font-size: 1rem;
-  line-height: 1.1;
-}
-
-.ios-contact-profile p,
-.ios-contact-profile span {
-  margin: 0;
-  color: rgba(231, 238, 252, 0.68);
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-.ios-contact-actions {
-  display: grid;
-  width: 100%;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.42rem;
-}
-
-.ios-contact-actions a {
-  display: inline-flex;
-  min-height: 2.35rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.85rem;
-  background: rgba(86, 217, 255, 0.16);
-  color: #56d9ff;
-  font-size: 0.58rem;
-  font-weight: 900;
-  text-decoration: none;
-}
-
-.ios-contact-list {
-  display: grid;
-  width: 100%;
-  gap: 0.44rem;
-  margin-top: 0.15rem;
-}
-
-.ios-contact-row {
-  padding: 0.6rem 0.68rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 0.86rem;
-  background: rgba(255, 255, 255, 0.065);
+  padding: 2.85rem 0.7rem 0.72rem;
+  overflow: hidden;
+  isolation: isolate;
+  background: #08090f;
   text-align: left;
 }
 
-.ios-contact-row p {
-  margin: 0 0 0.22rem;
-  color: rgba(231, 238, 252, 0.48);
-  font-size: 0.56rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.ios-contact-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.55rem;
 }
 
-.ios-contact-row a,
-.ios-contact-row span {
-  display: block;
+/* Full-screen contact photo backdrop with a frosted-glass UI over it. */
+.ios-contact-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
   overflow: hidden;
-  color: rgba(248, 251, 255, 0.84);
-  font-size: 0.64rem;
-  font-weight: 700;
-  line-height: 1.25;
-  text-decoration: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.ios-contact-row a {
-  color: #56d9ff;
+/* Photo, zoomed and shifted up so the face sits high (above the name), centred
+   on the person, with the background cropped out at the top. */
+.ios-contact-bg-photo {
+  --contact-photo-x: 22%;
+  --contact-photo-y: 52%;
+  --contact-photo-scale: 1.46;
+  --contact-photo-lift: -11%;
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--contact-photo-x) var(--contact-photo-y);
+  transform: translate3d(0, var(--contact-photo-lift), 0) scale(var(--contact-photo-scale));
+  transform-origin: var(--contact-photo-x) 42%;
+}
+
+.ios-contact-bg::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.02) 20%,
+    rgba(8, 9, 16, 0) 66%,
+    rgba(8, 9, 16, 0.16) 86%,
+    rgba(6, 7, 12, 0.4) 100%
+  );
+}
+
+.ios-contact-topbar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ios-contact-circle {
+  display: grid;
+  width: 1.95rem;
+  height: 1.95rem;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(42, 42, 48, 0.42);
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+
+.ios-contact-circle svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.ios-contact-edit {
+  padding: 0.36rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(42, 42, 48, 0.42);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+.ios-contact-name {
+  margin: 0 0 0.4rem;
+  color: #fff;
+  font-size: 2.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-align: center;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+}
+
+.ios-contact-lower {
+  display: flex;
+  flex-direction: column;
+  gap: 0.46rem;
+}
+
+.ios-contact-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.92rem;
+  margin-bottom: 0.1rem;
+}
+
+.ios-contact-action {
+  display: grid;
+  width: 2.95rem;
+  height: 2.95rem;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(150, 158, 172, 0.26);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(14px) saturate(1.3);
+}
+
+.ios-contact-action svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.ios-contact-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.95rem;
+  background: rgba(28, 28, 34, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(30px) saturate(1.3);
+}
+
+.ios-contact-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.43rem 0.62rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  text-decoration: none;
+}
+
+.ios-contact-field:first-child {
+  border-top: 0;
+}
+
+.ios-contact-field-info {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 0.07rem;
+}
+
+.ios-contact-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.26rem;
+  color: rgba(235, 235, 245, 0.6);
+  font-size: 0.6rem;
+  font-weight: 500;
+}
+
+.ios-contact-field-label svg {
+  width: 0.62rem;
+  height: 0.62rem;
+  color: #e0a200;
+}
+
+.ios-contact-field-value {
+  overflow: hidden;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.32;
+  white-space: pre-line;
+}
+
+.ios-contact-field-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.ios-contact-field-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.ios-contact-notes {
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.95rem;
+  background: rgba(28, 28, 34, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  color: rgba(235, 235, 245, 0.55);
+  font-size: 0.72rem;
+  backdrop-filter: blur(30px) saturate(1.3);
 }
 
 .home-section {
@@ -4774,7 +4863,8 @@ body::after {
   }
 }
 
-.contact-form-os {
+/* Desktop contact device styled as an email-compose app. */
+.contact-mail {
   display: flex;
   height: 100%;
   min-height: 0;
@@ -4782,147 +4872,187 @@ body::after {
   overflow: hidden;
   text-align: left;
   color: #f8fbff;
-  background:
-    radial-gradient(circle at 14% 10%, rgba(86, 217, 255, 0.16), transparent 32%),
-    radial-gradient(circle at 88% 12%, rgba(251, 113, 133, 0.14), transparent 32%),
-    linear-gradient(135deg, #11233c, #0d1320 54%, #161021);
+  background: linear-gradient(180deg, #1a1d27, #0f121b);
 }
 
-.contact-form-bar {
+.contact-mail-bar {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  justify-content: space-between;
-  gap: calc(0.72 * var(--u));
-  padding: calc(0.48 * var(--u)) calc(0.8 * var(--u));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(7, 10, 18, 0.42);
+  gap: calc(0.7 * var(--u));
+  padding: calc(0.55 * var(--u)) calc(0.8 * var(--u));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.contact-form-bar p {
-  margin: 0;
-  color: rgba(248, 251, 255, 0.6);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: calc(0.56 * var(--u));
-}
-
-.contact-form-bar .window-dots span,
-.contact-form-bar .window-actions span {
+.contact-mail-bar .window-dots span {
   width: calc(0.44 * var(--u));
   height: calc(0.44 * var(--u));
 }
 
-.contact-form-bar .window-actions span {
-  width: calc(0.86 * var(--u));
-}
-
-.contact-form {
-  display: flex;
+.contact-mail-title {
   flex: 1;
-  min-height: 0;
-  flex-direction: column;
-  gap: calc(0.66 * var(--u));
-  padding: calc(0.9 * var(--u)) calc(1.05 * var(--u)) calc(1 * var(--u));
-}
-
-.contact-form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(0.72 * var(--u));
-}
-
-.contact-field {
-  display: flex;
-  min-height: 0;
-  flex-direction: column;
-  gap: calc(0.3 * var(--u));
-}
-
-.contact-field > span {
-  color: rgba(231, 238, 252, 0.58);
-  font-size: clamp(0.6rem, calc(0.62 * var(--u)), 0.7rem);
+  text-align: center;
+  color: rgba(248, 251, 255, 0.82);
+  font-size: clamp(0.74rem, calc(0.72 * var(--u)), 0.84rem);
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
-.contact-field input,
-.contact-field textarea {
-  width: 100%;
-  padding: calc(0.64 * var(--u)) calc(0.78 * var(--u));
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: calc(0.56 * var(--u));
-  background: rgba(6, 9, 18, 0.42);
-  color: #f8fbff;
-  font-family: inherit;
-  font-size: clamp(0.78rem, calc(0.82 * var(--u)), 0.9rem);
-  line-height: 1.45;
-  outline: none;
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    background 160ms ease;
+.contact-mail-bar-spacer {
+  width: calc(2.2 * var(--u));
+  flex: 0 0 auto;
 }
 
-.contact-field input::placeholder,
-.contact-field textarea::placeholder {
-  color: rgba(231, 238, 252, 0.34);
+.contact-mail-head {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  padding: 0 calc(1.05 * var(--u));
 }
 
-.contact-field input:focus,
-.contact-field textarea:focus {
-  border-color: rgba(86, 217, 255, 0.55);
-  background: rgba(6, 9, 18, 0.6);
-  box-shadow: 0 0 0 calc(0.12 * var(--u)) rgba(86, 217, 255, 0.16);
-}
-
-.contact-field-grow {
-  flex: 1;
-  min-height: 0;
-}
-
-.contact-field-grow textarea {
-  flex: 1;
-  min-height: calc(5.15 * var(--u));
-  line-height: 1.4;
-  resize: none;
-}
-
-.contact-form-foot {
+.contact-mail-row {
   display: flex;
   align-items: center;
-  gap: calc(0.84 * var(--u));
+  gap: calc(0.7 * var(--u));
+  min-height: calc(2.4 * var(--u));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.contact-form button[type="submit"] {
+.contact-mail-key {
+  width: calc(3.4 * var(--u));
   flex: 0 0 auto;
-  min-height: calc(2.65 * var(--u));
-  padding: 0 calc(1.2 * var(--u));
+  color: rgba(235, 235, 245, 0.42);
+  font-size: clamp(0.72rem, calc(0.68 * var(--u)), 0.8rem);
+  font-weight: 500;
+}
+
+.contact-mail-row input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #f8fbff;
+  font-family: inherit;
+  font-size: clamp(0.78rem, calc(0.76 * var(--u)), 0.88rem);
+  outline: none;
+}
+
+.contact-mail-row input::placeholder {
+  color: rgba(231, 238, 252, 0.32);
+}
+
+.contact-mail-to {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(0.42 * var(--u));
+  padding: calc(0.24 * var(--u)) calc(0.6 * var(--u)) calc(0.24 * var(--u)) calc(0.26 * var(--u));
+  border-radius: 999px;
+  background: rgba(86, 217, 255, 0.14);
+  color: #bfeaff;
+  font-size: clamp(0.74rem, calc(0.72 * var(--u)), 0.84rem);
+  font-weight: 600;
+}
+
+.contact-mail-avatar {
+  display: grid;
+  width: calc(1.55 * var(--u));
+  height: calc(1.55 * var(--u));
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #56d9ff, #9b7cff);
+  color: #fff;
+  font-size: calc(0.58 * var(--u));
+  font-weight: 800;
+  overflow: hidden;
+}
+
+.contact-mail-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.contact-mail-body {
+  flex: 1;
+  min-height: calc(4 * var(--u));
+  padding: calc(0.9 * var(--u)) calc(1.05 * var(--u));
+  border: 0;
+  background: transparent;
+  color: rgba(248, 251, 255, 0.92);
+  font-family: inherit;
+  font-size: clamp(0.8rem, calc(0.78 * var(--u)), 0.92rem);
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+}
+
+.contact-mail-body::placeholder {
+  color: rgba(231, 238, 252, 0.32);
+}
+
+.contact-mail-foot {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: calc(0.7 * var(--u));
+  padding: calc(0.6 * var(--u)) calc(1.05 * var(--u));
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.contact-mail-tools {
+  display: flex;
+  align-items: center;
+  gap: calc(0.72 * var(--u));
+  color: rgba(235, 235, 245, 0.5);
+}
+
+.contact-mail-tools i {
+  display: grid;
+  place-items: center;
+}
+
+.contact-mail-tools i svg {
+  width: calc(1.02 * var(--u));
+  height: calc(1.02 * var(--u));
+}
+
+.contact-mail-status {
+  flex: 1;
+  color: rgba(86, 217, 255, 0.82);
+  font-size: clamp(0.66rem, calc(0.64 * var(--u)), 0.76rem);
+  font-weight: 600;
+  text-align: center;
+}
+
+.contact-mail-send {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: calc(0.4 * var(--u));
+  min-height: calc(2.4 * var(--u));
+  padding: 0 calc(1.15 * var(--u));
   border: 0;
   border-radius: 999px;
   background: linear-gradient(135deg, #56d9ff, #9b7cff);
   color: #06121f;
   font-family: inherit;
-  font-size: clamp(0.78rem, calc(0.82 * var(--u)), 0.9rem);
+  font-size: clamp(0.76rem, calc(0.76 * var(--u)), 0.86rem);
   font-weight: 800;
-  letter-spacing: 0.01em;
   cursor: pointer;
   box-shadow: 0 calc(0.4 * var(--u)) calc(1 * var(--u)) rgba(86, 217, 255, 0.22);
   transition:
     transform 160ms ease,
-    box-shadow 160ms ease,
     filter 160ms ease;
 }
 
-.contact-form button[type="submit"]:hover {
-  filter: brightness(1.06);
-  transform: translateY(-1px);
+.contact-mail-send svg {
+  width: calc(0.9 * var(--u));
+  height: calc(0.9 * var(--u));
 }
 
-.contact-form-note {
-  margin: 0;
-  color: rgba(231, 238, 252, 0.5);
-  font-size: clamp(0.62rem, calc(0.58 * var(--u)), 0.72rem);
+.contact-mail-send:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
 }
 
 .contact-copy {

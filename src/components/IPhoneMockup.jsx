@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import googleLogoMark from '../assets/Google-logo.png';
 import westminsterLogo from '../assets/UoW.jpeg';
 import homeWallpaper from '../assets/image.png';
+import contactPhoto from '../assets/pic1.jpeg';
 import { mobileProjects } from '../data/projects.js';
 import { itemVariants, quickEase, screenVariants, smoothEase } from '../lib/motion.js';
 
@@ -190,13 +191,21 @@ const googleResults = [
   },
 ];
 
-const contactDetails = [
-  { label: 'Email', value: 'eeliya@example.com', href: 'mailto:eeliya@example.com' },
-  { label: 'LinkedIn', value: 'linkedin.com/in/eeliya-nayeri', href: 'https://linkedin.com/in/eeliya-nayeri' },
-  { label: 'GitHub', value: 'github.com/eeliyanayeri', href: 'https://github.com/eeliyanayeri' },
-  { label: 'Location', value: 'United Kingdom' },
-  { label: 'Role', value: 'Computer Science Graduate / Software Developer' },
+const contactActions = [
+  { label: 'message', icon: 'message', href: 'mailto:eeliya.nayeri@gmail.com' },
+  { label: 'call', icon: 'phone', href: '#contact' },
+  { label: 'video', icon: 'video', href: '#contact' },
+  { label: 'mail', icon: 'mail', href: 'mailto:eeliya.nayeri@gmail.com' },
 ];
+
+const contactCardFields = [
+  { label: 'email', value: 'eeliya.nayeri@gmail.com', href: 'mailto:eeliya.nayeri@gmail.com', icon: 'mail' },
+  { label: 'LinkedIn', value: 'http://linkedin.com/in/eeliya/', href: 'https://linkedin.com/in/eeliya', icon: 'compass' },
+  { label: 'Github', value: 'http://github.com/eeliya-hub', href: 'https://github.com/eeliya-hub', icon: 'compass' },
+  { label: 'work', value: 'London\nUnited Kingdom', icon: 'pin' },
+];
+
+const opensInNewTab = (href) => Boolean(href && !href.startsWith('#'));
 
 function useIsCompact() {
   const getInitial = () => (typeof window === 'undefined' ? false : window.matchMedia('(max-width: 1023px)').matches);
@@ -573,7 +582,12 @@ function FakeWebPage({ result }) {
         </div>
       ) : null}
       {result.href ? (
-        <a className="fake-web-cta" href={result.href}>
+        <a
+          className="fake-web-cta"
+          href={result.href}
+          target={opensInNewTab(result.href) ? '_blank' : undefined}
+          rel={opensInNewTab(result.href) ? 'noreferrer' : undefined}
+        >
           Open {detailTitle}
         </a>
       ) : null}
@@ -1074,6 +1088,58 @@ function JourneyPhoneScreen() {
   );
 }
 
+function ContactGlyph({ name }) {
+  const common = {
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  };
+  const paths = {
+    message: <path {...common} d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4 9 9 0 0 1-3.9-.9L3 21l1.1-3.5A8.4 8.4 0 1 1 21 11.5Z" />,
+    phone: <path {...common} d="M6.6 3h3l1.5 4-2 1.4a12 12 0 0 0 5.5 5.5l1.4-2 4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.6 5.2 2 2 0 0 1 6.6 3Z" />,
+    video: (
+      <>
+        <rect {...common} x="3" y="6" width="13" height="12" rx="2.5" />
+        <path {...common} d="m16 10 5-3v10l-5-3z" />
+      </>
+    ),
+    mail: (
+      <>
+        <rect {...common} x="3" y="5" width="18" height="14" rx="2.5" />
+        <path {...common} d="m3.5 7 8.5 6 8.5-6" />
+      </>
+    ),
+    link: (
+      <>
+        <path {...common} d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1" />
+        <path {...common} d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1" />
+      </>
+    ),
+    github: <path {...common} d="M9 19c-4 1.2-4-2-5.5-2.5M15 22v-3.5c0-1 .1-1.4-.5-2 2-.2 4.2-1 4.2-4.5a3.5 3.5 0 0 0-1-2.5 3.2 3.2 0 0 0-.1-2.5S16 4.2 14.2 5.5a9 9 0 0 0-4.8 0C7.6 4.2 6.8 4.5 6.8 4.5a3.2 3.2 0 0 0-.1 2.5 3.5 3.5 0 0 0-1 2.5c0 3.5 2.1 4.3 4.1 4.5-.5.5-.7.9-.7 1.8V22" />,
+    pin: (
+      <>
+        <path {...common} d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z" />
+        <circle {...common} cx="12" cy="10" r="2.5" />
+      </>
+    ),
+    compass: (
+      <>
+        <circle {...common} cx="12" cy="12" r="9" />
+        <path {...common} d="m15.5 8.5-2 5.5-5 2 2-5.5 5-2Z" />
+      </>
+    ),
+    chevron: <path {...common} d="m9 6 6 6-6 6" />,
+    back: <path {...common} d="m15 6-6 6 6 6" />,
+  };
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  );
+}
+
 function ContactScreen() {
   return (
     <motion.div
@@ -1084,30 +1150,67 @@ function ContactScreen() {
       animate="animate"
       exit="exit"
     >
-      <motion.div className="ios-contact-header" variants={itemVariants}>
-        <span>Contacts</span>
-        <strong>Edit</strong>
+      <div className="ios-contact-bg" aria-hidden="true">
+        <img className="ios-contact-bg-photo" src={contactPhoto} alt="" />
+      </div>
+
+      <motion.div className="ios-contact-topbar" variants={itemVariants}>
+        <span className="ios-contact-circle" aria-hidden="true">
+          <ContactGlyph name="back" />
+        </span>
+        <span className="ios-contact-edit">Edit</span>
       </motion.div>
-      <motion.div className="ios-contact-profile" variants={itemVariants}>
-        <div className="ios-contact-avatar" aria-hidden="true">
-          EN
-        </div>
-        <h3>Eeliya Nayeri</h3>
-        <p>Computer Science Graduate</p>
-        <span>Software Developer</span>
-      </motion.div>
-      <motion.div className="ios-contact-actions" variants={itemVariants}>
-        <a href="mailto:eeliya@example.com">message</a>
-        <a href="https://linkedin.com/in/eeliya-nayeri">linkedin</a>
-        <a href="https://github.com/eeliyanayeri">github</a>
-      </motion.div>
-      <motion.div className="ios-contact-list" variants={itemVariants}>
-        {contactDetails.map((detail) => (
-          <div className="ios-contact-row" key={detail.label}>
-            <p>{detail.label}</p>
-            {detail.href ? <a href={detail.href}>{detail.value}</a> : <span>{detail.value}</span>}
+
+      <motion.div className="ios-contact-content" variants={itemVariants}>
+        <h3 className="ios-contact-name">Eeliya</h3>
+
+        <div className="ios-contact-lower">
+          <div className="ios-contact-actions">
+            {contactActions.map((action) => (
+              <a
+                className="ios-contact-action"
+                key={action.label}
+                href={action.href}
+                target={opensInNewTab(action.href) ? '_blank' : undefined}
+                rel={opensInNewTab(action.href) ? 'noreferrer' : undefined}
+                aria-label={action.label}
+              >
+                <ContactGlyph name={action.icon} />
+              </a>
+            ))}
           </div>
-        ))}
+
+          <div className="ios-contact-card">
+            {contactCardFields.map((field) => {
+              const Wrapper = field.href ? 'a' : 'div';
+              return (
+                <Wrapper
+                  className={`ios-contact-field ${field.href ? 'is-link' : ''}`}
+                  key={field.label}
+                  {...(field.href
+                    ? {
+                        href: field.href,
+                        target: opensInNewTab(field.href) ? '_blank' : undefined,
+                        rel: opensInNewTab(field.href) ? 'noreferrer' : undefined,
+                      }
+                    : {})}
+                >
+                  <span className="ios-contact-field-info">
+                    <span className="ios-contact-field-label">{field.label}</span>
+                    <span className="ios-contact-field-value">{field.value}</span>
+                  </span>
+                  {field.icon ? (
+                    <span className="ios-contact-field-icon">
+                      <ContactGlyph name={field.icon} />
+                    </span>
+                  ) : null}
+                </Wrapper>
+              );
+            })}
+          </div>
+
+          <div className="ios-contact-notes">Notes</div>
+        </div>
       </motion.div>
     </motion.div>
   );

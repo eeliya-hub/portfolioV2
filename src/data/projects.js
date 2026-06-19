@@ -35,6 +35,11 @@ import traverseShotFive from '../assets/projects/traverse/traverse-5.png';
 import weatherDevice from '../assets/screenshots copy/weather-model.jpg';
 import weatherShotOne from '../assets/projects/weather/weather-1.png';
 import weatherShotTwo from '../assets/projects/weather/weather-2.png';
+import alumniApiDoc from '../docs/Alumni API.pdf';
+import skyHealthDoc from '../docs/Heath Check.pdf';
+import premPredictorDoc from '../docs/Prem Predictor.pdf';
+import traverseDoc from '../docs/Traverse Doc.pdf';
+import weatherAppDoc from '../docs/Weather App.pdf';
 
 const techMap = {
   CSS: { logo: cssLogo, tone: 'blue' },
@@ -71,7 +76,9 @@ const stack = (items) =>
   }));
 
 const unavailable = (label) => ({ label, href: null });
-const defaultActions = [unavailable('GitHub'), unavailable('Docs')];
+const githubAction = (href) => ({ label: 'GitHub', href });
+const docsAction = (href) => ({ label: 'Docs', href, newTab: true });
+const projectActions = (doc, githubHref = null) => [githubHref ? githubAction(githubHref) : unavailable('GitHub'), docsAction(doc)];
 
 export const mobileProjects = [
   {
@@ -108,7 +115,7 @@ export const mobileProjects = [
       { src: traverseShotFour, alt: 'Traverse itinerary screenshot' },
       { src: traverseShotFive, alt: 'Traverse travel assistant screenshot' },
     ],
-    actions: defaultActions,
+    actions: projectActions(traverseDoc, 'https://github.com/eeliya-hub/traverse'),
   },
   {
     id: 'weather-app',
@@ -140,7 +147,7 @@ export const mobileProjects = [
       { src: weatherShotOne, alt: 'Weather app current conditions screenshot' },
       { src: weatherShotTwo, alt: 'Weather app map and places screenshot' },
     ],
-    actions: defaultActions,
+    actions: projectActions(weatherAppDoc),
   },
 ];
 
@@ -176,7 +183,7 @@ export const desktopProjects = [
       { src: premShotTwo, alt: 'Prem Predictor table screenshot' },
       { src: premShotThree, alt: 'Prem Predictor report screenshot' },
     ],
-    actions: defaultActions,
+    actions: projectActions(premPredictorDoc),
   },
   {
     id: 'alumni-api',
@@ -209,7 +216,7 @@ export const desktopProjects = [
       { src: alumniShotTwo, alt: 'Alumni API dashboard screenshot' },
       { src: alumniShotThree, alt: 'Alumni API profile screenshot' },
     ],
-    actions: defaultActions,
+    actions: projectActions(alumniApiDoc),
   },
   {
     id: 'sky-health',
@@ -243,7 +250,7 @@ export const desktopProjects = [
       { src: skyShotThree, alt: 'Sky Health survey screenshot' },
       { src: skyShotFour, alt: 'Sky Health trend screenshot' },
     ],
-    actions: defaultActions,
+    actions: projectActions(skyHealthDoc),
   },
 ];
 

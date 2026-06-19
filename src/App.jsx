@@ -1,5 +1,7 @@
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import profilePhoto from './assets/image.png';
+import cvPdf from './assets/nayeri-eeliya-CV-compressed (1).pdf';
 import IPhoneMockup from './components/IPhoneMockup.jsx';
 import { desktopProjects, mobileProjects } from './data/projects.js';
 import { journeyTimeline } from './data/journey.js';
@@ -23,9 +25,11 @@ const desktopDeviceSections = ['projects-desktop', 'tech-stack', 'journey', 'con
 // text — the slot is part of the normal layout flow at any screen size.
 function useDesktopSlots() {
   const [slots, setSlots] = useState({});
+  const [isLayoutChanging, setIsLayoutChanging] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     let raf = 0;
+    let layoutTimer = 0;
 
     const measure = () => {
       setSlots((prev) => {
@@ -51,23 +55,51 @@ function useDesktopSlots() {
       });
     };
 
-    measure();
-    // Re-measure as lazy devices/fonts settle and on resize.
-    const timers = [setTimeout(measure, 300), setTimeout(measure, 900), setTimeout(measure, 1800)];
-    const onResize = () => {
+    const scheduleMeasure = (layoutChanging = false) => {
+      if (layoutChanging) {
+        setIsLayoutChanging(true);
+        window.clearTimeout(layoutTimer);
+        layoutTimer = window.setTimeout(() => setIsLayoutChanging(false), 180);
+      }
+
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(measure);
     };
+
+    measure();
+    // Re-measure as lazy devices/fonts settle and on resize.
+    const timers = [
+      setTimeout(() => scheduleMeasure(true), 300),
+      setTimeout(() => scheduleMeasure(true), 900),
+      setTimeout(() => scheduleMeasure(true), 1800),
+    ];
+    const onResize = () => scheduleMeasure(true);
     window.addEventListener('resize', onResize);
+
+    const resizeObserver =
+      'ResizeObserver' in window
+        ? new ResizeObserver(() => scheduleMeasure(true))
+        : null;
+
+    if (resizeObserver) {
+      for (const id of desktopDeviceSections) {
+        const section = document.getElementById(id);
+        const slot = section?.querySelector('.device-inline');
+        if (section) resizeObserver.observe(section);
+        if (slot) resizeObserver.observe(slot);
+      }
+    }
 
     return () => {
       timers.forEach(clearTimeout);
+      window.clearTimeout(layoutTimer);
       cancelAnimationFrame(raf);
+      resizeObserver?.disconnect();
       window.removeEventListener('resize', onResize);
     };
   }, []);
 
-  return slots;
+  return { slots, isLayoutChanging };
 }
 
 function useDesktopProjectBoundaryLock(enabled) {
@@ -132,9 +164,12 @@ const initialDesktopProjectIndex = Math.max(
 function useActiveSection(ids) {
   const [activeSection, setActiveSection] = useState(ids[0]);
   const activeSectionRef = useRef(ids[0]);
+  const activeSectionTopRef = useRef(0);
   const rafRef = useRef(0);
   const lockTimerRef = useRef(0);
   const releaseTimerRef = useRef(0);
+  const resizeTimerRef = useRef(0);
+  const isResizingRef = useRef(false);
   const isSoftLockingRef = useRef(false);
 
   useEffect(() => {
@@ -165,6 +200,9 @@ function useActiveSection(ids) {
 
     const syncActiveSection = () => {
       const nearest = getNearestSection();
+      if (nearest) {
+        activeSectionTopRef.current = nearest.top;
+      }
       setActiveIfNeeded(nearest?.id);
     };
 
@@ -202,21 +240,44 @@ function useActiveSection(ids) {
       window.cancelAnimationFrame(rafRef.current);
       rafRef.current = window.requestAnimationFrame(syncActiveSection);
 
-      if (!isSoftLockingRef.current) {
+      if (!isSoftLockingRef.current && !isResizingRef.current) {
         scheduleSoftLock();
       }
     };
 
+    const handleResize = () => {
+      const activeElement = document.getElementById(activeSectionRef.current);
+
+      isResizingRef.current = true;
+      isSoftLockingRef.current = false;
+      window.clearTimeout(lockTimerRef.current);
+      window.clearTimeout(releaseTimerRef.current);
+      window.clearTimeout(resizeTimerRef.current);
+      window.cancelAnimationFrame(rafRef.current);
+
+      if (desktopViewport.matches && activeElement) {
+        const nextScrollTop = window.scrollY + activeElement.getBoundingClientRect().top - activeSectionTopRef.current;
+        window.scrollTo({ top: nextScrollTop, behavior: 'auto' });
+      }
+
+      rafRef.current = window.requestAnimationFrame(syncActiveSection);
+      resizeTimerRef.current = window.setTimeout(() => {
+        isResizingRef.current = false;
+        syncActiveSection();
+      }, 220);
+    };
+
     syncActiveSection();
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll);
+    window.addEventListener('resize', handleResize);
 
     return () => {
       window.cancelAnimationFrame(rafRef.current);
       window.clearTimeout(lockTimerRef.current);
       window.clearTimeout(releaseTimerRef.current);
+      window.clearTimeout(resizeTimerRef.current);
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('resize', handleResize);
     };
   }, [ids]);
 
@@ -329,16 +390,22 @@ function getActionIconType(label) {
   return 'external';
 }
 
+function shouldOpenInNewTab(href) {
+  return Boolean(href && !href.startsWith('#'));
+}
+
 function ProjectActions({ project, onGallery, className = '' }) {
   return (
     <div className={`project-action-row ${className}`}>
-      {project.actions.map((action) =>
-        action.href ? (
+      {project.actions.map((action) => {
+        const opensInNewTab = shouldOpenInNewTab(action.href);
+
+        return action.href ? (
           <a
             href={action.href}
             key={action.label}
-            target={action.href.startsWith('http') ? '_blank' : undefined}
-            rel={action.href.startsWith('http') ? 'noreferrer' : undefined}
+            target={opensInNewTab ? '_blank' : undefined}
+            rel={opensInNewTab ? 'noreferrer' : undefined}
             download={action.download}
           >
             <ProjectButtonIcon type={getActionIconType(action.label)} />
@@ -349,8 +416,8 @@ function ProjectActions({ project, onGallery, className = '' }) {
             <ProjectButtonIcon type={getActionIconType(action.label)} />
             {action.label}
           </button>
-        ),
-      )}
+        );
+      })}
       <button type="button" onClick={() => onGallery(project)}>
         <ProjectButtonIcon type="gallery" />
         Gallery
@@ -452,6 +519,41 @@ function ProjectGalleryModal({ project, onClose }) {
   );
 }
 
+function HeroButtonIcon({ type }) {
+  const c = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  const paths = {
+    projects: (
+      <>
+        <rect {...c} x="4" y="4" width="6" height="6" rx="1.5" />
+        <rect {...c} x="14" y="4" width="6" height="6" rx="1.5" />
+        <rect {...c} x="4" y="14" width="6" height="6" rx="1.5" />
+        <rect {...c} x="14" y="14" width="6" height="6" rx="1.5" />
+      </>
+    ),
+    
+    about: (
+      <>
+        <circle {...c} cx="12" cy="8" r="3" />
+        <path {...c} d="M5 20a7 7 0 0 1 14 0" />
+      </>
+    ),
+
+    cv: (
+      <>
+        <path {...c} d="M7 3h7l4 4v14H7z" />
+        <path {...c} d="M14 3v5h5" />
+        <path {...c} d="M9.5 12h5M9.5 15h5M9.5 18h3" />
+      </>
+    ),
+  };
+
+  return (
+    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+      {paths[type]}
+    </svg>
+  );
+}
+
 function Home() {
   return (
     <section
@@ -483,15 +585,28 @@ function Home() {
           <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
             <a
               href="#projects"
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-frost px-7 text-sm font-bold text-ink transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-glow focus:ring-offset-2 focus:ring-offset-ink"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-frost px-7 text-sm font-bold text-ink transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-glow focus:ring-offset-2 focus:ring-offset-ink"
             >
+              <HeroButtonIcon type="projects" />
               View Projects
             </a>
+            
             <a
               href="#about"
-              className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/15 px-7 text-sm font-semibold text-frost transition hover:border-white/35 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-cyan-glow"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/15 px-7 text-sm font-semibold text-frost transition hover:border-white/35 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-cyan-glow"
             >
+              <HeroButtonIcon type="about" />
               About Eeliya
+            </a>
+
+            <a
+              href={cvPdf}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-cyan-glow/35 bg-cyan-glow/10 px-7 text-sm font-semibold text-frost transition hover:border-cyan-glow/65 hover:bg-cyan-glow/15 focus:outline-none focus:ring-2 focus:ring-cyan-glow"
+            >
+              <HeroButtonIcon type="cv" />
+              CV
             </a>
           </div>
         </motion.div>
@@ -769,58 +884,113 @@ function Journey({ activeIndex = 0, onSelect }) {
   );
 }
 
-function ContactForm() {
-  const [formStatus, setFormStatus] = useState('idle');
+function MailGlyph({ name }) {
+  const c = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  const paths = {
+    send: <path {...c} d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />,
+    paperclip: <path {...c} d="M21 11.5 12.6 20a5 5 0 0 1-7-7l8.5-8.6a3.3 3.3 0 0 1 4.7 4.7L10 18.3a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8" />,
+    image: (
+      <>
+        <rect {...c} x="3" y="4" width="18" height="16" rx="2.5" />
+        <circle {...c} cx="8.5" cy="9.5" r="1.5" />
+        <path {...c} d="m4 18 5-5 4 4 3-3 4 4" />
+      </>
+    ),
+    text: <path {...c} d="M7 7h10M12 7v10m-2 0h4" />,
+  };
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  );
+}
 
-  const handleSubmit = (event) => {
+function ContactForm() {
+  const [formStatus, setFormStatus] = useState('');
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setFormStatus('sent');
-    event.currentTarget.reset();
+
+    setFormStatus('Sending...');
+
+    const formData = new FormData(event.target);
+    const userSubject = formData.get('subject')?.toString().trim();
+
+    formData.append('access_key', '00278f25-2bfb-4583-801f-3c9ad4e45642');
+    formData.set('subject', userSubject ? `Portfolio Thread: ${userSubject}` : 'Portfolio contact form');
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setFormStatus('Message sent successfully');
+        event.target.reset();
+      } else {
+        setFormStatus('Failed to send message');
+      }
+    } catch {
+      setFormStatus('Something went wrong');
+    }
   };
 
   return (
-    <div className="contact-form-os">
-      <div className="contact-form-bar" aria-hidden="true">
-        <div className="window-dots">
+    <form className="contact-mail" onSubmit={handleSubmit}>
+      <div className="contact-mail-bar">
+        <div className="window-dots" aria-hidden="true">
           <span />
           <span />
           <span />
         </div>
-        <p>new-message</p>
-        <div className="window-actions">
-          <span />
-          <span />
-        </div>
+        <span className="contact-mail-title">New Message</span>
+        <span className="contact-mail-bar-spacer" aria-hidden="true" />
       </div>
-      <form className="contact-form" onSubmit={handleSubmit}>
-        <div className="contact-form-row">
-          <label className="contact-field">
-            <span>Name</span>
-            <input name="name" type="text" autoComplete="name" placeholder="Your name" required />
-          </label>
-          <label className="contact-field">
-            <span>Email</span>
-            <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
-          </label>
+
+      <div className="contact-mail-head">
+        <div className="contact-mail-row">
+          <span className="contact-mail-key">To</span>
+          <span className="contact-mail-to">
+            <span className="contact-mail-avatar" aria-hidden="true">
+              <img src={profilePhoto} alt="" />
+            </span>
+            Eeliya Nayeri
+          </span>
         </div>
-        <label className="contact-field">
-          <span>Subject</span>
-          <input name="subject" type="text" placeholder="Project, internship, collaboration..." required />
+        <label className="contact-mail-row">
+          <span className="contact-mail-key">From</span>
+          <input name="name" type="text" autoComplete="name" placeholder="Your name" required />
         </label>
-        <label className="contact-field contact-field-grow">
-          <span>Message</span>
-          <textarea name="message" placeholder="Write your message..." required />
+        <label className="contact-mail-row">
+          <span className="contact-mail-key">Email</span>
+          <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
         </label>
-        <div className="contact-form-foot">
-          <button type="submit">Send Message</button>
-          <p className="contact-form-note" aria-live="polite">
-            {formStatus === 'sent'
-              ? 'Captured locally — hook up sending later.'
-              : 'Form is ready; sending logic comes next.'}
-          </p>
+        <label className="contact-mail-row">
+          <span className="contact-mail-key">Subject</span>
+          <input name="subject" type="text" placeholder="Let’s build something together" required />
+        </label>
+      </div>
+
+      <textarea className="contact-mail-body" name="message" placeholder="Write your message…" required />
+
+      <div className="contact-mail-foot">
+        <div className="contact-mail-tools" aria-hidden="true">
+          <i><MailGlyph name="paperclip" /></i>
+          <i><MailGlyph name="image" /></i>
+          <i><MailGlyph name="text" /></i>
         </div>
-      </form>
-    </div>
+        <span className="contact-mail-status" aria-live="polite">
+          {formStatus}
+        </span>
+        <button type="submit" className="contact-mail-send">
+          <MailGlyph name="send" />
+          Send
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -880,7 +1050,14 @@ const sectionToDesktopVariant = {
 // exactly like the desktop phone. The per-section inline devices stay for
 // mobile; on desktop they only reserve layout space (see .device-inline), and
 // the float is positioned precisely onto that reserved slot.
-function DesktopDevice({ activeSection, desktopProject, journeyIndex, onJourneySelect, slots }) {
+function DesktopDevice({
+  activeSection,
+  desktopProject,
+  journeyIndex,
+  onJourneySelect,
+  slots,
+  isLayoutChanging,
+}) {
   const isOn = desktopDeviceSections.includes(activeSection);
   const lastSectionRef = useRef('projects-desktop');
   if (isOn) lastSectionRef.current = activeSection;
@@ -897,11 +1074,11 @@ function DesktopDevice({ activeSection, desktopProject, journeyIndex, onJourneyS
       initial={false}
       animate={
         target
-          ? { left: target.left, top: target.top, width: target.width, opacity: isOn ? 1 : 0 }
-          : { opacity: 0 }
+          ? { left: target.left, top: target.top, width: target.width }
+          : {}
       }
-      style={{ pointerEvents: isOn ? 'auto' : 'none' }}
-      transition={{ duration: 0.7, ease: smoothEase }}
+      style={{ opacity: target && isOn ? 1 : 0, pointerEvents: isOn ? 'auto' : 'none' }}
+      transition={{ duration: isLayoutChanging ? 0 : 0.7, ease: smoothEase }}
       aria-hidden={!isOn}
     >
       <Suspense fallback={null}>
@@ -926,7 +1103,7 @@ export default function App() {
   const [galleryProject, setGalleryProject] = useState(null);
   const activeMobileProject = mobileProjects[mobileProjectIndex];
   const desktopProject = desktopProjects[desktopProjectIndex];
-  const desktopSlots = useDesktopSlots();
+  const { slots: desktopSlots, isLayoutChanging: isDesktopLayoutChanging } = useDesktopSlots();
 
   return (
     <MotionConfig reducedMotion="user">
@@ -939,6 +1116,7 @@ export default function App() {
           journeyIndex={journeyIndex}
           onJourneySelect={setJourneyIndex}
           slots={desktopSlots}
+          isLayoutChanging={isDesktopLayoutChanging}
         />
         <main className="overflow-x-hidden">
           <Home />
