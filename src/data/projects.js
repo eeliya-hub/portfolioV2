@@ -12,6 +12,7 @@ import postmanLogo from '../assets/logos/postman.png';
 import pythonLogo from '../assets/logos/python.png';
 import sqlLogo from '../assets/logos/sql.png';
 import swiftLogo from '../assets/logos/swift.png';
+import reactLogo from '../assets/logos/react.png';
 
 import alumniDevice from '../assets/screenshots copy/alumni-api-model.jpg';
 import alumniShotOne from '../assets/projects/alumni-api/alumni-1.png';
@@ -35,6 +36,10 @@ import traverseShotFive from '../assets/projects/traverse/traverse-5.png';
 import weatherDevice from '../assets/screenshots copy/weather-model.jpg';
 import weatherShotOne from '../assets/projects/weather/weather-1.png';
 import weatherShotTwo from '../assets/projects/weather/weather-2.png';
+import pitWallDevice from '../assets/projects/pitwall/pitwall-device.png';
+import pitWallShotOne from '../assets/projects/pitwall/1.png';
+import pitWallShotTwo from '../assets/projects/pitwall/2.png';
+import pitWallShotThree from '../assets/projects/pitwall/3.png';
 import alumniApiDoc from '../docs/Alumni API.pdf';
 import skyHealthDoc from '../docs/Heath Check.pdf';
 import premPredictorDoc from '../docs/Prem Predictor.pdf';
@@ -65,6 +70,12 @@ const techMap = {
   SwiftUI: { logo: swiftLogo, tone: 'cyan' },
   MVVM: { icon: 'MV', tone: 'navy' },
   'Amadeus API': { icon: 'A', tone: 'gold' },
+  'React Native': { logo: reactLogo, tone: 'cyan' },
+  React: { logo: reactLogo, tone: 'cyan' },
+  Expo: { icon: 'EX', tone: 'navy' },
+  TypeScript: { icon: 'TS', tone: 'blue' },
+  'react-native-web': { icon: 'RNW', tone: 'cyan' },
+  'react-native-svg': { icon: 'SVG', tone: 'cyan' },
 };
 
 const stack = (items) =>
@@ -116,6 +127,40 @@ export const mobileProjects = [
       { src: traverseShotFive, alt: 'Traverse travel assistant screenshot' },
     ],
     actions: projectActions(traverseDoc, 'https://github.com/eeliya-hub/traverse'),
+  },
+  {
+    id: 'pit-wall',
+    title: 'Pit Wall',
+    name: 'Pit Wall',
+    category: 'F1 Strategy App',
+    label: 'F1 Strategy App',
+    intro: 'Prototype F1 fan app for live race-strategy calls with an AI race engineer.',
+    summary:
+      'A cross-platform Aston Martin F1 fan app where you pick a driver, lock in pre-race predictions, and make live pit-wall strategy calls alongside an AI race engineer.',
+    description:
+      'An Expo and React Native prototype built for the Cognizant Ideathon that puts fans on the Aston Martin pit wall, making live timed strategy calls alongside an AI race engineer. A fan-persona system adapts each screen\'s depth, and a scoring engine grades every call against the team\'s real strategy.',
+    overview:
+      'An Expo and React Native prototype built for the Cognizant Ideathon that puts fans on the Aston Martin pit wall, making live timed strategy calls alongside an AI race engineer. A fan-persona system adapts each screen\'s depth, and a scoring engine grades every call against the team\'s real strategy.',
+    features: [
+      'Live, timed strategy calls made alongside an AI race engineer that rates its own confidence.',
+      'Fan-persona system that adapts telemetry, hints, and depth from new fans to experts.',
+      'Scoring engine that grades every pit-wall call against the team\'s real race strategy.',
+    ],
+    highlights: [
+      'Live, timed strategy calls made alongside an AI race engineer that rates its own confidence.',
+      'Fan-persona system that adapts telemetry, hints, and depth from new fans to experts.',
+      'Scoring engine that grades every pit-wall call against the team\'s real race strategy.',
+    ],
+    tech: stack(['React Native', 'Expo', 'TypeScript']),
+    stack: stack(['React Native', 'Expo', 'TypeScript']),
+    deviceImage: pitWallDevice,
+    liveUrl: 'https://eeliya-hub.github.io/amf1/',
+    gallery: [
+      { src: pitWallShotOne, alt: 'Pit Wall live race, home dashboard, and season detail screens' },
+      { src: pitWallShotTwo, alt: 'Pit Wall global leagues, season standings, and custom league screens' },
+      { src: pitWallShotThree, alt: 'Pit Wall race setup, live pit-window decision, and race data screens' },
+    ],
+    actions: [githubAction('https://github.com/eeliya-hub/amf1'), unavailable('Docs')],
   },
   {
     id: 'weather-app',

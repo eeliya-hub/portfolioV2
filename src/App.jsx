@@ -1,7 +1,7 @@
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import profilePhoto from './assets/image.png';
-import cvPdf from './assets/nayeri-eeliya-CV-compressed (1).pdf';
+import cvPdf from './docs/eeliya-nayeri-cv.pdf';
 import IPhoneMockup from './components/IPhoneMockup.jsx';
 import { desktopProjects, mobileProjects } from './data/projects.js';
 import { journeyTimeline } from './data/journey.js';
@@ -9,7 +9,7 @@ import { cardItem, sectionContainer, sectionItem, smoothEase, viewportOnce } fro
 
 const LaptopMockup = lazy(() => import('./components/LaptopMockup.jsx'));
 
-const sectionIds = ['home', 'about', 'projects', 'projects-desktop', 'tech-stack', 'journey', 'contact'];
+const sectionIds = ['home', 'about', 'projects', 'projects-desktop', 'journey', 'tech-stack', 'contact'];
 const softLockDelayMs = 250;
 const softLockReleaseMs = 900;
 const snapDistanceThreshold = 28;
@@ -17,7 +17,7 @@ const snapDistanceThreshold = 28;
 // Sections where the persistent floating desktop device is visible. Once the
 // first one (projects-desktop) is in frame it stays on screen and slides to
 // each section's position — exactly like the desktop phone.
-const desktopDeviceSections = ['projects-desktop', 'tech-stack', 'journey', 'contact'];
+const desktopDeviceSections = ['projects-desktop', 'journey', 'tech-stack', 'contact'];
 
 // Measures the layout space each desktop section already reserves for its
 // device (the hidden inline slot) and returns its settled viewport rect. The
@@ -1129,8 +1129,8 @@ export default function App() {
             setDesktopProjectIndex={setDesktopProjectIndex}
             onGallery={setGalleryProject}
           />
-          <TechStack />
           <Journey activeIndex={journeyIndex} onSelect={setJourneyIndex} />
+          <TechStack />
           <Contact />
         </main>
         <ProjectGalleryModal project={galleryProject} onClose={() => setGalleryProject(null)} />

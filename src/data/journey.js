@@ -77,4 +77,16 @@ export const journeyTimeline = [
     detail:
       'Collaborated with a team to develop innovative solutions for the Aston Martin F1 Team & Cognizant on how AI can be used to increase fan engagement and improve the overall fan experience.',
   },
+  {
+    id: 'fm',
+    color: '#b4f589',
+    short: 'Foundermatcha Internship',
+    date: ' May 2026 - Jul 2026',
+    start: 2026.33,
+    end: 2026.58,
+    command: 'init work --foundermatcha-internship',
+    title: 'Worked as a software development intern at Foundermatcha',
+    detail: 'Completed a two-month internship as primarily a UI/UX developer for a startup, contributing to the development of early-stage software features.',
+
+  }
 ];

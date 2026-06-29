@@ -1958,6 +1958,16 @@ body::after {
   object-position: top center;
 }
 
+/* Pit Wall's screen capture is cropped to the screen edges, so it fills the
+   frame like the other projects; a dark backdrop covers any sub-pixel gap. */
+.projects-app[data-project='pit-wall'] {
+  background: #010806;
+}
+
+.projects-app[data-project='pit-wall'] img {
+  object-position: center;
+}
+
 .app-topbar {
   display: flex;
   align-items: end;

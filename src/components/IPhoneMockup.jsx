@@ -22,8 +22,8 @@ const fakeWebPageVariants = {
 const dockItems = [
   { label: 'About', icon: 'user', href: '#about', tone: 'dock-cyan' },
   { label: 'Projects', icon: 'grid', href: '#projects', tone: 'dock-violet' },
-  { label: 'Tech Stack', display: 'Tech', icon: 'code', href: '#tech-stack', tone: 'dock-green' },
   { label: 'Journey', icon: 'route', href: '#journey', tone: 'dock-amber' },
+  { label: 'Tech Stack', display: 'Tech', icon: 'code', href: '#tech-stack', tone: 'dock-green' },
   { label: 'Contact', icon: 'mail', href: '#contact', tone: 'dock-rose' },
 ];
 
@@ -1023,6 +1023,7 @@ function ProjectsScreen({ project }) {
     <motion.div
       key={`projects-${activeProject.id}`}
       className="phone-screen-layer app-screen projects-app"
+      data-project={activeProject.id}
       variants={screenVariants}
       initial="initial"
       animate="animate"
