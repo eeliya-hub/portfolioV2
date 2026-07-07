@@ -94,9 +94,11 @@ body::after {
 }
 
 .iphone-stage {
+  /* Anchored at the viewport origin; framer-motion positions it purely with
+     transforms (see getStageVariants) so sliding never triggers layout. */
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top: 0;
+  left: 0;
   z-index: 30;
   width: clamp(17rem, 23vw, 22rem);
   --iphone-frame-padding: clamp(0.36rem, 3.2%, 0.7rem);
@@ -116,7 +118,6 @@ body::after {
   filter:
     drop-shadow(0 34px 64px rgba(0, 0, 0, 0.52))
     drop-shadow(0 0 42px rgba(86, 217, 255, 0.08));
-  transform: translate3d(-50%, -50%, 0);
   will-change: transform, opacity;
 }
 
@@ -409,11 +410,14 @@ body::after {
 
 .dynamic-island {
   position: absolute;
-  top: 0.9rem;
+  /* Proportional to the device so it stays status-bar sized on every phone
+     width (fixed rem values ballooned it on the smaller mobile phones). */
+  top: 1.9%;
   left: 50%;
   z-index: 10;
   width: 34%;
-  height: 1.55rem;
+  height: auto;
+  aspect-ratio: 4.8 / 1;
   border-radius: 999px;
   background: #010206;
   box-shadow:
@@ -425,9 +429,10 @@ body::after {
 .dynamic-island span {
   position: absolute;
   top: 50%;
-  right: 0.42rem;
-  width: 0.36rem;
-  height: 0.36rem;
+  right: 6%;
+  width: auto;
+  height: 34%;
+  aspect-ratio: 1;
   border-radius: 999px;
   background: radial-gradient(circle, #17213f, #020309);
   transform: translateY(-50%);
@@ -608,11 +613,12 @@ body::after {
 
 .home-indicator {
   position: absolute;
-  bottom: 0.48rem;
+  bottom: 1%;
   left: 50%;
   z-index: 10;
   width: 34%;
-  height: 0.22rem;
+  height: auto;
+  aspect-ratio: 34 / 1;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   transform: translateX(-50%);
@@ -1931,6 +1937,12 @@ body::after {
   padding: 0;
   background:
     linear-gradient(180deg, #f8fafc, #eef2f7);
+}
+
+/* Project captures include their own status bar; hide the mockup's overlay
+   so the two don't stack (ours renders white-on-white anyway). */
+.iphone-screen:has(.projects-app) .phone-status {
+  display: none;
 }
 
 .projects-app > img {
@@ -3268,9 +3280,9 @@ body::after {
   position: relative;
   width: min(100%, 42rem);
   margin: 0 auto 1.25rem;
-  filter:
-    drop-shadow(0 28px 54px rgba(0, 0, 0, 0.34))
-    drop-shadow(0 0 34px rgba(86, 217, 255, 0.06));
+  /* No filter here: a drop-shadow on this wrapper forces the entire laptop to
+     re-rasterize whenever anything inside repaints (typing, caret blink in the
+     contact form). The equivalent shadows live on .laptop-lid as box-shadow. */
   perspective: 1200px;
 }
 
@@ -3309,7 +3321,7 @@ body::after {
     z-index: 20;
     display: block;
     pointer-events: none;
-    will-change: left, top, width, opacity;
+    will-change: transform, opacity;
   }
 
   .desktop-device-float .laptop-focus {
@@ -3350,7 +3362,9 @@ body::after {
     inset 0 0 0 1px rgba(255, 255, 255, 0.035),
     inset 14px 0 22px rgba(255, 255, 255, 0.025),
     inset -18px 0 28px rgba(0, 0, 0, 0.42),
-    0 24px 70px rgba(0, 0, 0, 0.34);
+    0 24px 70px rgba(0, 0, 0, 0.34),
+    0 28px 54px rgba(0, 0, 0, 0.3),
+    0 0 34px rgba(86, 217, 255, 0.07);
   transform: none;
   transform-origin: center;
   will-change: transform;
@@ -3445,6 +3459,12 @@ body::after {
   left: 50%;
   margin: 0.25rem 0 0;
   transform: translateX(-50%);
+}
+
+/* Wrapper that keeps slotted screen content (the contact form) mounted while
+   other variants are showing; it simply fills the screen when visible. */
+.laptop-screen-children {
+  height: 100%;
 }
 
 .laptop-project-os {
@@ -4951,6 +4971,19 @@ body::after {
   color: rgba(231, 238, 252, 0.32);
 }
 
+.contact-mail-row:focus-within {
+  border-bottom-color: rgba(86, 217, 255, 0.5);
+}
+
+.contact-mail-body:focus-visible {
+  background: rgba(86, 217, 255, 0.05);
+}
+
+.contact-mail-send:focus-visible {
+  outline: 2px solid rgba(86, 217, 255, 0.85);
+  outline-offset: 2px;
+}
+
 .contact-mail-to {
   display: inline-flex;
   align-items: center;
@@ -5449,6 +5482,423 @@ body::after {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Mobile-native section components. Below the desktop breakpoint the shrunken
+   device mockups are replaced by these touch-first layouts, built in the same
+   design language: glass cards, cyan accents, soft borders, generous targets.
+--------------------------------------------------------------------------- */
+
+/* Journey: vertical accordion timeline */
+.m-journey {
+  display: grid;
+  gap: 0.6rem;
+  width: min(100%, 34rem);
+  margin: 0 auto;
+}
+
+.m-journey-item {
+  --accent: #56d9ff;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 3px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 1.05rem;
+  background: rgba(6, 11, 22, 0.42);
+  transition:
+    border-color 220ms ease,
+    background 220ms ease;
+}
+
+.m-journey-item.is-active {
+  border-color: color-mix(in srgb, var(--accent) 30%, rgba(255, 255, 255, 0.1));
+  border-left-color: var(--accent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 12%, transparent),
+    rgba(255, 255, 255, 0.02) 55%,
+    transparent
+  );
+}
+
+.m-journey-head {
+  display: flex;
+  width: 100%;
+  min-height: 3.4rem;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.7rem 0.95rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.m-journey-head:focus-visible {
+  outline: 2px solid rgba(86, 217, 255, 0.85);
+  outline-offset: -2px;
+  border-radius: inherit;
+}
+
+.m-journey-node {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  transition:
+    border-color 200ms ease,
+    background 200ms ease;
+}
+
+.m-journey-node svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  fill: none;
+  stroke: #06121f;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.m-journey-item.is-active .m-journey-node {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.m-journey-item.is-active .m-journey-node svg {
+  opacity: 1;
+}
+
+.m-journey-head-info {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 0.12rem;
+}
+
+.m-journey-name {
+  color: #f8fbff;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.m-journey-date {
+  color: rgba(231, 238, 252, 0.5);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.m-journey-chevron {
+  flex: 0 0 auto;
+  color: rgba(231, 238, 252, 0.45);
+  transition:
+    transform 240ms ease,
+    color 240ms ease;
+}
+
+.m-journey-chevron svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.m-journey-item.is-active .m-journey-chevron {
+  color: var(--accent);
+  transform: rotate(90deg);
+}
+
+.m-journey-body {
+  overflow: hidden;
+}
+
+.m-journey-body-inner {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.15rem 1rem 1.05rem 3.25rem;
+}
+
+.m-journey-body-inner h3 {
+  margin: 0;
+  color: #f8fbff;
+  font-size: 1.02rem;
+  line-height: 1.25;
+}
+
+.m-journey-body-inner p {
+  margin: 0;
+  color: rgba(192, 203, 224, 0.85);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.m-journey-body-inner code {
+  display: inline-block;
+  justify-self: start;
+  padding: 0.3rem 0.62rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: 0.55rem;
+  background: rgba(6, 9, 18, 0.45);
+  color: color-mix(in srgb, var(--accent) 80%, #ffffff);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+}
+
+/* Tech stack: category chips + tool grid */
+.m-tech-wrap {
+  width: 100%;
+}
+
+.m-tech {
+  width: min(100%, 34rem);
+  margin: 0 auto;
+  text-align: left;
+}
+
+.m-tech-tabs {
+  display: flex;
+  gap: 0.45rem;
+  padding: 0.15rem 0.15rem 0.7rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.m-tech-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.m-tech-tab {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.6rem;
+  padding: 0 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(231, 238, 252, 0.75);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition:
+    border-color 200ms ease,
+    background 200ms ease,
+    color 200ms ease;
+}
+
+.m-tech-tab .lucide-like-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.m-tech-tab.is-active {
+  border-color: rgba(86, 217, 255, 0.45);
+  background: rgba(86, 217, 255, 0.14);
+  color: #dff5ff;
+}
+
+.m-tech-tab:focus-visible {
+  outline: 2px solid rgba(86, 217, 255, 0.85);
+  outline-offset: 2px;
+}
+
+.m-tech-panel {
+  margin-top: 0.3rem;
+}
+
+.m-tech-desc {
+  margin: 0 0 0.85rem;
+  color: rgba(231, 238, 252, 0.55);
+  font-size: 0.85rem;
+}
+
+.m-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.55rem;
+}
+
+.m-tech-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.045);
+  color: #e7eefc;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.m-tech-card i {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.m-tech-card i img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.m-tech-card i .lucide-like-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  color: #7ee0ff;
+}
+
+/* Desktop projects: browser card with big prev/next controls */
+.m-browser {
+  width: min(100%, 34rem);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.15rem;
+  background: rgba(6, 11, 22, 0.55);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32);
+}
+
+.m-browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.m-browser-bar .window-dots {
+  display: flex;
+  gap: 0.32rem;
+}
+
+.m-browser-bar .window-dots span {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+}
+
+.m-browser-bar .window-dots span:nth-child(1) {
+  background: #ff5f57;
+}
+
+.m-browser-bar .window-dots span:nth-child(2) {
+  background: #febc2e;
+}
+
+.m-browser-bar .window-dots span:nth-child(3) {
+  background: #28c840;
+}
+
+.m-browser-bar p {
+  flex: 1;
+  margin: 0 2rem 0 0;
+  color: rgba(231, 238, 252, 0.6);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.m-browser-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.m-browser-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.m-browser-nav button {
+  display: grid;
+  place-items: center;
+  width: 2.85rem;
+  height: 2.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f8fbff;
+  cursor: pointer;
+  transition:
+    border-color 200ms ease,
+    background 200ms ease;
+}
+
+.m-browser-nav button:focus-visible {
+  outline: 2px solid rgba(86, 217, 255, 0.85);
+  outline-offset: 2px;
+}
+
+.m-browser-nav button svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.m-browser-dots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.m-browser-dots span {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  transition:
+    background 200ms ease,
+    transform 200ms ease;
+}
+
+.m-browser-dots span.is-active {
+  background: #56d9ff;
+  transform: scale(1.3);
+}
+
+/* Tablet (iPad portrait): wider cards and denser grids so the mobile-native
+   layouts read as designed-for-tablet rather than stretched phone views. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .m-journey,
+  .m-tech,
+  .m-browser {
+    width: min(100%, 42rem);
+  }
+
+  .m-tech-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .m-journey-name {
+    font-size: 1.02rem;
+  }
+}
+
 @media (max-width: 1023px) {
   html {
     scroll-snap-type: y proximity;
@@ -5560,15 +6010,27 @@ body::after {
   }
 
   .iphone-stage.is-static {
-    width: min(12.75rem, 54vw);
+    width: min(14rem, 54vw);
   }
 
   .home-section .iphone-stage.is-static {
-    width: min(10.6rem, 45vw);
+    width: min(13.5rem, 52vw);
   }
 
   .project-static-phone .iphone-stage.is-static {
-    width: min(11.5rem, 49vw);
+    width: min(14rem, 52vw);
+  }
+
+  /* The hero phone is a lock screen: no dock (its labels could never be
+     readable at phone sizes), and the wallpaper zooms onto the portrait so
+     the photo fills the frame instead of showing a sliver of wall. */
+  .home-section .phone-dock {
+    display: none;
+  }
+
+  .home-section .home-wallpaper-image {
+    transform: scale(1.18);
+    transform-origin: 55% 40%;
   }
 
   .lock-copy h2 {
@@ -5582,6 +6044,49 @@ body::after {
     margin-right: auto;
     margin-left: auto;
     transform: none;
+  }
+
+  /* Contact: on small screens the fixed-ratio monitor clipped the message
+     field and send button. Let the mail window size itself to its content and
+     drop the desk stand, so it reads as a full compose card instead. */
+  .laptop-contact {
+    width: min(100%, 30rem);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .laptop-contact .laptop-screen {
+    aspect-ratio: auto;
+    --u: 1rem;
+  }
+
+  .laptop-contact .laptop-base {
+    display: none;
+  }
+
+  .laptop-contact .laptop-lid {
+    padding: 0.5rem;
+    border-radius: 1.2rem;
+  }
+
+  .laptop-contact .contact-mail-row {
+    min-height: 3rem;
+  }
+
+  /* 16px inputs stop iOS Safari from auto-zooming the page on focus. */
+  .laptop-contact .contact-mail-row input,
+  .laptop-contact .contact-mail-body {
+    font-size: 1rem;
+  }
+
+  .laptop-contact .contact-mail-body {
+    min-height: 9rem;
+  }
+
+  .laptop-contact .contact-mail-send {
+    min-height: 2.9rem;
+    padding: 0 1.4rem;
+    font-size: 0.92rem;
   }
 
 }
@@ -5603,104 +6108,20 @@ body::after {
   }
 
   .iphone-stage.is-static {
-    width: min(9.5rem, 45vw);
+    width: min(12rem, 55vw);
   }
 
   .home-section .iphone-stage.is-static {
-    width: min(6.5rem, 33vw);
+    width: min(12.5rem, 56vw);
   }
 
   .project-static-phone .iphone-stage.is-static {
-    width: min(8.55rem, 40.5vw);
-  }
-
-  .home-section .dynamic-island {
-    top: 0.62rem;
-    height: 1.05rem;
-  }
-
-  .home-section .phone-status {
-    top: 0.78rem;
-    right: 0.82rem;
-    left: 0.82rem;
-    font-size: 0.48rem;
-  }
-
-  .home-section .status-icons {
-    gap: 0.12rem;
-  }
-
-  .home-section .status-icon-wifi svg {
-    width: 0.68rem;
-    height: 0.56rem;
-  }
-
-  .home-section .status-icon-battery svg {
-    width: 0.82rem;
-    height: 0.44rem;
-  }
-
-  .home-section .lock-copy {
-    top: 14%;
-    right: 0.72rem;
-    left: 0.72rem;
-  }
-
-  .home-section .lock-copy span {
-    font-size: 0.46rem;
-  }
-
-  .home-section .lock-copy h2 {
-    margin-top: 0.16rem;
-    font-size: 1.35rem;
-  }
-
-  .home-section .wallpaper-face {
-    top: 48%;
-    width: 46%;
-  }
-
-  .home-section .phone-dock {
-    right: 0.42rem;
-    bottom: 1rem;
-    left: 0.42rem;
-    gap: 0.16rem;
-    padding: 0.32rem;
-    border-radius: 1rem;
-  }
-
-  .home-section .dock-app {
-    min-height: 1.78rem;
-    gap: 0.08rem;
-  }
-
-  .home-section .dock-icon {
-    width: 1.08rem;
-    height: 1.08rem;
-    border-radius: 0.4rem;
-    font-size: 0.48rem;
-  }
-
-  .home-section .dock-svg {
-    width: 0.62rem;
-    height: 0.62rem;
-  }
-
-  .home-section .dock-label {
-    font-size: 0.28rem;
-  }
-
-  .home-section .home-indicator {
-    bottom: 0.34rem;
-    height: 0.16rem;
+    width: min(12.5rem, 56vw);
   }
 
   .home-copy h1 {
-    max-width: 7ch;
-    margin-right: auto;
-    margin-left: auto;
-    font-size: clamp(1.78rem, 8vw, 2.25rem);
-    line-height: 0.96;
+    font-size: clamp(2rem, 8.6vw, 2.6rem);
+    line-height: 0.98;
   }
 
   .home-copy {
@@ -5745,6 +6166,12 @@ body::after {
 
   .app-screen {
     padding: 3.65rem 0.75rem 1.85rem;
+  }
+
+  /* The project screenshot is a full-bleed app capture: it must fill the
+     screen edge-to-edge, never sit inside the generic app padding above. */
+  .app-screen.projects-app {
+    padding: 0;
   }
 
   .app-topbar {
@@ -5940,7 +6367,7 @@ body::after {
   }
 
   .iphone-stage.is-static {
-    width: min(8.9rem, 46vw);
+    width: min(11rem, 56vw);
   }
 
   #home {
@@ -5949,15 +6376,15 @@ body::after {
   }
 
   .home-section .iphone-stage.is-static {
-    width: min(6.1rem, 32vw);
+    width: min(11rem, 56vw);
   }
 
   .project-static-phone .iphone-stage.is-static {
-    width: min(8rem, 41vw);
+    width: min(11rem, 56vw);
   }
 
   .home-copy h1 {
-    font-size: clamp(1.68rem, 7.8vw, 2.05rem);
+    font-size: clamp(1.85rem, 8.4vw, 2.3rem);
   }
 
   .home-copy > p:not(:first-child) {

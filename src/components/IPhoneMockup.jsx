@@ -6,6 +6,7 @@ import homeWallpaper from '../assets/image.png';
 import contactPhoto from '../assets/pic1.jpeg';
 import { mobileProjects } from '../data/projects.js';
 import { itemVariants, quickEase, screenVariants, smoothEase } from '../lib/motion.js';
+import { useIsCompact } from '../lib/useIsCompact.js';
 
 const googlePageVariants = {
   initial: { opacity: 0 },
@@ -207,22 +208,6 @@ const contactCardFields = [
 
 const opensInNewTab = (href) => Boolean(href && !href.startsWith('#'));
 
-function useIsCompact() {
-  const getInitial = () => (typeof window === 'undefined' ? false : window.matchMedia('(max-width: 1023px)').matches);
-  const [isCompact, setIsCompact] = useState(getInitial);
-
-  useEffect(() => {
-    const media = window.matchMedia('(max-width: 1023px)');
-    const sync = () => setIsCompact(media.matches);
-
-    sync();
-    media.addEventListener('change', sync);
-    return () => media.removeEventListener('change', sync);
-  }, []);
-
-  return isCompact;
-}
-
 function useProjectBoundaryLock(enabled) {
   const stageRef = useRef(null);
 
@@ -264,27 +249,30 @@ function useProjectBoundaryLock(enabled) {
   return stageRef;
 }
 
+// Positions are expressed purely as transforms (calc of viewport units minus
+// the element's own half-size). Animating left/top instead would trigger a
+// layout pass on every animation frame; transforms stay on the compositor.
 function getStageVariants(isCompact) {
   if (isCompact) {
     return {
-      home: { left: '50%', top: '4.4rem', x: '-50%', y: '0%', scale: 1, opacity: 1 },
-      about: { left: '50%', top: '4.4rem', x: '-50%', y: '0%', scale: 1, opacity: 1 },
-      projects: { left: '50%', top: '4.4rem', x: '-50%', y: '0%', scale: 1, opacity: 1 },
-      'projects-desktop': { left: '50%', top: '4.4rem', x: '-50%', y: '0%', scale: 1, opacity: 0 },
-      'tech-stack': { left: '50%', top: '4.4rem', x: '-50%', y: '0%', scale: 0.78, opacity: 0.78 },
-      journey: { left: '50%', top: '4.4rem', x: '-50%', y: '0%', scale: 0.72, opacity: 0.72 },
-      contact: { left: '50%', top: '4.4rem', x: '-50%', y: '0%', scale: 1, opacity: 1 },
+      home: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 1 },
+      about: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 1 },
+      projects: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 1 },
+      'projects-desktop': { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 0 },
+      'tech-stack': { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 0.78, opacity: 0.78 },
+      journey: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 0.72, opacity: 0.72 },
+      contact: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 1 },
     };
   }
 
   return {
-    home: { left: '27%', top: '50%', x: '-50%', y: '-50%', scale: 0.88, opacity: 1 },
-    about: { left: '76%', top: '50%', x: '-50%', y: '-50%', scale: 0.9, opacity: 1 },
-    projects: { left: '50%', top: '50%', x: '-50%', y: '-50%', scale: 0.9, opacity: 1 },
-    'projects-desktop': { left: '50%', top: '50%', x: '-50%', y: '-50%', scale: 0.9, opacity: 0 },
-    'tech-stack': { left: '76%', top: '50%', x: '-50%', y: '-50%', scale: 0.72, opacity: 0.86 },
-    journey: { left: '78%', top: '54%', x: '-50%', y: '-50%', scale: 0.62, opacity: 0.72 },
-    contact: { left: '76%', top: '50%', x: '-50%', y: '-50%', scale: 0.90, opacity: 1 },
+    home: { x: 'calc(27vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.88, opacity: 1 },
+    about: { x: 'calc(76vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.9, opacity: 1 },
+    projects: { x: 'calc(50vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.9, opacity: 1 },
+    'projects-desktop': { x: 'calc(50vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.9, opacity: 0 },
+    'tech-stack': { x: 'calc(76vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.72, opacity: 0.86 },
+    journey: { x: 'calc(78vw - 50%)', y: 'calc(54vh - 50%)', scale: 0.62, opacity: 0.72 },
+    contact: { x: 'calc(76vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.90, opacity: 1 },
   };
 }
 

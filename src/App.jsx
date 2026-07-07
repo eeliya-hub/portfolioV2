@@ -3,9 +3,13 @@ import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 're
 import profilePhoto from './assets/image.png';
 import cvPdf from './docs/eeliya-nayeri-cv.pdf';
 import IPhoneMockup from './components/IPhoneMockup.jsx';
+import MobileJourneyTimeline from './components/mobile/MobileJourneyTimeline.jsx';
+import MobileProjectViewer from './components/mobile/MobileProjectViewer.jsx';
+import MobileTechStack from './components/mobile/MobileTechStack.jsx';
 import { desktopProjects, mobileProjects } from './data/projects.js';
 import { journeyTimeline } from './data/journey.js';
 import { cardItem, sectionContainer, sectionItem, smoothEase, viewportOnce } from './lib/motion.js';
+import { useIsCompact } from './lib/useIsCompact.js';
 
 const LaptopMockup = lazy(() => import('./components/LaptopMockup.jsx'));
 
@@ -23,13 +27,31 @@ const desktopDeviceSections = ['projects-desktop', 'journey', 'tech-stack', 'con
 // device (the hidden inline slot) and returns its settled viewport rect. The
 // floating device is positioned exactly onto that slot, so it can never cover
 // text — the slot is part of the normal layout flow at any screen size.
-function useDesktopSlots() {
+function useDesktopSlots(activeSection) {
   const [slots, setSlots] = useState({});
   const [isLayoutChanging, setIsLayoutChanging] = useState(false);
+  const measureRef = useRef(null);
 
   useLayoutEffect(() => {
     let raf = 0;
     let layoutTimer = 0;
+
+    // Layout-based position of the slot within its section. Offset geometry
+    // ignores CSS transforms, so measuring during a whileInView entrance
+    // animation (translated/scaled ancestors) still yields the settled
+    // position — getBoundingClientRect here would capture mid-animation rects
+    // that nothing ever corrects.
+    const measureSlot = (section, slot) => {
+      let left = 0;
+      let top = 0;
+      let node = slot;
+      while (node && node !== section && node instanceof HTMLElement) {
+        left += node.offsetLeft;
+        top += node.offsetTop;
+        node = node.offsetParent;
+      }
+      return { left: Math.round(left), top: Math.round(top), width: Math.round(slot.offsetWidth) };
+    };
 
     const measure = () => {
       setSlots((prev) => {
@@ -39,12 +61,11 @@ function useDesktopSlots() {
           const section = document.getElementById(id);
           const slot = section?.querySelector('.device-inline');
           if (!section || !slot) continue;
-          const s = slot.getBoundingClientRect();
-          const sec = section.getBoundingClientRect();
-          if (s.width < 1) continue;
-          // top is the slot's offset within its section; when the section is
-          // snapped to the top of the viewport this equals its viewport top.
-          const rect = { left: Math.round(s.left), top: Math.round(s.top - sec.top), width: Math.round(s.width) };
+          if (slot.offsetWidth < 1) continue;
+          // top/left are the slot's offset within its section; when the
+          // section is snapped to the top of the viewport this equals its
+          // viewport position.
+          const rect = measureSlot(section, slot);
           const old = prev[id];
           if (!old || old.left !== rect.left || old.top !== rect.top || old.width !== rect.width) {
             next[id] = rect;
@@ -66,6 +87,7 @@ function useDesktopSlots() {
       raf = requestAnimationFrame(measure);
     };
 
+    measureRef.current = measure;
     measure();
     // Re-measure as lazy devices/fonts settle and on resize.
     const timers = [
@@ -73,6 +95,7 @@ function useDesktopSlots() {
       setTimeout(() => scheduleMeasure(true), 900),
       setTimeout(() => scheduleMeasure(true), 1800),
     ];
+    document.fonts?.ready?.then(() => scheduleMeasure(true));
     const onResize = () => scheduleMeasure(true);
     window.addEventListener('resize', onResize);
 
@@ -96,8 +119,16 @@ function useDesktopSlots() {
       cancelAnimationFrame(raf);
       resizeObserver?.disconnect();
       window.removeEventListener('resize', onResize);
+      measureRef.current = null;
     };
   }, []);
+
+  // Slot offsets can drift after the last scheduled measurement (late layout
+  // settling the ResizeObserver can't see). Re-measuring as a section becomes
+  // active means every slide targets the slot's true position.
+  useLayoutEffect(() => {
+    measureRef.current?.();
+  }, [activeSection]);
 
   return { slots, isLayoutChanging };
 }
@@ -558,7 +589,7 @@ function Home() {
   return (
     <section
       id="home"
-      className="home-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 pt-[30rem] sm:px-8 sm:pt-[34rem] lg:px-12 lg:py-28"
+      className="home-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 sm:px-8 lg:px-12 lg:py-28"
     >
       <div className="mobile-static-phone">
         <IPhoneMockup activeSection="home" staticMode />
@@ -619,7 +650,7 @@ function About() {
   return (
     <section
       id="about"
-      className="section-panel about-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 pt-[30rem] sm:px-8 sm:pt-[34rem] lg:px-12 lg:pb-20 lg:pt-8"
+      className="section-panel about-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 sm:px-8 lg:px-12 lg:pb-20 lg:pt-8"
     >
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(86,217,255,0.05),transparent_28%,rgba(255,255,255,0.03))]" />
       <motion.div
@@ -672,6 +703,7 @@ function Projects({
   desktopProjectIndex,
   setDesktopProjectIndex,
   onGallery,
+  isCompact,
 }) {
   const mobileProject = mobileProjects[mobileProjectIndex];
   const desktopProject = desktopProjects[desktopProjectIndex];
@@ -752,15 +784,25 @@ function Projects({
           </motion.div>
 
           <motion.div className="project-laptop-slot" variants={cardItem}>
-            <ProjectSelector
-              projects={desktopProjects}
-              activeIndex={desktopProjectIndex}
-              onChange={setDesktopProjectIndex}
-              className={desktopSelectorClass}
-            />
-            <div className="device-inline">
-              <LazyLaptop activeProject={desktopProject} variant="projects" />
-            </div>
+            {isCompact ? (
+              <MobileProjectViewer
+                projects={desktopProjects}
+                activeIndex={desktopProjectIndex}
+                onChange={setDesktopProjectIndex}
+              />
+            ) : (
+              <>
+                <ProjectSelector
+                  projects={desktopProjects}
+                  activeIndex={desktopProjectIndex}
+                  onChange={setDesktopProjectIndex}
+                  className={desktopSelectorClass}
+                />
+                <div className="device-inline">
+                  <LazyLaptop activeProject={desktopProject} variant="projects" />
+                </div>
+              </>
+            )}
           </motion.div>
 
           <motion.div className="project-detail-block project-desktop-detail" variants={cardItem}>
@@ -772,11 +814,11 @@ function Projects({
   );
 }
 
-function TechStack() {
+function TechStack({ isCompact }) {
   return (
     <section
       id="tech-stack"
-      className="section-panel tech-section relative flex min-h-dvh snap-start items-center justify-center overflow-hidden px-5 py-12 text-center sm:px-8 sm:py-14 lg:px-12 lg:py-10"
+      className="section-panel tech-section relative flex min-h-dvh snap-start items-center justify-center overflow-hidden px-5 py-12 text-center sm:px-8 lg:px-12 lg:py-10"
     >
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(74,222,128,0.05),transparent_30%,rgba(255,255,255,0.03))]" />
       <motion.div
@@ -796,22 +838,28 @@ function TechStack() {
             workflows.
           </p>
         </motion.div>
-        <motion.div className="tech-laptop-slot device-inline" variants={cardItem}>
-          <LazyLaptop variant="tech" />
-        </motion.div>
+        {isCompact ? (
+          <motion.div className="m-tech-wrap" variants={cardItem}>
+            <MobileTechStack />
+          </motion.div>
+        ) : (
+          <motion.div className="tech-laptop-slot device-inline" variants={cardItem}>
+            <LazyLaptop variant="tech" />
+          </motion.div>
+        )}
       </motion.div>
     </section>
   );
 }
 
-function Journey({ activeIndex = 0, onSelect }) {
+function Journey({ activeIndex = 0, onSelect, isCompact }) {
   const activeEvent = journeyTimeline[activeIndex];
   const total = journeyTimeline.length;
 
   return (
     <section
       id="journey"
-      className="section-panel journey-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 pt-[30rem] sm:px-8 sm:pt-[34rem] lg:px-12 lg:py-28"
+      className="section-panel journey-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 sm:px-8 lg:px-12 lg:py-28"
     >
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(251,191,36,0.05),transparent_32%,rgba(255,255,255,0.03))]" />
       <motion.div
@@ -844,41 +892,51 @@ function Journey({ activeIndex = 0, onSelect }) {
             Pick a milestone on the roadmap to see what happened.
           </motion.p>
 
-          <motion.span className="journey-divider" variants={sectionItem} aria-hidden="true" />
+          {isCompact ? null : (
+            <>
+              <motion.span className="journey-divider" variants={sectionItem} aria-hidden="true" />
 
-          <motion.div
-            className="journey-detail"
-            style={{ '--accent': activeEvent.color }}
-            variants={cardItem}
-          >
-            <AnimatePresence mode="wait">
               <motion.div
-                key={activeEvent.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.28 }}
+                className="journey-detail"
+                style={{ '--accent': activeEvent.color }}
+                variants={cardItem}
               >
-                <div className="journey-detail-meta">
-                  <span className="journey-detail-step">
-                    {String(activeIndex + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
-                  </span>
-                  <span className="journey-detail-date">{activeEvent.date}</span>
-                </div>
-                <h3 className="journey-detail-title">{activeEvent.title}</h3>
-                <p className="journey-detail-text">{activeEvent.detail}</p>
-                <code className="journey-detail-cmd">$ {activeEvent.command}</code>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeEvent.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.28 }}
+                  >
+                    <div className="journey-detail-meta">
+                      <span className="journey-detail-step">
+                        {String(activeIndex + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+                      </span>
+                      <span className="journey-detail-date">{activeEvent.date}</span>
+                    </div>
+                    <h3 className="journey-detail-title">{activeEvent.title}</h3>
+                    <p className="journey-detail-text">{activeEvent.detail}</p>
+                    <code className="journey-detail-cmd">$ {activeEvent.command}</code>
+                  </motion.div>
+                </AnimatePresence>
               </motion.div>
-            </AnimatePresence>
+            </>
+          )}
+        </motion.div>
+        {isCompact ? (
+          <motion.div variants={cardItem}>
+            <MobileJourneyTimeline activeIndex={activeIndex} onSelect={onSelect} />
           </motion.div>
-        </motion.div>
-        <motion.div className="device-inline" variants={cardItem}>
-          <LazyLaptop
-            variant="journey"
-            activeJourneyIndex={activeIndex}
-            onJourneySelect={onSelect}
-          />
-        </motion.div>
+        ) : (
+          <motion.div className="device-inline" variants={cardItem}>
+            <LazyLaptop
+              variant="journey"
+              activeJourneyIndex={activeIndex}
+              onJourneySelect={onSelect}
+            />
+          </motion.div>
+        )}
       </motion.div>
     </section>
   );
@@ -998,7 +1056,7 @@ function Contact() {
   return (
     <section
       id="contact"
-      className="section-panel contact-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 pt-[30rem] sm:px-8 sm:pt-[34rem] lg:px-12 lg:py-28"
+      className="section-panel contact-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 sm:px-8 lg:px-12 lg:py-28"
     >
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(251,113,133,0.05),transparent_34%,rgba(86,217,255,0.04))]" />
       <motion.div
@@ -1067,6 +1125,10 @@ function DesktopDevice({
   const target = slots[contentSection];
   const stageRef = useDesktopProjectBoundaryLock(isOn && contentSection === 'projects-desktop');
 
+  // x/y are transforms (compositor-only, no reflow while sliding). Width is
+  // layout so it snaps instantly instead of tweening: animating it re-runs the
+  // container queries inside the device on every frame, which is what made the
+  // slide (and the contact section) stutter.
   return (
     <motion.div
       ref={stageRef}
@@ -1074,11 +1136,15 @@ function DesktopDevice({
       initial={false}
       animate={
         target
-          ? { left: target.left, top: target.top, width: target.width }
+          ? { x: target.left, y: target.top, width: target.width }
           : {}
       }
       style={{ opacity: target && isOn ? 1 : 0, pointerEvents: isOn ? 'auto' : 'none' }}
-      transition={{ duration: isLayoutChanging ? 0 : 0.7, ease: smoothEase }}
+      transition={{
+        x: { duration: isLayoutChanging ? 0 : 0.7, ease: smoothEase },
+        y: { duration: isLayoutChanging ? 0 : 0.7, ease: smoothEase },
+        width: { duration: 0 },
+      }}
       aria-hidden={!isOn}
     >
       <Suspense fallback={null}>
@@ -1088,7 +1154,7 @@ function DesktopDevice({
           activeJourneyIndex={journeyIndex}
           onJourneySelect={onJourneySelect}
         >
-          {variant === 'contact' ? <ContactForm /> : null}
+          <ContactForm />
         </LaptopMockup>
       </Suspense>
     </motion.div>
@@ -1097,13 +1163,14 @@ function DesktopDevice({
 
 export default function App() {
   const activeSection = useActiveSection(sectionIds);
+  const isCompact = useIsCompact();
   const [mobileProjectIndex, setMobileProjectIndex] = useState(0);
   const [desktopProjectIndex, setDesktopProjectIndex] = useState(initialDesktopProjectIndex);
   const [journeyIndex, setJourneyIndex] = useState(0);
   const [galleryProject, setGalleryProject] = useState(null);
   const activeMobileProject = mobileProjects[mobileProjectIndex];
   const desktopProject = desktopProjects[desktopProjectIndex];
-  const { slots: desktopSlots, isLayoutChanging: isDesktopLayoutChanging } = useDesktopSlots();
+  const { slots: desktopSlots, isLayoutChanging: isDesktopLayoutChanging } = useDesktopSlots(activeSection);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -1128,9 +1195,10 @@ export default function App() {
             desktopProjectIndex={desktopProjectIndex}
             setDesktopProjectIndex={setDesktopProjectIndex}
             onGallery={setGalleryProject}
+            isCompact={isCompact}
           />
-          <Journey activeIndex={journeyIndex} onSelect={setJourneyIndex} />
-          <TechStack />
+          <Journey activeIndex={journeyIndex} onSelect={setJourneyIndex} isCompact={isCompact} />
+          <TechStack isCompact={isCompact} />
           <Contact />
         </main>
         <ProjectGalleryModal project={galleryProject} onClose={() => setGalleryProject(null)} />
