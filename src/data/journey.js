@@ -30,7 +30,7 @@ export const journeyTimeline = [
   },
   {
     id: 'b-and-q',
-    color: '#fbbf24',
+    color: '#e97c00',
     short: 'B&Q',
     date: 'Oct 2021 – Present',
     start: 2021.75,
@@ -43,7 +43,7 @@ export const journeyTimeline = [
   },
   {
     id: 'fujitsu-workx',
-    color: '#4ade80',
+    color: '#de4a54',
     short: 'Fujitsu WorkX',
     date: 'Jul 2022',
     start: 2022.5,
@@ -55,7 +55,7 @@ export const journeyTimeline = [
   },
   {
     id: 'bsc-westminster',
-    color: '#f472b6',
+    color: '#ffd901',
     short: "Bachelor's Degree",
     date: 'Sep 2023 – Jun 2026',
     start: 2023.67,
@@ -67,7 +67,7 @@ export const journeyTimeline = [
   },
   {
     id: 'aston-ideathon',
-    color: '#60a5fa',
+    color: '#72c83d',
     short: 'Aston Martin F1 Ideathon',
     date: 'Jun 2026 – Jul 2026',
     start: 2026.42,
@@ -79,7 +79,7 @@ export const journeyTimeline = [
   },
   {
     id: 'fm',
-    color: '#b4f589',
+    color: '#f5f5f5',
     short: 'Foundermatcha Internship',
     date: ' May 2026 - Jul 2026',
     start: 2026.33,

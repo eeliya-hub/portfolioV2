@@ -13,6 +13,8 @@ import pythonLogo from '../assets/logos/python.png';
 import sqlLogo from '../assets/logos/sql.png';
 import swiftLogo from '../assets/logos/swift.png';
 import reactLogo from '../assets/logos/react.png';
+import viteLogo from '../assets/logos/vite.png';
+import tailwindLogo from '../assets/logos/tailwind.png';
 
 import alumniDevice from '../assets/screenshots copy/alumni-api-model.jpg';
 import alumniShotOne from '../assets/projects/alumni-api/alumni-1.png';
@@ -40,11 +42,25 @@ import pitWallDevice from '../assets/projects/pitwall/pitwall-device.png';
 import pitWallShotOne from '../assets/projects/pitwall/1.png';
 import pitWallShotTwo from '../assets/projects/pitwall/2.png';
 import pitWallShotThree from '../assets/projects/pitwall/3.png';
+import pulseOsDevice from '../assets/projects/pulseos/thumbnail.png';
+import pulseOsShotOne from '../assets/projects/pulseos/pulseos-1.png';
+import pulseOsShotTwo from '../assets/projects/pulseos/pulseos-2.png';
+import pulseOsShotThree from '../assets/projects/pulseos/pulseos-3.png';
+import pulseOsShotFour from '../assets/projects/pulseos/pulseos-4.png';
+import pulseOsShotFive from '../assets/projects/pulseos/pulseos-5.png';
+import pulseOsShotSix from '../assets/projects/pulseos/pulseos-6.png';
+import pulseOsShotSeven from '../assets/projects/pulseos/pulseos-7.png';
+import pulseOsShotEight from '../assets/projects/pulseos/pulseos-8.png';
+import pulseOsShotNine from '../assets/projects/pulseos/pulseos-9.png';
+import pulseOsShotTen from '../assets/projects/pulseos/pulseos-10.png';
+import pulseOsShotEleven from '../assets/projects/pulseos/pulseos-11.png';
 import alumniApiDoc from '../docs/Alumni API.pdf';
 import skyHealthDoc from '../docs/Heath Check.pdf';
 import premPredictorDoc from '../docs/Prem Predictor.pdf';
 import traverseDoc from '../docs/Traverse Doc.pdf';
 import weatherAppDoc from '../docs/Weather App.pdf';
+import pulseOsDoc from '../docs/PulseOS Doc.pdf';
+import pitWallDoc from '../docs/Pitwall Doc.pdf';
 
 const techMap = {
   CSS: { logo: cssLogo, tone: 'blue' },
@@ -76,6 +92,8 @@ const techMap = {
   TypeScript: { icon: 'TS', tone: 'blue' },
   'react-native-web': { icon: 'RNW', tone: 'cyan' },
   'react-native-svg': { icon: 'SVG', tone: 'cyan' },
+  Vite: { logo: viteLogo, tone: 'gold' },
+  'Tailwind CSS': { logo: tailwindLogo, tone: 'cyan' },
 };
 
 const stack = (items) =>
@@ -160,7 +178,7 @@ export const mobileProjects = [
       { src: pitWallShotTwo, alt: 'Pit Wall global leagues, season standings, and custom league screens' },
       { src: pitWallShotThree, alt: 'Pit Wall race setup, live pit-window decision, and race data screens' },
     ],
-    actions: [githubAction('https://github.com/eeliya-hub/amf1'), unavailable('Docs')],
+    actions: projectActions(pitWallDoc, 'https://github.com/eeliya-hub/amf1'),
   },
   {
     id: 'weather-app',
@@ -197,6 +215,47 @@ export const mobileProjects = [
 ];
 
 export const desktopProjects = [
+  {
+    id: 'pulseos',
+    title: 'PulseOS',
+    name: 'PulseOS',
+    category: 'Personal Dashboard',
+    label: 'Web App',
+    intro: 'A calm, single-screen command centre that unifies weather, calendar, news, markets, music, and finance.',
+    summary:
+      'A personal command-centre dashboard that pulls the services you check each day — weather, calendar, news, markets, music, and finances — into one calm, single-viewport interface.',
+    description:
+      'A personal dashboard that gathers the many services people check every day into one calm, unscrolling "quiet-glass" surface. Built as a monorepo with a React and Vite frontend and a layered Node.js and Express backend that acts as a secure gateway to a wide range of third-party providers, each isolated behind its own route, controller, and service.',
+    overview:
+      'A personal dashboard that gathers the many services people check every day into one calm, unscrolling "quiet-glass" surface. Built as a monorepo with a React and Vite frontend and a layered Node.js and Express backend that acts as a secure gateway to a wide range of third-party providers, each isolated behind its own route, controller, and service.',
+    features: [
+      'Single-viewport home surfacing weather, forecast, calendar, next shift, and an app launchpad at a glance.',
+      'Layered Express gateway isolating each provider behind its own route, controller, and service.',
+      'Provider-swappable AI assistant that reads the user\'s live data and acts on it, with caching and hard usage caps.',
+    ],
+    highlights: [
+      'Single-viewport home surfacing weather, forecast, calendar, next shift, and an app launchpad at a glance.',
+      'Layered Express gateway isolating each provider behind its own route, controller, and service.',
+      'Provider-swappable AI assistant that reads the user\'s live data and acts on it, with caching and hard usage caps.',
+    ],
+    tech: stack(['JavaScript', 'React', 'Vite', 'Tailwind CSS', 'Node.js', 'Express', 'Firebase', 'REST APIs']),
+    stack: stack(['JavaScript', 'React', 'Vite', 'Tailwind CSS', 'Node.js', 'Express', 'Firebase', 'REST APIs']),
+    deviceImage: pulseOsDevice,
+    gallery: [
+      { src: pulseOsShotOne, alt: 'PulseOS settings panel with name, location, and followed sports teams' },
+      { src: pulseOsShotTwo, alt: 'PulseOS launchpad app picker screenshot' },
+      { src: pulseOsShotThree, alt: 'PulseOS Life Hub with schedule, projects, and daily habits' },
+      { src: pulseOsShotFour, alt: 'PulseOS Markets & News view with live news stream and stock ticker' },
+      { src: pulseOsShotFive, alt: 'PulseOS markets watchlist card with live instrument prices' },
+      { src: pulseOsShotSix, alt: 'PulseOS local news feed screenshot' },
+      { src: pulseOsShotSeven, alt: 'PulseOS sports card showing Premier League standings' },
+      { src: pulseOsShotEight, alt: 'PulseOS sports card showing Formula 1 standings' },
+      { src: pulseOsShotNine, alt: 'PulseOS music player with now playing and search' },
+      { src: pulseOsShotTen, alt: 'PulseOS travel planner with itinerary, packing, and currency' },
+      { src: pulseOsShotEleven, alt: 'PulseOS finance overview with balances, spending trend, and goals' },
+    ],
+    actions: projectActions(pulseOsDoc, 'https://github.com/eeliya-hub/pulseOS'),
+  },
   {
     id: 'prem-predictor',
     title: 'Prem Predictor',
