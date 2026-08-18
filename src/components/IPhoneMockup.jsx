@@ -147,7 +147,7 @@ const googleResults = [
       'Projects are where I turn ideas into working products. I like building complete flows, then tightening the interface, data, and edge cases until the result feels usable.',
     cards: [
       'Traverse combines travel search, itinerary planning, budgeting, and AI-assisted trip support.',
-      'Prem Predictor focuses on prediction leagues, scoring, local persistence, and report generation.',
+      'Prem Predictor runs multiplayer prediction leagues with sealed picks, live standings, and report generation.',
       'Other builds include weather, finance, SkyHealth, and alumni API work.',
     ],
     chips: ['Mobile apps', 'Desktop apps', 'APIs', 'Reports', 'AI features'],

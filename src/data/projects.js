@@ -107,7 +107,12 @@ const stack = (items) =>
 const unavailable = (label) => ({ label, href: null });
 const githubAction = (href) => ({ label: 'GitHub', href });
 const docsAction = (href) => ({ label: 'Docs', href, newTab: true });
-const projectActions = (doc, githubHref = null) => [githubHref ? githubAction(githubHref) : unavailable('GitHub'), docsAction(doc)];
+const liveAction = (href) => ({ label: 'Live Site', href, newTab: true });
+const projectActions = (doc, githubHref = null, liveHref = null) => [
+  githubHref ? githubAction(githubHref) : unavailable('GitHub'),
+  docsAction(doc),
+  ...(liveHref ? [liveAction(liveHref)] : []),
+];
 
 export const mobileProjects = [
   {
@@ -262,32 +267,36 @@ export const desktopProjects = [
     name: 'Prem Predictor',
     category: 'Football Prediction Project',
     label: 'Web App',
-    intro: 'Browser-based Premier League prediction leagues with scoring and reports.',
+    intro: 'Multiplayer Premier League prediction leagues with sealed picks and live standings.',
     summary:
-      'A browser-based Premier League prediction app where users create leagues, submit full table predictions, compare results, and generate PDF summaries.',
+      'A multiplayer Premier League prediction app where friends join a private league by link or code, rank all twenty clubs, and have their picks stay sealed until the deadline before revealing together.',
     description:
-      'A client-side web app that turns informal football predictions into a structured experience. Users create leagues, submit full 20-team table predictions, get scored against actual results, and generate PDF reports, all in the browser without accounts or backend storage.',
+      'A Firebase-backed web app that turns informal football predictions into a competition people can trust. Players sign in with Google, join a private league by invite link or six-character code, and rank all twenty clubs by dragging, tapping or typing. Every prediction stays sealed until the deadline — enforced by Firestore security rules on the server, not just hidden in the interface — then the whole league reveals at once and is scored against the real Premier League table, which a scheduled job refreshes once a day.',
     overview:
-      'A client-side web app that turns informal football predictions into a structured experience. Users create leagues, submit full 20-team table predictions, get scored against actual results, and generate PDF reports, all in the browser without accounts or backend storage.',
+      'A Firebase-backed web app that turns informal football predictions into a competition people can trust. Players sign in with Google, join a private league by invite link or six-character code, and rank all twenty clubs by dragging, tapping or typing. Every prediction stays sealed until the deadline — enforced by Firestore security rules on the server, not just hidden in the interface — then the whole league reveals at once and is scored against the real Premier League table, which a scheduled job refreshes once a day.',
     features: [
-      'League creation and player management for private prediction groups.',
-      'Validation and scoring of full 20-team table predictions with automatic leaderboard ranking.',
-      'Client-side PDF report generation to compare predictions against actual results.',
+      'Multiplayer leagues with Google sign-in, invite links and join codes, and accounts that carry predictions across devices.',
+      'Firestore security rules that keep every prediction sealed until the deadline server-side, with owner controls to close early, reopen, reveal tables and publish scores.',
+      'Live Premier League standings fetched once daily by a scheduled CI job, plus PDF prediction sheets, score reports and JSON import/export.',
     ],
     highlights: [
-      'League creation and player management for private prediction groups.',
-      'Validation and scoring of full 20-team table predictions with automatic leaderboard ranking.',
-      'Client-side PDF report generation to compare predictions against actual results.',
+      'Multiplayer leagues with Google sign-in, invite links and join codes, and accounts that carry predictions across devices.',
+      'Firestore security rules that keep every prediction sealed until the deadline server-side, with owner controls to close early, reopen, reveal tables and publish scores.',
+      'Live Premier League standings fetched once daily by a scheduled CI job, plus PDF prediction sheets, score reports and JSON import/export.',
     ],
-    tech: stack(['JavaScript', 'CSS', 'HTML']),
-    stack: stack(['JavaScript', 'CSS', 'HTML']),
+    tech: stack(['JavaScript', 'Firebase', 'Tailwind CSS', 'REST APIs', 'HTML', 'CSS']),
+    stack: stack(['JavaScript', 'Firebase', 'Tailwind CSS', 'REST APIs', 'HTML', 'CSS']),
     deviceImage: premDevice,
     gallery: [
       { src: premShotOne, alt: 'Prem Predictor league dashboard screenshot' },
       { src: premShotTwo, alt: 'Prem Predictor table screenshot' },
       { src: premShotThree, alt: 'Prem Predictor report screenshot' },
     ],
-    actions: projectActions(premPredictorDoc),
+    actions: projectActions(
+      premPredictorDoc,
+      'https://github.com/eeliya-hub/PremPredictor',
+      'https://predictthetable.web.app',
+    ),
   },
   {
     id: 'alumni-api',
