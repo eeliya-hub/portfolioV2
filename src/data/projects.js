@@ -20,10 +20,19 @@ import alumniDevice from '../assets/screenshots copy/alumni-api-model.jpg';
 import alumniShotOne from '../assets/projects/alumni-api/alumni-1.png';
 import alumniShotTwo from '../assets/projects/alumni-api/alumni-2.png';
 import alumniShotThree from '../assets/projects/alumni-api/alumni-3.png';
-import premDevice from '../assets/screenshots copy/prem-predictor-model.jpg';
+import premDevice from '../assets/projects/prem-predictor/prem-predictor-thumb.png';
+// The same home screen as the thumbnail, padded to 16:10 so it matches the rest
+// of the gallery; the thumbnail itself stays at its native ratio for the device.
+import premShotHome from '../assets/projects/prem-predictor/prem-predictor-0.png';
 import premShotOne from '../assets/projects/prem-predictor/prem-predictor-1.png';
 import premShotTwo from '../assets/projects/prem-predictor/prem-predictor-2.png';
 import premShotThree from '../assets/projects/prem-predictor/prem-predictor-3.png';
+import premShotFour from '../assets/projects/prem-predictor/prem-predictor-4.png';
+import premShotFive from '../assets/projects/prem-predictor/prem-predictor-5.png';
+import premShotSix from '../assets/projects/prem-predictor/prem-predictor-6.png';
+import premShotSeven from '../assets/projects/prem-predictor/prem-predictor-7.png';
+import premShotEight from '../assets/projects/prem-predictor/prem-predictor-8.png';
+import premShotNine from '../assets/projects/prem-predictor/prem-predictor-9.png';
 import skyDevice from '../assets/screenshots copy/sky-model.jpg';
 import skyShotOne from '../assets/projects/skyhealth/skyhealth-1.png';
 import skyShotTwo from '../assets/projects/skyhealth/skyhealth-2.png';
@@ -107,11 +116,11 @@ const stack = (items) =>
 const unavailable = (label) => ({ label, href: null });
 const githubAction = (href) => ({ label: 'GitHub', href });
 const docsAction = (href) => ({ label: 'Docs', href, newTab: true });
-const liveAction = (href) => ({ label: 'Live Site', href, newTab: true });
-const projectActions = (doc, githubHref = null, liveHref = null) => [
+// Live sites are reached by clicking the device itself (see `liveUrl`), so
+// they deliberately have no button of their own here.
+const projectActions = (doc, githubHref = null) => [
   githubHref ? githubAction(githubHref) : unavailable('GitHub'),
   docsAction(doc),
-  ...(liveHref ? [liveAction(liveHref)] : []),
 ];
 
 export const mobileProjects = [
@@ -271,32 +280,36 @@ export const desktopProjects = [
     summary:
       'A multiplayer Premier League prediction app where friends join a private league by link or code, rank all twenty clubs, and have their picks stay sealed until the deadline before revealing together.',
     description:
-      'A Firebase-backed web app that turns informal football predictions into a competition people can trust. Players sign in with Google, join a private league by invite link or six-character code, and rank all twenty clubs by dragging, tapping or typing. Every prediction stays sealed until the deadline — enforced by Firestore security rules on the server, not just hidden in the interface — then the whole league reveals at once and is scored against the real Premier League table, which a scheduled job refreshes once a day.',
+      'A Firebase-backed web app that turns informal football predictions into a competition people can trust. Players join a private league by invite link or code and rank all twenty clubs, and every prediction stays sealed until the deadline — enforced by Firestore security rules on the server, not just hidden in the interface.',
     overview:
-      'A Firebase-backed web app that turns informal football predictions into a competition people can trust. Players sign in with Google, join a private league by invite link or six-character code, and rank all twenty clubs by dragging, tapping or typing. Every prediction stays sealed until the deadline — enforced by Firestore security rules on the server, not just hidden in the interface — then the whole league reveals at once and is scored against the real Premier League table, which a scheduled job refreshes once a day.',
+      'A Firebase-backed web app that turns informal football predictions into a competition people can trust. Players join a private league by invite link or code and rank all twenty clubs, and every prediction stays sealed until the deadline — enforced by Firestore security rules on the server, not just hidden in the interface.',
     features: [
       'Multiplayer leagues with Google sign-in, invite links and join codes, and accounts that carry predictions across devices.',
-      'Firestore security rules that keep every prediction sealed until the deadline server-side, with owner controls to close early, reopen, reveal tables and publish scores.',
-      'Live Premier League standings fetched once daily by a scheduled CI job, plus PDF prediction sheets, score reports and JSON import/export.',
+      'Server-side Firestore rules that seal every prediction until the deadline, with owner controls to close, reopen and reveal.',
+      'Live standings refreshed daily by a scheduled CI job, plus PDF sheets, score reports and JSON import/export.',
     ],
     highlights: [
       'Multiplayer leagues with Google sign-in, invite links and join codes, and accounts that carry predictions across devices.',
-      'Firestore security rules that keep every prediction sealed until the deadline server-side, with owner controls to close early, reopen, reveal tables and publish scores.',
-      'Live Premier League standings fetched once daily by a scheduled CI job, plus PDF prediction sheets, score reports and JSON import/export.',
+      'Server-side Firestore rules that seal every prediction until the deadline, with owner controls to close, reopen and reveal.',
+      'Live standings refreshed daily by a scheduled CI job, plus PDF sheets, score reports and JSON import/export.',
     ],
     tech: stack(['JavaScript', 'Firebase', 'Tailwind CSS', 'REST APIs', 'HTML', 'CSS']),
     stack: stack(['JavaScript', 'Firebase', 'Tailwind CSS', 'REST APIs', 'HTML', 'CSS']),
     deviceImage: premDevice,
+    liveUrl: 'https://prempredictor.web.app',
     gallery: [
-      { src: premShotOne, alt: 'Prem Predictor league dashboard screenshot' },
-      { src: premShotTwo, alt: 'Prem Predictor table screenshot' },
-      { src: premShotThree, alt: 'Prem Predictor report screenshot' },
+      { src: premShotHome, alt: 'Prem Predictor home screen welcoming the player with their leagues' },
+      { src: premShotOne, alt: 'Prem Predictor leagues list showing both leagues counting down to their deadline' },
+      { src: premShotTwo, alt: 'Prem Predictor league overview with players, countdown, and sealed picks' },
+      { src: premShotThree, alt: 'Prem Predictor prediction board part-filled, with the remaining clubs above the positions' },
+      { src: premShotFour, alt: 'Prem Predictor prediction board with all twenty clubs placed' },
+      { src: premShotFive, alt: 'Prem Predictor one-at-a-time mode picking the champions' },
+      { src: premShotSix, alt: 'Prem Predictor league settings with deadline and owner controls' },
+      { src: premShotSeven, alt: 'Prem Predictor live Premier League table pulled from the league feed' },
+      { src: premShotEight, alt: 'Prem Predictor rules page explaining how it works and how scoring works' },
+      { src: premShotNine, alt: 'Prem Predictor profile page with display name and club crest picker' },
     ],
-    actions: projectActions(
-      premPredictorDoc,
-      'https://github.com/eeliya-hub/PremPredictor',
-      'https://predictthetable.web.app',
-    ),
+    actions: projectActions(premPredictorDoc, ''),
   },
   {
     id: 'alumni-api',

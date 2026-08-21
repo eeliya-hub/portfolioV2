@@ -603,7 +603,7 @@ function Home() {
       >
         <div className="hidden lg:block" aria-hidden="true" />
         <motion.div className="home-copy max-w-4xl text-center lg:text-left" variants={sectionItem}>
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.34em] text-cyan-glow">
+          <p className="mb-6 font-display text-xs font-semibold uppercase tracking-[0.34em] text-cyan-glow">
             Software Developer
           </p>
           <h1 className="whitespace-nowrap text-[clamp(2.1rem,9.8vw,6.4rem)] font-semibold leading-none text-frost">
@@ -662,7 +662,7 @@ function About() {
       >
         <div className="about-copy max-w-3xl lg:max-w-[34rem] xl:max-w-[42rem]">
           <motion.p
-            className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
+            className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
             variants={sectionItem}
           >
             My Personal Story
@@ -738,7 +738,7 @@ function Projects({
           variants={sectionContainer}
         >
           <motion.div className="project-title-block" variants={sectionItem}>
-            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Mobile Project</p>
+            <p className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Mobile Project</p>
             <h2>{mobileProject.title}</h2>
             <p>{mobileProject.summary}</p>
             <ProjectActions project={mobileProject} onGallery={onGallery} className="project-action-row-left" />
@@ -772,7 +772,7 @@ function Projects({
           variants={sectionContainer}
         >
           <motion.div className="project-title-block project-desktop-title" variants={sectionItem}>
-            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Desktop Project</p>
+            <p className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Desktop Project</p>
             <div className="project-title-heading-row">
               <h2>{desktopProject.title}</h2>
             </div>
@@ -829,7 +829,7 @@ function TechStack({ isCompact }) {
         variants={sectionContainer}
       >
         <motion.div className="tech-copy" variants={sectionItem}>
-          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Tech Stack</p>
+          <p className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Tech Stack</p>
           <h2 className="text-4xl font-semibold leading-tight text-frost sm:text-5xl lg:text-6xl">
             Developer Toolkit
           </h2>
@@ -877,7 +877,7 @@ function Journey({ activeIndex = 0, onSelect, isCompact }) {
           variants={sectionContainer}
         >
           <motion.p
-            className="mb-5 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
+            className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
             variants={sectionItem}
           >
             The Roadmap
@@ -1068,7 +1068,7 @@ function Contact() {
       >
         <div className="contact-head">
           <motion.p
-            className="mb-4 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
+            className="mb-4 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
             variants={sectionItem}
           >
             Contact
@@ -1174,7 +1174,7 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative min-h-dvh overflow-x-hidden bg-ink bg-radial-soft text-frost">
+      <div className="relative min-h-dvh overflow-x-hidden bg-ink text-frost">
         <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(115deg,rgba(6,9,18,0.68),rgba(11,16,32,0.9))]" />
         <IPhoneMockup activeSection={activeSection} className="desktop-phone" project={activeMobileProject} />
         <DesktopDevice

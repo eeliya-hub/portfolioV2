@@ -28,6 +28,10 @@ function ChromeFavicon({ icon }) {
 }
 
 function ProjectLaptopScreen({ activeProject }) {
+  const screenshot = (
+    <img src={activeProject.deviceImage} alt={`${activeProject.title} screenshot`} loading="lazy" />
+  );
+
   return (
     <div className="laptop-project-os">
       <div className="laptop-window-bar">
@@ -49,7 +53,19 @@ function ProjectLaptopScreen({ activeProject }) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.28, ease: smoothEase }}
       >
-        <img src={activeProject.deviceImage} alt={`${activeProject.title} screenshot`} loading="lazy" />
+        {activeProject.liveUrl ? (
+          <a
+            className="laptop-project-live-link"
+            href={activeProject.liveUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Open the ${activeProject.title} live site`}
+          >
+            {screenshot}
+          </a>
+        ) : (
+          screenshot
+        )}
       </motion.div>
     </div>
   );

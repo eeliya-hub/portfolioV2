@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import googleLogoMark from '../assets/Google-logo.png';
 import westminsterLogo from '../assets/UoW.jpeg';
 import homeWallpaper from '../assets/image.png';
@@ -252,28 +252,92 @@ function useProjectBoundaryLock(enabled) {
 // Positions are expressed purely as transforms (calc of viewport units minus
 // the element's own half-size). Animating left/top instead would trigger a
 // layout pass on every animation frame; transforms stay on the compositor.
-function getStageVariants(isCompact) {
-  if (isCompact) {
-    return {
-      home: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 1 },
-      about: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 1 },
-      projects: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 1 },
-      'projects-desktop': { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 0 },
-      'tech-stack': { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 0.78, opacity: 0.78 },
-      journey: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 0.72, opacity: 0.72 },
-      contact: { x: 'calc(50vw - 50%)', y: '4.4rem', scale: 1, opacity: 1 },
+// Where the phone sits in each section, as fractions of the viewport. Resolved
+// to pixels below so framer-motion animates plain numbers.
+const COMPACT_STAGE_SLOTS = {
+  home: { fx: 0.5, top: 4.4, scale: 1, opacity: 1 },
+  about: { fx: 0.5, top: 4.4, scale: 1, opacity: 1 },
+  projects: { fx: 0.5, top: 4.4, scale: 1, opacity: 1 },
+  'projects-desktop': { fx: 0.5, top: 4.4, scale: 1, opacity: 0 },
+  'tech-stack': { fx: 0.5, top: 4.4, scale: 0.78, opacity: 0.78 },
+  journey: { fx: 0.5, top: 4.4, scale: 0.72, opacity: 0.72 },
+  contact: { fx: 0.5, top: 4.4, scale: 1, opacity: 1 },
+};
+
+const STAGE_SLOTS = {
+  home: { fx: 0.27, fy: 0.5, scale: 0.88, opacity: 1 },
+  about: { fx: 0.76, fy: 0.5, scale: 0.9, opacity: 1 },
+  projects: { fx: 0.5, fy: 0.5, scale: 0.9, opacity: 1 },
+  'projects-desktop': { fx: 0.5, fy: 0.5, scale: 0.9, opacity: 0 },
+  'tech-stack': { fx: 0.76, fy: 0.5, scale: 0.72, opacity: 0.86 },
+  journey: { fx: 0.78, fy: 0.54, scale: 0.62, opacity: 0.72 },
+  contact: { fx: 0.76, fy: 0.5, scale: 0.9, opacity: 1 },
+};
+
+// The stage used to be positioned with calc(76vw - 50%) strings. framer-motion
+// cannot composite those: it rewrites the whole transform every frame, which
+// forces a style recalc and a re-raster of the phone (a subtree under a
+// drop-shadow filter). Measuring the stage once and animating plain pixel
+// numbers keeps the slide on the compositor. Falls back to the old calc values
+// until the first measurement lands, so the phone is never mispositioned.
+function useStageMetrics(ref) {
+  const [metrics, setMetrics] = useState(null);
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = ref.current;
+      if (!el || !el.offsetWidth) return;
+      const next = {
+        vw: window.innerWidth,
+        vh: window.innerHeight,
+        w: el.offsetWidth,
+        h: el.offsetHeight,
+      };
+      setMetrics((prev) =>
+        prev && prev.vw === next.vw && prev.vh === next.vh && prev.w === next.w && prev.h === next.h
+          ? prev
+          : next,
+      );
     };
+
+    measure();
+    window.addEventListener('resize', measure);
+    document.fonts?.ready?.then(measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [ref]);
+
+  return metrics;
+}
+
+function getStageVariants(isCompact, m) {
+  const slots = isCompact ? COMPACT_STAGE_SLOTS : STAGE_SLOTS;
+
+  if (!m) {
+    // Pre-measurement fallback: same positions, expressed the old way.
+    return Object.fromEntries(
+      Object.entries(slots).map(([key, s]) => [
+        key,
+        {
+          x: `calc(${s.fx * 100}vw - 50%)`,
+          y: isCompact ? `${s.top}rem` : `calc(${s.fy * 100}vh - 50%)`,
+          scale: s.scale,
+          opacity: s.opacity,
+        },
+      ]),
+    );
   }
 
-  return {
-    home: { x: 'calc(27vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.88, opacity: 1 },
-    about: { x: 'calc(76vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.9, opacity: 1 },
-    projects: { x: 'calc(50vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.9, opacity: 1 },
-    'projects-desktop': { x: 'calc(50vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.9, opacity: 0 },
-    'tech-stack': { x: 'calc(76vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.72, opacity: 0.86 },
-    journey: { x: 'calc(78vw - 50%)', y: 'calc(54vh - 50%)', scale: 0.62, opacity: 0.72 },
-    contact: { x: 'calc(76vw - 50%)', y: 'calc(50vh - 50%)', scale: 0.90, opacity: 1 },
-  };
+  return Object.fromEntries(
+    Object.entries(slots).map(([key, s]) => [
+      key,
+      {
+        x: Math.round(s.fx * m.vw - m.w / 2),
+        y: isCompact ? s.top * 16 : Math.round(s.fy * m.vh - m.h / 2),
+        scale: s.scale,
+        opacity: s.opacity,
+      },
+    ]),
+  );
 }
 
 function WallpaperFace() {
@@ -1140,7 +1204,9 @@ function ContactScreen() {
       exit="exit"
     >
       <div className="ios-contact-bg" aria-hidden="true">
-        <img className="ios-contact-bg-photo" src={contactPhoto} alt="" />
+        {/* Decoded off the main thread so the first arrival at the contact
+            section doesn't pay for it mid-slide. */}
+        <img className="ios-contact-bg-photo" src={contactPhoto} alt="" decoding="async" />
       </div>
 
       <motion.div className="ios-contact-topbar" variants={itemVariants}>
@@ -1229,7 +1295,6 @@ const staticStageVariants = {
 
 export default function IPhoneMockup({ activeSection = 'home', className = '', staticMode = false, project }) {
   const isCompact = useIsCompact();
-  const variants = getStageVariants(isCompact);
   const screenKey = activeSection || 'home';
   const projectBoundarySections = ['projects', 'projects-desktop'];
   const hiddenStageSections = ['tech-stack', 'journey'];
@@ -1237,19 +1302,24 @@ export default function IPhoneMockup({ activeSection = 'home', className = '', s
   const isHidden = !staticMode && hiddenStageSections.includes(screenKey);
   const displayKey = isProjectBoundaryActive || isHidden ? 'projects' : screenKey;
   const stageRef = useProjectBoundaryLock(isProjectBoundaryActive);
+  const stageMetrics = useStageMetrics(stageRef);
+  const variants = getStageVariants(isCompact, stageMetrics);
+  const [isMoving, setIsMoving] = useState(false);
 
   return (
     <motion.aside
       ref={stageRef}
       className={`iphone-stage iphone-section-${displayKey} ${staticMode ? 'is-static' : ''} ${
         isHidden ? 'is-hidden' : ''
-      } ${className}`}
+      } ${isMoving ? 'is-moving' : ''} ${className}`}
       aria-label="Persistent iPhone section navigation"
       aria-hidden={isHidden}
       animate={staticMode ? 'static' : displayKey}
       variants={staticMode ? staticStageVariants : variants}
       initial={false}
-      transition={{ duration: 1, ease: smoothEase }}
+      transition={{ duration: 0.7, ease: smoothEase }}
+      onAnimationStart={() => setIsMoving(true)}
+      onAnimationComplete={() => setIsMoving(false)}
     >
       <div className="iphone-device">
         <span className="iphone-button iphone-button-left" aria-hidden="true" />

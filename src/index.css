@@ -12,17 +12,42 @@
   --cyan: #56d9ff;
   --frost: #f8fbff;
   --muted: rgba(231, 238, 252, 0.68);
+  /* Page background. One knob for the whole site — lifted off pure black so
+     the panels and borders don't read as harsh. */
+  --site-bg: #1b1e29;
   --shadow-soft: 0 24px 80px rgba(0, 0, 0, 0.32);
   --shadow-device: 0 36px 86px rgba(0, 0, 0, 0.5);
-  font-family:
-    Inter,
+  /* One family across the whole site: Manrope, a modern geometric sans with
+     softly cut terminals that stays comfortable from 12px body copy up to the
+     display headings. */
+  --font-sans:
+    Manrope,
     ui-sans-serif,
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  background: #060912;
+  --font-display: var(--font-sans);
+  font-family: var(--font-sans);
+  background: #000000;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+/* The mock websites inside the phone are meant to look like other people's
+   sites, so they keep whichever face their own theme sets. */
+.fake-web-page :is(h1, h2, h3, h4, h5, h6) {
+  font-family: inherit;
+  letter-spacing: normal;
 }
 
 * {
@@ -42,9 +67,7 @@ body {
   min-height: 100dvh;
   margin: 0;
   overflow-x: hidden;
-  background:
-    linear-gradient(140deg, rgba(6, 9, 18, 0.95), rgba(11, 16, 32, 0.94)),
-    #060912;
+  background: var(--site-bg);
   color: var(--frost);
 }
 
@@ -115,9 +138,6 @@ body::after {
   --iphone-hover-tilt-z: 0deg;
   --iphone-hover-lift: -4px;
   pointer-events: none;
-  filter:
-    drop-shadow(0 34px 64px rgba(0, 0, 0, 0.52))
-    drop-shadow(0 0 42px rgba(86, 217, 255, 0.08));
   will-change: transform, opacity;
 }
 
@@ -136,6 +156,20 @@ body::after {
 .iphone-stage::after {
   inset: 34% -18% 4%;
   background: radial-gradient(circle, rgba(155, 124, 255, 0.16), transparent 64%);
+}
+
+/* Backdrop blurs inside a moving, scaling element force the browser to
+   re-sample and re-blur the backdrop every frame — the contact screen alone
+   mounts five of them. They are suspended while the phone travels and restored
+   the moment it settles, which is imperceptible in motion. */
+.iphone-stage.is-moving .phone-dock,
+.iphone-stage.is-moving .ios-contact-circle,
+.iphone-stage.is-moving .ios-contact-edit,
+.iphone-stage.is-moving .ios-contact-action,
+.iphone-stage.is-moving .ios-contact-card,
+.iphone-stage.is-moving .ios-contact-notes {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .iphone-stage.is-hidden {
@@ -159,9 +193,6 @@ body::after {
   z-index: 2;
   width: clamp(12rem, 28vw, 18rem);
   margin: 0 auto;
-  filter:
-    drop-shadow(0 28px 54px rgba(0, 0, 0, 0.42))
-    drop-shadow(0 0 34px rgba(86, 217, 255, 0.08));
   pointer-events: auto;
   transform: none;
 }
@@ -170,6 +201,14 @@ body::after {
   position: relative;
   width: 100%;
   aspect-ratio: 9 / 19.5;
+  /* The shadow lives here as a box-shadow rather than as a drop-shadow filter
+     on the stage: a filter would make the browser recompute the alpha
+     silhouette of the entire phone subtree on every frame of the slide. The
+     device is a rounded rectangle, so the two look the same. */
+  border-radius: var(--iphone-frame-radius-x) / var(--iphone-frame-radius-y);
+  box-shadow:
+    0 34px 64px rgba(0, 0, 0, 0.52),
+    0 0 42px rgba(86, 217, 255, 0.08);
   backface-visibility: hidden;
   pointer-events: auto;
   transform: perspective(var(--iphone-perspective)) rotateX(var(--iphone-tilt-x)) rotateY(var(--iphone-tilt-y)) rotateZ(var(--iphone-tilt-z));
@@ -3169,10 +3208,14 @@ body::after {
   stroke-width: 2.4;
 }
 
+/* The frame hugs the image rather than being a fixed box, so screenshots of
+   different aspect ratios (16:10 full-screen grabs, 1.82 browser-window grabs,
+   2.1 ultrawide) all read as the same treatment instead of showing different
+   amounts of letterbox. */
 .project-gallery-carousel figure {
   display: grid;
   min-height: 0;
-  margin: 0;
+  margin: 0 auto;
   place-items: center;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3182,8 +3225,10 @@ body::after {
 
 .project-gallery-carousel img {
   display: block;
-  width: 100%;
-  height: min(72dvh, 42rem);
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(72dvh, 42rem);
   object-fit: contain;
 }
 
@@ -3226,8 +3271,40 @@ body::after {
     padding-left: clamp(2rem, 3vw, 4rem);
   }
 
+  /* The detail column must not drive the height of its grid row. If it does, a
+     project with a longer overview makes the whole (vertically centred) layout
+     taller and drags the header upwards — Prem Predictor sat 37px higher than
+     the rest for exactly this reason. Taking the panel out of flow pins row 2
+     to the laptop, so every project's header, actions and device land in the
+     same place and only the content inside differs. */
   .project-desktop-detail {
+    position: relative;
+    min-height: 0;
     padding-left: clamp(2.5rem, 4vw, 5rem);
+  }
+
+  /* Out of flow, so the row is sized by the laptop alone. The cell is stretched
+     to that row, which gives this a definite height to cap against: shorter
+     panels sit at their natural height, longer ones scroll inside instead of
+     spilling into the section below. */
+  .project-desktop-detail > .project-info-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: clamp(2.5rem, 4vw, 5rem);
+    bottom: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  }
+
+  .project-desktop-detail > .project-info-panel::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .project-desktop-detail > .project-info-panel::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
   }
 
   .project-desktop-detail .project-info-panel {
@@ -3273,7 +3350,9 @@ body::after {
 
 .project-desktop-detail {
   grid-area: detail;
-  align-self: start;
+  /* stretch, not start: the panel inside is taken out of flow (see below) so
+     this cell has no height of its own to align. */
+  align-self: stretch;
 }
 
 .laptop-focus {
@@ -3493,6 +3572,18 @@ body::after {
   min-height: 0;
   object-fit: cover;
   object-position: top center;
+}
+
+/* Mirrors .phone-project-live-link: the screenshot itself is the link to the
+   live site, so the device reads as the thing you click. */
+.laptop-project-live-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .laptop-window-bar {
@@ -5820,6 +5911,12 @@ body::after {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.m-browser-shot-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
 }
 
 .m-browser-nav {

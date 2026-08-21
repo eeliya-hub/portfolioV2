@@ -15,6 +15,9 @@ export default function MobileProjectViewer({ projects, activeIndex, onChange })
   const project = projects[activeIndex];
   const showPrevious = () => onChange((activeIndex - 1 + projects.length) % projects.length);
   const showNext = () => onChange((activeIndex + 1) % projects.length);
+  const screenshot = (
+    <img className="m-browser-shot" src={project.deviceImage} alt={`${project.title} screenshot`} loading="lazy" />
+  );
 
   return (
     <div className="m-browser">
@@ -27,16 +30,26 @@ export default function MobileProjectViewer({ projects, activeIndex, onChange })
         <p>projects.eeliya.dev</p>
       </div>
 
-      <motion.img
+      <motion.div
         key={project.id}
-        className="m-browser-shot"
-        src={project.deviceImage}
-        alt={`${project.title} screenshot`}
-        loading="lazy"
         initial={{ opacity: 0, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.26 }}
-      />
+      >
+        {project.liveUrl ? (
+          <a
+            className="m-browser-shot-link"
+            href={project.liveUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Open the ${project.title} live site`}
+          >
+            {screenshot}
+          </a>
+        ) : (
+          screenshot
+        )}
+      </motion.div>
 
       <div className="m-browser-nav">
         <button type="button" onClick={showPrevious} aria-label="Previous project">
