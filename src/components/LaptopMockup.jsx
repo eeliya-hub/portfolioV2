@@ -230,7 +230,6 @@ function TechLaptopScreen() {
             role="tabpanel"
           >
             <div className="chrome-page-heading">
-              <p>Developer Toolkit</p>
               <h3>{activeTab.title}</h3>
               <span>{activeTab.description}</span>
             </div>

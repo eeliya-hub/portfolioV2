@@ -63,6 +63,9 @@ import pulseOsShotEight from '../assets/projects/pulseos/pulseos-8.png';
 import pulseOsShotNine from '../assets/projects/pulseos/pulseos-9.png';
 import pulseOsShotTen from '../assets/projects/pulseos/pulseos-10.png';
 import pulseOsShotEleven from '../assets/projects/pulseos/pulseos-11.png';
+import pulseOsShotTwelve from '../assets/projects/pulseos/pulseos-12.png';
+import pulseOsShotThirteen from '../assets/projects/pulseos/pulseos-13.png';
+import pulseOsShotFourteen from '../assets/projects/pulseos/pulseos-14.png';
 import alumniApiDoc from '../docs/Alumni API.pdf';
 import skyHealthDoc from '../docs/Heath Check.pdf';
 import premPredictorDoc from '../docs/Prem Predictor.pdf';
@@ -103,6 +106,7 @@ const techMap = {
   'react-native-svg': { icon: 'SVG', tone: 'cyan' },
   Vite: { logo: viteLogo, tone: 'gold' },
   'Tailwind CSS': { logo: tailwindLogo, tone: 'cyan' },
+  WebSockets: { icon: 'WS', tone: 'cyan' },
 };
 
 const stack = (items) =>
@@ -235,38 +239,41 @@ export const desktopProjects = [
     name: 'PulseOS',
     category: 'Personal Dashboard',
     label: 'Web App',
-    intro: 'A calm, single-screen command centre that unifies weather, calendar, news, markets, music, and finance.',
+    intro: 'A single-screen command centre for the day — weather, calendar, news, markets, sport, music and travel, under a sky that follows the hour.',
     summary:
-      'A personal command-centre dashboard that pulls the services you check each day — weather, calendar, news, markets, music, and finances — into one calm, single-viewport interface.',
+      'A personal command-centre dashboard that pulls the services you check each day — weather, calendar, news, markets, sport, music and travel — into one single-viewport interface, built around a living background whose colour follows the time of day.',
     description:
-      'A personal dashboard that gathers the many services people check every day into one calm, unscrolling "quiet-glass" surface. Built as a monorepo with a React and Vite frontend and a layered Node.js and Express backend that acts as a secure gateway to a wide range of third-party providers, each isolated behind its own route, controller, and service.',
+      'A personal dashboard that gathers the many services people check every day onto one screen that never scrolls. Every view is composed the same way: a hero set straight on a living sky, a horizon that lands on the same line in every tab, and one full-bleed surface below it divided into columns by hairlines rather than chopped into floating cards. Built as a monorepo with a React and Vite frontend and a layered Node.js and Express backend that acts as a secure gateway to a wide range of third-party providers, each isolated behind its own route, controller and service.',
     overview:
-      'A personal dashboard that gathers the many services people check every day into one calm, unscrolling "quiet-glass" surface. Built as a monorepo with a React and Vite frontend and a layered Node.js and Express backend that acts as a secure gateway to a wide range of third-party providers, each isolated behind its own route, controller, and service.',
+      'A personal dashboard that gathers the many services people check every day onto one screen that never scrolls. Every view is composed the same way: a hero set straight on a living sky, a horizon that lands on the same line in every tab, and one full-bleed surface below it divided into columns by hairlines rather than chopped into floating cards. Built as a monorepo with a React and Vite frontend and a layered Node.js and Express backend that acts as a secure gateway to a wide range of third-party providers, each isolated behind its own route, controller and service.',
     features: [
-      'Single-viewport home surfacing weather, forecast, calendar, next shift, and an app launchpad at a glance.',
-      'Layered Express gateway isolating each provider behind its own route, controller, and service.',
-      'Provider-swappable AI assistant that reads the user\'s live data and acts on it, with caching and hard usage caps.',
+      'A background that carries meaning: sky colours follow the hour, and the Music view lends them the current album\'s palette.',
+      'An assistant that acts rather than answers — an agent loop over the user\'s live data, reachable by typing or by real-time speech over a WebSocket.',
+      'Layered Express gateway isolating each provider behind its own route, controller and service, with rate limiting and hard usage caps that keep it inside free tiers.',
     ],
     highlights: [
-      'Single-viewport home surfacing weather, forecast, calendar, next shift, and an app launchpad at a glance.',
-      'Layered Express gateway isolating each provider behind its own route, controller, and service.',
-      'Provider-swappable AI assistant that reads the user\'s live data and acts on it, with caching and hard usage caps.',
+      'A background that carries meaning: sky colours follow the hour, and the Music view lends them the current album\'s palette.',
+      'An assistant that acts rather than answers — an agent loop over the user\'s live data, reachable by typing or by real-time speech over a WebSocket.',
+      'Layered Express gateway isolating each provider behind its own route, controller and service, with rate limiting and hard usage caps that keep it inside free tiers.',
     ],
-    tech: stack(['JavaScript', 'React', 'Vite', 'Tailwind CSS', 'Node.js', 'Express', 'Firebase', 'REST APIs']),
-    stack: stack(['JavaScript', 'React', 'Vite', 'Tailwind CSS', 'Node.js', 'Express', 'Firebase', 'REST APIs']),
+    tech: stack(['JavaScript', 'React', 'Vite', 'Tailwind CSS', 'Node.js', 'Express', 'WebSockets', 'Firebase', 'REST APIs']),
+    stack: stack(['JavaScript', 'React', 'Vite', 'Tailwind CSS', 'Node.js', 'Express', 'WebSockets', 'Firebase', 'REST APIs']),
     deviceImage: pulseOsDevice,
     gallery: [
-      { src: pulseOsShotOne, alt: 'PulseOS settings panel with name, location, and followed sports teams' },
-      { src: pulseOsShotTwo, alt: 'PulseOS launchpad app picker screenshot' },
-      { src: pulseOsShotThree, alt: 'PulseOS Life Hub with schedule, projects, and daily habits' },
-      { src: pulseOsShotFour, alt: 'PulseOS Markets & News view with live news stream and stock ticker' },
-      { src: pulseOsShotFive, alt: 'PulseOS markets watchlist card with live instrument prices' },
-      { src: pulseOsShotSix, alt: 'PulseOS local news feed screenshot' },
-      { src: pulseOsShotSeven, alt: 'PulseOS sports card showing Premier League standings' },
-      { src: pulseOsShotEight, alt: 'PulseOS sports card showing Formula 1 standings' },
-      { src: pulseOsShotNine, alt: 'PulseOS music player with now playing and search' },
-      { src: pulseOsShotTen, alt: 'PulseOS travel planner with itinerary, packing, and currency' },
-      { src: pulseOsShotEleven, alt: 'PulseOS finance overview with balances, spending trend, and goals' },
+      { src: pulseOsShotOne, alt: 'PulseOS home screen with greeting, upcoming events, forecast and app launcher under a daytime sky' },
+      { src: pulseOsShotTwo, alt: 'PulseOS Launchpad showing installed Mac apps, saved websites and a combined search field' },
+      { src: pulseOsShotThree, alt: 'PulseOS Life Hub with the day\'s schedule, to-dos, habits and project progress' },
+      { src: pulseOsShotFour, alt: 'PulseOS Markets & News with a live television stream, price ticker and headline feed' },
+      { src: pulseOsShotFive, alt: 'PulseOS markets watchlist showing live prices and daily change per instrument' },
+      { src: pulseOsShotSix, alt: 'PulseOS local news feed resolved from the user\'s county' },
+      { src: pulseOsShotSeven, alt: 'PulseOS sport feed showing the Premier League table with the followed club highlighted' },
+      { src: pulseOsShotEight, alt: 'PulseOS sport feed showing the Formula 1 drivers\' championship and the next race' },
+      { src: pulseOsShotNine, alt: 'PulseOS music player playing a track, with the sky taking the album cover\'s colours' },
+      { src: pulseOsShotTen, alt: 'PulseOS travel planner with live flight tracking, a route map, currency and day-by-day itinerary' },
+      { src: pulseOsShotEleven, alt: 'PulseOS AI assistant answering a question about the day from live calendar and weather data' },
+      { src: pulseOsShotTwelve, alt: 'PulseOS voice assistant speaking its answer aloud, with the live weather it just looked up shown beside it' },
+      { src: pulseOsShotThirteen, alt: 'PulseOS voice assistant listening, the waveform tracking the speaker’s voice in real time' },
+      { src: pulseOsShotFourteen, alt: 'PulseOS immersive player: the lyric above a horizon that marks every line of the song, lit by the album’s own colours' },
     ],
     actions: projectActions(pulseOsDoc, 'https://github.com/eeliya-hub/pulseOS'),
   },

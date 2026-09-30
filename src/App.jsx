@@ -338,7 +338,6 @@ function ProjectInfoPanel({ project }) {
     <div className="project-info-panel">
       <section className="project-overview-panel">
         <div className="project-overview-card">
-          <span className="project-type-badge">{project.label}</span>
           <h3>Overview</h3>
           <p>{project.overview}</p>
           <h4>Key Features</h4>
@@ -589,7 +588,7 @@ function Home() {
   return (
     <section
       id="home"
-      className="home-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 sm:px-8 lg:px-12 lg:py-28"
+      className="home-section relative flex min-h-dvh snap-start items-center overflow-hidden px-5 pb-24 sm:px-8 lg:px-12 lg:py-24"
     >
       <div className="mobile-static-phone">
         <IPhoneMockup activeSection="home" staticMode />
@@ -603,13 +602,11 @@ function Home() {
       >
         <div className="hidden lg:block" aria-hidden="true" />
         <motion.div className="home-copy max-w-4xl text-center lg:text-left" variants={sectionItem}>
-          <p className="mb-6 font-display text-xs font-semibold uppercase tracking-[0.34em] text-cyan-glow">
-            Software Developer
-          </p>
           <h1 className="whitespace-nowrap text-[clamp(2.1rem,9.8vw,6.4rem)] font-semibold leading-none text-frost">
             Eeliya Nayeri
           </h1>
-          <p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-muted sm:text-xl lg:mx-0">
+          <p className="mt-3 text-lg font-medium text-frost/70 sm:text-xl">Software developer</p>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl lg:mx-0">
             Computer Science graduate building clean full-stack apps, AI-powered ideas, and practical tools
             inspired by travel and aviation.
           </p>
@@ -634,7 +631,7 @@ function Home() {
               href={cvPdf}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-cyan-glow/35 bg-cyan-glow/10 px-7 text-sm font-semibold text-frost transition hover:border-cyan-glow/65 hover:bg-cyan-glow/15 focus:outline-none focus:ring-2 focus:ring-cyan-glow"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/15 px-7 text-sm font-semibold text-frost transition hover:border-white/35 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-cyan-glow"
             >
               <HeroButtonIcon type="cv" />
               CV
@@ -661,14 +658,8 @@ function About() {
         variants={sectionContainer}
       >
         <div className="about-copy max-w-3xl lg:max-w-[34rem] xl:max-w-[42rem]">
-          <motion.p
-            className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
-            variants={sectionItem}
-          >
-            My Personal Story
-          </motion.p>
           <motion.h2
-            className="max-w-4xl text-4xl font-semibold leading-tight text-frost sm:text-6xl lg:text-7xl"
+            className="max-w-4xl text-4xl font-semibold leading-tight text-frost sm:text-5xl lg:text-6xl"
             variants={sectionItem}
           >
             About Me
@@ -738,7 +729,6 @@ function Projects({
           variants={sectionContainer}
         >
           <motion.div className="project-title-block" variants={sectionItem}>
-            <p className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Mobile Project</p>
             <h2>{mobileProject.title}</h2>
             <p>{mobileProject.summary}</p>
             <ProjectActions project={mobileProject} onGallery={onGallery} className="project-action-row-left" />
@@ -772,7 +762,6 @@ function Projects({
           variants={sectionContainer}
         >
           <motion.div className="project-title-block project-desktop-title" variants={sectionItem}>
-            <p className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Desktop Project</p>
             <div className="project-title-heading-row">
               <h2>{desktopProject.title}</h2>
             </div>
@@ -829,7 +818,6 @@ function TechStack({ isCompact }) {
         variants={sectionContainer}
       >
         <motion.div className="tech-copy" variants={sectionItem}>
-          <p className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90">Tech Stack</p>
           <h2 className="text-4xl font-semibold leading-tight text-frost sm:text-5xl lg:text-6xl">
             Developer Toolkit
           </h2>
@@ -854,7 +842,6 @@ function TechStack({ isCompact }) {
 
 function Journey({ activeIndex = 0, onSelect, isCompact }) {
   const activeEvent = journeyTimeline[activeIndex];
-  const total = journeyTimeline.length;
 
   return (
     <section
@@ -876,14 +863,8 @@ function Journey({ activeIndex = 0, onSelect, isCompact }) {
           viewport={viewportOnce}
           variants={sectionContainer}
         >
-          <motion.p
-            className="mb-5 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
-            variants={sectionItem}
-          >
-            The Roadmap
-          </motion.p>
           <motion.h2
-            className="max-w-2xl text-4xl font-semibold leading-tight text-frost sm:text-5xl"
+            className="max-w-2xl text-4xl font-semibold leading-tight text-frost sm:text-5xl lg:text-6xl"
             variants={sectionItem}
           >
             My Journey.
@@ -910,14 +891,10 @@ function Journey({ activeIndex = 0, onSelect, isCompact }) {
                     transition={{ duration: 0.28 }}
                   >
                     <div className="journey-detail-meta">
-                      <span className="journey-detail-step">
-                        {String(activeIndex + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
-                      </span>
                       <span className="journey-detail-date">{activeEvent.date}</span>
                     </div>
                     <h3 className="journey-detail-title">{activeEvent.title}</h3>
                     <p className="journey-detail-text">{activeEvent.detail}</p>
-                    <code className="journey-detail-cmd">$ {activeEvent.command}</code>
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
@@ -1067,14 +1044,8 @@ function Contact() {
         variants={sectionContainer}
       >
         <div className="contact-head">
-          <motion.p
-            className="mb-4 font-display text-xs font-semibold uppercase tracking-[0.32em] text-cyan-glow/90"
-            variants={sectionItem}
-          >
-            Contact
-          </motion.p>
           <motion.h2
-            className="max-w-3xl text-4xl font-semibold leading-tight text-frost sm:text-5xl"
+            className="max-w-3xl text-4xl font-semibold leading-tight text-frost sm:text-5xl lg:text-6xl"
             variants={sectionItem}
           >
             Get in Touch.

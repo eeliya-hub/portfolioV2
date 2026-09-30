@@ -54,7 +54,6 @@ export default function MobileJourneyTimeline({ activeIndex = 0, onSelect }) {
                   <div className="m-journey-body-inner">
                     <h3>{event.title}</h3>
                     <p>{event.detail}</p>
-                    <code>$ {event.command}</code>
                   </div>
                 </motion.div>
               ) : null}
