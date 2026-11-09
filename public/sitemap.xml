@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- One page, one URL. The chapters are fragments of it, not routes: a
+     sitemap entry for /work/ or /about/ would be a 404 handed to a crawler. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://eeliyanayeri.com/</loc>
-    <lastmod>2026-06-30</lastmod>
     <priority>1.0</priority>
   </url>
 </urlset>

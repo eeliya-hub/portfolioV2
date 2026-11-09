@@ -5,10 +5,22 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default [
-  { ignores: ['dist'] },
-  js.configs.recommended,
   {
-    files: ['**/*.{js,jsx}'],
+    ignores: [
+      'dist',
+      'node_modules',
+      // Tooling that ships with the installed skills, not this project's code.
+      '.claude',
+      // Generated: the responsive WebP sets and the per-route HTML entries.
+      'src/media',
+      'src/assets',
+    ],
+  },
+  js.configs.recommended,
+
+  // Browser code.
+  {
+    files: ['src/**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2022,
       globals: globals.browser,
@@ -17,20 +29,25 @@ export default [
         sourceType: 'module',
       },
     },
-    settings: {
-      react: { version: 'detect' },
-    },
-    plugins: {
-      react,
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
+    settings: { react: { version: 'detect' } },
+    plugins: { react, 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     rules: {
       ...react.configs.recommended.rules,
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react/prop-types': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
+  },
+
+  // Build scripts and config: Node, plus the browser globals that run inside
+  // page.evaluate() in the screenshot script.
+  {
+    files: ['scripts/**/*.mjs', '*.config.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: { ...globals.node, ...globals.browser },
+      parserOptions: { sourceType: 'module' },
     },
   },
 ];

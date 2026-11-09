@@ -1,44 +1,53 @@
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Eeliya Nayeri — Software Developer | Official Site</title>
+    <title>Eeliya Nayeri — Software Developer</title>
     <meta
       name="description"
-      content="Eeliya Nayeri (ایلیا نایری) is a UK-based software developer and First Class Computer Science graduate from the University of Westminster. He builds full-stack, mobile, and web applications focused on AI, travel technology, and aviation."
+      content="Eeliya Nayeri (ایلیا نیری) is a London-based software developer and First Class Computer Science graduate of the University of Westminster. He builds full-stack, mobile and web applications across AI, travel technology and aviation."
     />
     <meta name="author" content="Eeliya Nayeri" />
     <meta
       name="keywords"
-      content="Eeliya, Eeliya Nayeri, ایلیا, ایلیا نایری, نایری, software developer, full-stack developer, University of Westminster, portfolio"
+      content="Eeliya, Eeliya Nayeri, ایلیا, ایلیا نیری, نیری, software developer, full-stack developer, University of Westminster, portfolio"
     />
     <link rel="canonical" href="https://eeliyanayeri.com/" />
 
-    <!-- Type: Manrope throughout. Inter was named in the CSS stack for a long
-         time but never actually loaded, so the site fell back to the system UI
-         font. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-    />
+    <!-- Set the edition before first paint, so a night visitor never sees the
+         ivory flash past. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('edition');
+          if (t !== 'day' && t !== 'night') {
+            t = matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'day';
+        }
+      })();
+    </script>
 
-    <!-- Icons / favicon (referenced so it can appear in Google results) -->
+    <link rel="preload" href="/fonts/archivo-var-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/markazi-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin />
+
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#14161c" />
+    <meta name="theme-color" content="#F1E9D9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121010" media="(prefers-color-scheme: dark)" />
 
-    <!-- Open Graph (uses the profile type so gender is explicit) -->
     <meta property="og:title" content="Eeliya Nayeri | Software Developer" />
     <meta
       property="og:description"
-      content="Eeliya Nayeri is a UK-based software developer and First Class Computer Science graduate. He builds full-stack, mobile, and web applications."
+      content="London-based software developer and First Class Computer Science graduate. Seven finished projects across mobile, web and backend."
     />
     <meta property="og:type" content="profile" />
     <meta property="profile:first_name" content="Eeliya" />
@@ -50,16 +59,15 @@
     <meta property="og:locale" content="en_GB" />
     <meta property="og:locale:alternate" content="fa_IR" />
 
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Eeliya Nayeri | Software Developer" />
     <meta
       name="twitter:description"
-      content="UK-based software developer and First Class Computer Science graduate. He builds full-stack, mobile, and web apps."
+      content="London-based software developer and First Class Computer Science graduate. Seven finished projects across mobile, web and backend."
     />
     <meta name="twitter:image" content="https://eeliyanayeri.com/appicon.png" />
 
-    <!-- Person entity: establishes the name (English + Persian) and that Eeliya is male/he -->
+    <!-- Person entity: the name in English and Persian, and that Eeliya is he/him -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -71,7 +79,7 @@
         "gender": "Male",
         "pronouns": "he/him",
         "jobTitle": "Software Developer",
-        "description": "Eeliya Nayeri is a UK-based male software developer and First Class Computer Science graduate from the University of Westminster. He builds full-stack, mobile, and web applications.",
+        "description": "Eeliya Nayeri is a London-based software developer and First Class Computer Science graduate from the University of Westminster. He builds full-stack, mobile and web applications.",
         "url": "https://eeliyanayeri.com",
         "image": "https://eeliyanayeri.com/image.png",
         "alumniOf": {
@@ -86,34 +94,31 @@
           "Artificial Intelligence",
           "Travel Technology",
           "Aviation",
+          "React",
+          "React Native",
           "Flutter",
           "Dart",
           "Swift",
           "SwiftUI",
-          "React",
           "Node.js",
           "Express",
           "Firebase",
           "Django",
+          "Python",
           "SQL",
           "JavaScript",
-          "HTML",
-          "CSS"
+          "TypeScript"
         ],
-        "sameAs": [
-          "https://www.linkedin.com/in/eeliya",
-          "https://github.com/eeliya-hub"
-        ]
+        "sameAs": ["https://www.linkedin.com/in/eeliya", "https://github.com/eeliya-hub"]
       }
     </script>
 
-    <!-- WebSite entity: ties the site name (English + Persian) to the domain -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Eeliya Nayeri",
-        "alternateName": "ایلیا نایری",
+        "alternateName": "ایلیا نیری",
         "url": "https://eeliyanayeri.com/"
       }
     </script>
@@ -121,7 +126,38 @@
     <meta name="google-site-verification" content="xku-436tZvunmpdLc4gHRnmXHdfJgX1_dbyJ6KcFcM0" />
   </head>
   <body>
+    <!--
+      THESIS: This page is a naqsheh — the squared cartoon a Persian weaver
+      works from, which is a colour-indexed bitmap five centuries before the
+      bitmap. Ornament is never wallpaper; it is the grid resolving into a
+      figure. Refuses both the dark-mode dev portfolio and the parchment-and-
+      serif editorial default already on this domain.
+      OWN-WORLD: ivory parchment / lacquer black in two art-directed editions;
+      madder crimson as FIELD not accent; terracotta and sand; Archivo width
+      axis for display, Markazi for copy, Vazirmatn for Persian. No radius
+      anywhere. Controls are double-ruled cartouches that ink in from the foot.
+      STORY: a name at architectural scale, a Persian signature written across
+      it, seven openable files, a crimson close.
+      FIRST VIEWPORT: EELIYA and NAYERI set to opposite margins at display
+      scale, the portrait standing between them with the head clear above the
+      type, ایلیا نیری signed in madder in the open quarter under the first
+      line; actions bottom-left, status bottom-right.
+      SIGNATURE INTERACTION: the selvedge — a woven edge down both margins
+      that is also the progress indicator. Each chapter owns a station;
+      arriving strikes its shamsa onto the ghost drawn on the cartoon.
+      FORM: naqsheh, candidate 7 of the grounded list. Seed b052b99d.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with
+      the finish review, the verdict, DESIGN.md, and every shipping raster
+      carrying its provenance.
+    -->
     <div id="root"></div>
+    <noscript>
+      <p style="padding: 2rem; font-family: Georgia, serif">
+        Eeliya Nayeri — software developer, London. This site needs JavaScript to run. The CV is at
+        <a href="/docs/eeliya-nayeri-cv.pdf">/docs/eeliya-nayeri-cv.pdf</a>, the code at
+        <a href="https://github.com/eeliya-hub">github.com/eeliya-hub</a>.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -1,0 +1,486 @@
+{
+  "alumni-api/alumni-1": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "alumni-api/alumni-2": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "alumni-api/alumni-3": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "personal/amf1": {
+    "width": 1280,
+    "height": 920,
+    "aspect": 1.3913,
+    "widths": [
+      480,
+      960,
+      1280
+    ]
+  },
+  "personal/founder-matcha": {
+    "width": 1100,
+    "height": 1100,
+    "aspect": 1,
+    "widths": [
+      480,
+      960,
+      1100
+    ]
+  },
+  "personal/graduation": {
+    "width": 1536,
+    "height": 1900,
+    "aspect": 0.8084,
+    "widths": [
+      480,
+      960,
+      1440,
+      1536
+    ]
+  },
+  "pitwall/1": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pitwall/2": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pitwall/3": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "portrait/eeliya-cutout": {
+    "width": 1118,
+    "height": 1030,
+    "aspect": 1.0854,
+    "widths": [
+      480,
+      960,
+      1118
+    ]
+  },
+  "prem-predictor/prem-predictor-0": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.5997,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-1": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6003,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-2": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-3": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.5997,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-4": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6006,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-5": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-6": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6006,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-7": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-8": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.5994,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-9": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6003,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-1": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-10": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-11": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-12": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-13": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-14": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-2": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-3": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-4": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-5": {
+    "width": 870,
+    "height": 1198,
+    "aspect": 0.7262,
+    "widths": [
+      480,
+      870
+    ]
+  },
+  "pulseos/pulseos-6": {
+    "width": 860,
+    "height": 1200,
+    "aspect": 0.7167,
+    "widths": [
+      480,
+      860
+    ]
+  },
+  "pulseos/pulseos-7": {
+    "width": 876,
+    "height": 1208,
+    "aspect": 0.7252,
+    "widths": [
+      480,
+      876
+    ]
+  },
+  "pulseos/pulseos-8": {
+    "width": 866,
+    "height": 1202,
+    "aspect": 0.7205,
+    "widths": [
+      480,
+      866
+    ]
+  },
+  "pulseos/pulseos-9": {
+    "width": 1920,
+    "height": 1200,
+    "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "skyhealth/skyhealth-1": {
+    "width": 1920,
+    "height": 916,
+    "aspect": 2.096,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "skyhealth/skyhealth-2": {
+    "width": 1920,
+    "height": 908,
+    "aspect": 2.1144,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "skyhealth/skyhealth-3": {
+    "width": 1920,
+    "height": 904,
+    "aspect": 2.1243,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "skyhealth/skyhealth-4": {
+    "width": 1486,
+    "height": 734,
+    "aspect": 2.0245,
+    "widths": [
+      480,
+      960,
+      1440,
+      1486
+    ]
+  },
+  "traverse/traverse-1": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "traverse/traverse-2": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "traverse/traverse-3": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "traverse/traverse-4": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "traverse/traverse-5": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "weather/weather-1": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "weather/weather-2": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  }
+}

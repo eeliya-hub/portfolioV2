@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-color",
+        "value": "#000",
+        "createdAt": "2026-11-02T20:00:29.023Z",
+        "reason": "Claude: every occurrence is inside mask-image, where #000 is the alpha carrier that makes the mask opaque, never a painted colour. Verified at chapters.css L43 (chapter join band), L1064 (portrait crop dissolve), L1776 (running timeline bar)."
+      }
+    ]
+  }
+}
