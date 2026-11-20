@@ -1,220 +1,285 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
-import ChapterHead from '../components/ChapterHead.jsx';
-import Icon from '../components/Icon.jsx';
-import { chronology, chronologyKinds, chronologyRange } from '../data/journey.js';
+import Announce from '../components/Announce.jsx';
 import { folio } from '../lib/chapters.js';
-
-const SPAN = chronologyRange.to - chronologyRange.from;
-const at = (year) => ((year - chronologyRange.from) / SPAN) * 100;
-const until = (entry) => entry.to ?? chronologyRange.to;
-
-// One tick per whole year inside the range.
-const YEARS = [];
-for (let year = Math.ceil(chronologyRange.from); year <= Math.floor(chronologyRange.to); year += 1) {
-  YEARS.push(year);
-}
-
-// The span the chapter actually covers, taken from the entries rather than
-// from the axis — the axis is padded at both ends so the bars are not flush
-// against it, and that padding is nobody's history.
-const FIRST = Math.floor(Math.min(...chronology.map((entry) => entry.from)));
-const LAST = Math.floor(Math.max(...chronology.map(until)));
-
-// The order the leaf steps through and numbers by: when each one began. The
-// lanes group by kind, but "how it went" is read in time.
-const SEQUENCE = [...chronology].sort((a, b) => a.from - b.from);
-
-const LANES = chronologyKinds.map((lane) => ({
-  ...lane,
-  entries: SEQUENCE.filter((entry) => entry.kind === lane.kind),
-}));
-
-// The order the rows stand in on screen, lane by lane. The arrow keys walk
-// this one, because they are spatial; Earlier and Later walk SEQUENCE,
-// because they are about time.
-const DISPLAY = LANES.flatMap((lane) => lane.entries);
-
-const KIND = Object.fromEntries(chronologyKinds.map((lane) => [lane.kind, lane.title]));
-
-// Everything that was running at the same time as an entry, worked out from
-// the dates — the overlaps the chart draws, said in words.
-const alongside = (entry) =>
-  SEQUENCE.filter(
-    (other) => other.id !== entry.id && other.from < until(entry) && entry.from < until(other),
-  );
+import { chronology } from '../data/journey.js';
 
 /**
- * The chronology, drawn as a loom.
+ * 03 — the route, which folds into the record.
  *
- * The years are the warp — fixed threads running down the chart — and each
- * chapter of the life is a weft bar crossing them, in two lanes, Education
- * and Experience, the way the CV divides them. That is the whole reason this
- * is a chart rather than a list: six years of retail run underneath school,
- * the degree and every placement, and a stacked list of dates hides exactly
- * that. Nothing here is positioned by hand; every bar is struck from the
- * dates in the data.
+ * The section is given several screens of height and its viewport is pinned;
+ * the scroll it absorbs becomes travel, and the whole chronology rides past
+ * horizontally on a single madder thread. Every chapter of the record hangs
+ * from that one thread at the date it BEGAN — education above, work below —
+ * and nothing is drawn to say where it ended. A bar spanning start to end
+ * made the chart a Gantt nobody asked for; the point of this chapter is when
+ * each thing started and what order they came in, and the full span is given
+ * in words where there is room to read it.
  *
- * Each row names the role and the organisation outright, and the leaf beside
- * the chart carries the rest. Choosing is a click, never a hover — a chart
- * that rewrote the leaf as the pointer crossed it made the reader steer
- * around it to read anything — and the arrow keys walk the rows.
+ * The pinned leg has four phases, all plain arithmetic on the one number the
+ * loom engine writes:
+ *
+ *   travel 0 → 0.56     the ride: the thread crosses the glass end to end
+ *   travel 0.56 → 0.82  the fold: the cards shed, and then the track reels
+ *                       in — contracting to the width of the glass and
+ *                       lifting to the head of the frame, so what is left is
+ *                       an axis of the same knots and the same years. The
+ *                       reader watches eight years of track compress into
+ *                       one line rather than cross-fade into a different
+ *                       drawing of it.
+ *   travel 0.80 → 0.94  the unroll: the roll writes itself out beneath the
+ *                       axis, a row at a time, each wiping in from the left.
+ *   travel 0.94 → 1     the hold: axis and roll, standing together.
+ *
+ * So the chapter is read twice — once as time, once as a roll — and the
+ * second reading keeps the first above it instead of replacing it. The two
+ * are tied together by number: every knot on the axis is numbered and so is
+ * every row of the roll, which means a reader can see where any entry sits
+ * in the eight years without doing anything at all. Pointing at a row lights
+ * its knot on top of that, for anyone who would rather point than read a
+ * figure.
+ *
+ * For a reader who asked for stillness the pin is released: the thread
+ * becomes a native horizontal scroller and the record simply stands under
+ * it, both at once, neither on a trigger.
  */
+
+/* --- The axis ---------------------------------------------------------------
+   Time is drawn to a squeezed scale rather than a linear one. Three years
+   pass between the GCSEs and the A-Levels with nothing to put on the thread,
+   and a linear axis spends a third of its length drawing that nothing — the
+   reader scrolls through an empty quarter of the chapter to reach the half
+   where everything happens. So each calendar year is given a full share of
+   the track if something begins in it and a quarter share if nothing does.
+
+   The squeeze is declared, not hidden: the years stay labelled at their own
+   positions, and every compressed run is struck through with a break mark,
+   the way a broken axis is marked on a printed chart. A reader who looks can
+   see exactly where the scale changes and by how much.                     */
+
+/** The share of the track a year with nothing in it is given. */
+const QUIET = 0.26;
+
+const FROM = Math.floor(Math.min(...chronology.map((entry) => entry.from)));
+const TO = Math.ceil(Math.max(...chronology.map((entry) => entry.from)));
+
+/** One weight per [year, year + 1) interval: 1 if occupied, QUIET if not. */
+const WEIGHTS = [];
+for (let year = FROM; year < TO; year += 1) {
+  WEIGHTS.push(chronology.some((entry) => Math.floor(entry.from) === year) ? 1 : QUIET);
+}
+
+const TOTAL = WEIGHTS.reduce((sum, weight) => sum + weight, 0);
+
+/** Cumulative share of the track at the start of each year. */
+const OFFSET = [0];
+for (const weight of WEIGHTS) OFFSET.push(OFFSET[OFFSET.length - 1] + weight / TOTAL);
+
+/** A decimal year → its share of the squeezed axis, 0 → 1. */
+const share = (year) => {
+  const i = Math.min(WEIGHTS.length - 1, Math.max(0, Math.floor(year) - FROM));
+  return OFFSET[i] + ((year - (FROM + i)) * WEIGHTS[i]) / TOTAL;
+};
+
+/** …and into 3–92% of the track, so the ends stand clear and a card fits. */
+const at = (year) => `${(3 + share(year) * 89).toFixed(3)}%`;
+
+/**
+ * The labelled ticks. A year is labelled only if it touches a year that was
+ * given a full share — inside a squeezed run the ticks would stand a few
+ * pixels apart and their labels would simply overprint each other, and the
+ * break mark says what is there instead.
+ *
+ * `edge` marks the last label before a break. On a phone the folded axis is
+ * one screen wide and even the labels that survive are too close, so those
+ * two fade out as the axis contracts; the labelled years that remain are
+ * the ones the chronology actually resumes on.
+ */
+const YEARS = [];
+for (let year = FROM; year < TO; year += 1) {
+  const i = year - FROM;
+  if (WEIGHTS[i - 1] !== 1 && WEIGHTS[i] !== 1) continue;
+  YEARS.push({ year, edge: WEIGHTS[i] !== 1 });
+}
+
+/** Every maximal run of squeezed years, for the break marks. */
+const BREAKS = [];
+for (let i = 0; i < WEIGHTS.length; i += 1) {
+  if (WEIGHTS[i] === 1) continue;
+  let end = i;
+  while (end + 1 < WEIGHTS.length && WEIGHTS[end + 1] !== 1) end += 1;
+  BREAKS.push({ id: FROM + i, mid: FROM + (i + end + 1) / 2 });
+  i = end;
+}
+
+/**
+ * The span the chapter actually covers, taken from the entries themselves
+ * rather than from the padded axis — the padding is nobody's history. An
+ * entry still running contributes only its start: the chronology reaches as
+ * far as the latest date it can point at, and inventing a present date for
+ * it would be inventing a fact.
+ */
+const FIRST = Math.floor(Math.min(...chronology.map((entry) => entry.from)));
+const LAST = Math.floor(
+  Math.max(...chronology.flatMap((entry) => [entry.from, entry.to ?? 0])),
+);
+
+/* --- The entries ---------------------------------------------------------- */
+
+/** Chronological: the order they ride past, and the order a reader walks. */
+const SEQUENCE = [...chronology].sort((a, b) => a.from - b.from);
+
+const KINDS = { education: 'Education', experience: 'Experience' };
+
+/**
+ * The date a chapter began, taken off the front of the period rather than
+ * written down a second time — `period` stays the one copy of the dates.
+ * 'Sep 2018 – Jul 2021' → 'Sep 2018'; 'Jul 2022' → 'Jul 2022'.
+ */
+const began = (period) => period.split('–')[0].trim();
+
+/**
+ * The first sentence of the entry's own detail, which is what a card has
+ * room for. Taken from the copy rather than written a second time, so the
+ * card and the record can never say different things — the card gets the
+ * opening claim, the record gets the whole of it.
+ */
+const brief = (detail) => {
+  const stop = detail.indexOf('. ');
+  return stop < 0 ? detail : detail.slice(0, stop + 1);
+};
+
+function Station({ entry, index, lit }) {
+  return (
+    <article
+      className="station"
+      data-kind={entry.kind}
+      data-side={index % 2 ? 'under' : 'over'}
+      data-lit={lit ? 'true' : undefined}
+      style={{ '--at': at(entry.from), '--i': index }}
+    >
+      <span className="station__drop" aria-hidden="true" />
+      <span className="station__gem" aria-hidden="true" />
+      {/* The knot's number, and the thing that survives the shed: it is how
+          the roll below finds its way back onto the axis. It sits on the
+          empty side of the thread — the side this entry's card is NOT on —
+          and since the stations alternate sides, two knots close enough to
+          collide always carry their numbers on opposite sides. */}
+      <span className="station__no figures" aria-hidden="true">
+        {folio(index + 1)}
+      </span>
+      <div className="station__card">
+        <p className="station__when figures">{began(entry.period)}</p>
+        <h3 className="station__role">{entry.role}</h3>
+        {entry.org ? <p className="station__org">{entry.org}</p> : null}
+        <p className="station__brief">{brief(entry.detail)}</p>
+      </div>
+    </article>
+  );
+}
+
 export function Journey() {
-  const [id, setId] = useState(SEQUENCE[SEQUENCE.length - 1].id);
-  const rows = useRef({});
-
-  const entry = SEQUENCE.find((row) => row.id === id);
-  const position = SEQUENCE.indexOf(entry);
-  const concurrent = alongside(entry);
-
-  // Earlier and Later. They stop at both ends rather than coming round: the
-  // earliest thing in a life is not what comes after the latest.
-  const step = (next) => setId(SEQUENCE[Math.min(Math.max(next, 0), SEQUENCE.length - 1)].id);
-
-  // Up and down the rows as they stand on screen. Selection and focus move
-  // together, or the ring is left on a row the leaf no longer describes.
-  const walk = (from, by) => {
-    const target = DISPLAY[Math.min(Math.max(DISPLAY.indexOf(from) + by, 0), DISPLAY.length - 1)];
-    setId(target.id);
-    rows.current[target.id]?.focus();
-  };
+  // Which row the pointer is on, so its knot can light on the axis above it.
+  // Decoration, and only decoration: nothing is reachable through it and the
+  // record reads the same whether a pointer exists or not.
+  const [lit, setLit] = useState(-1);
 
   return (
-    <section className="chapter chapter--sand chapter--fit" id="journey" aria-labelledby="journey-heading">
+    <section className="chapter chapter--sand journey" id="journey" aria-labelledby="journey-heading">
       <div className="chapter__inner">
-        <ChapterHead id="journey" figure={`${FIRST} – ${LAST}`} />
+        <Announce id="journey" figure={`${FIRST} – ${LAST}`} />
+      </div>
 
-        <div className="journey">
-          <div className="loom reveal">
-            {/* The warp, and the band of it the chosen entry spans. Shared by
-                every lane, so a year and the bars under it are measured
-                against exactly one track. */}
-            <div className="loom__warp" aria-hidden="true">
-              <span
-                className="loom__span"
-                style={{
-                  '--a': `${at(entry.from)}%`,
-                  '--s': Math.max(at(until(entry)) - at(entry.from), 0.9) / 100,
-                }}
-              />
-              {YEARS.map((year) => (
-                <span className="warp" key={year} style={{ '--at': `${at(year)}%` }}>
-                  <span className="warp__year figures">{year}</span>
-                  <span className="warp__thread" />
-                </span>
-              ))}
+      <div className="route" data-loom="travel">
+        <div className="route__pin">
+          {/* The full view names itself, above the axis it is read under.
+              By the time it is read the band's announcement is two screens
+              back up the leg, so without this the reader arrives at a ruled
+              table with nothing saying what it is a table of. It arrives on
+              the unroll like everything else in the full view; every figure
+              in it is derived, never written. */}
+          <header className="route__head">
+            <h3 className="route__title">The full record</h3>
+            <p className="route__sub">
+              All my academic and professional experiences since {FIRST}.
+            </p>
+          </header>
+
+          {/* The ride, which becomes the axis. Drawn from the same data as
+              the record below and kept from the screen reader, which gets
+              the record and only the record. */}
+          <div className="route__ride" aria-hidden="true">
+            <div className="route__window">
+              <div className="route__track">
+                <div className="route__thread">
+                  <span className="route__line" />
+
+                  {YEARS.map(({ year, edge }, index) => (
+                    <span
+                      className="route__year"
+                      key={year}
+                      data-edge={edge ? 'true' : undefined}
+                      data-end={index === 0 ? 'first' : index === YEARS.length - 1 ? 'last' : undefined}
+                      style={{ '--at': at(year) }}
+                    >
+                      <span className="route__tick" />
+                      <span className="route__date figures">{year}</span>
+                    </span>
+                  ))}
+
+                  {/* Where the scale is squeezed, struck as a break. */}
+                  {BREAKS.map((gap) => (
+                    <span className="route__break" key={gap.id} style={{ '--at': at(gap.mid) }} />
+                  ))}
+                </div>
+
+                {SEQUENCE.map((entry, index) => (
+                  <Station key={entry.id} entry={entry} index={index} lit={lit === index} />
+                ))}
+              </div>
             </div>
 
-            {LANES.map((lane) => (
-              <div className="loom__lane" key={lane.kind}>
-                <p className="loom__kind label">{lane.title}</p>
-                <ul className="loom__rows">
-                  {lane.entries.map((row) => {
-                    const start = at(row.from);
-                    const end = at(until(row));
-                    return (
-                      <li key={row.id}>
-                        <button
-                          type="button"
-                          className="weft"
-                          data-kind={row.kind}
-                          aria-current={row.id === id ? 'true' : undefined}
-                          aria-controls="journey-leaf"
-                          ref={(node) => {
-                            rows.current[row.id] = node;
-                          }}
-                          onClick={() => setId(row.id)}
-                          onKeyDown={(event) => {
-                            const by = { ArrowDown: 1, ArrowUp: -1 }[event.key];
-                            if (by) {
-                              event.preventDefault();
-                              walk(row, by);
-                            }
-                          }}
-                          data-cursor="open"
-                          data-cursor-label="Read"
-                          style={{ '--i': DISPLAY.indexOf(row) }}
-                        >
-                          <span className="weft__who">
-                            <span className="weft__role">{row.role}</span>
-                            {row.org ? <span className="weft__org">{row.org}</span> : null}
-                          </span>
-                          <span className="weft__track">
-                            <span
-                              className="weft__bar"
-                              data-running={row.to === null ? 'true' : undefined}
-                              style={{ '--a': `${start}%`, '--w': `${Math.max(end - start, 0.9)}%` }}
-                            />
-                          </span>
-                          <span className="visually-hidden">{`, ${row.period}`}</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
+            <p className="route__hint label">Keep scrolling: the thread runs sideways</p>
           </div>
 
-          <article className="leaf reveal" style={{ '--i': 1 }} id="journey-leaf" aria-live="polite">
-            <div className="leaf__swap" key={entry.id}>
-              <h3 className="leaf__role">{entry.role}</h3>
-              {entry.org ? <p className="leaf__org">{entry.org}</p> : null}
-              <p className="leaf__when">
-                <span className="figures">{entry.period}</span>
-                <span className="leaf__kind">{KIND[entry.kind]}</span>
-              </p>
-              <p className="leaf__text">{entry.detail}</p>
-
-              {concurrent.length ? (
-                <div className="leaf__with">
-                  <p className="leaf__with-label label">At the same time</p>
-                  <ul className="leaf__chips">
-                    {concurrent.map((other) => (
-                      <li key={other.id}>
-                        <button
-                          type="button"
-                          className="chip"
-                          onClick={() => setId(other.id)}
-                          data-cursor="control"
-                        >
-                          {other.org ?? other.role}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
+          {/* The roll: everything, ruled, under the axis it came off. This is
+              the chapter's real content — the ride above is drawn from the
+              same data and kept from the screen reader, which gets the roll
+              and only the roll. Every cell is a direct child of its row, so
+              one grid can set four columns on a desk and two on a phone
+              without the markup changing underneath it. */}
+          <div className="roll" onPointerLeave={() => setLit(-1)}>
+            <div className="roll__head" aria-hidden="true">
+              <span className="label">When</span>
+              <span className="label">What</span>
+              <span className="label">Where</span>
+              <span className="label">What it was</span>
             </div>
 
-            <div className="leaf__foot">
-              <p className="leaf__no figures">
-                {folio(position + 1)}
-                <span className="leaf__of"> / {folio(SEQUENCE.length)}</span>
-              </p>
-              <div className="leaf__move">
-                <button
-                  type="button"
-                  className="iconbtn"
-                  onClick={() => step(position - 1)}
-                  disabled={position === 0}
-                  aria-label="Earlier"
+            <ol className="roll__rows">
+              {SEQUENCE.map((entry, index) => (
+                <li
+                  className="roll__row"
+                  data-kind={entry.kind}
+                  data-lit={lit === index ? 'true' : undefined}
+                  style={{ '--i': index }}
+                  key={entry.id}
+                  onPointerEnter={() => setLit(index)}
                 >
-                  <Icon name="chevronLeft" />
-                </button>
-                <button
-                  type="button"
-                  className="iconbtn"
-                  onClick={() => step(position + 1)}
-                  disabled={position === SEQUENCE.length - 1}
-                  aria-label="Later"
-                >
-                  <Icon name="chevronRight" />
-                </button>
-              </div>
-            </div>
-          </article>
+                  <p className="roll__when figures">
+                    <span className="roll__no" aria-hidden="true">
+                      {folio(index + 1)}
+                    </span>
+                    {entry.period}
+                  </p>
+                  <h3 className="roll__role">{entry.role}</h3>
+                  <p className="roll__kind label">{KINDS[entry.kind]}</p>
+                  {entry.org && <p className="roll__org">{entry.org}</p>}
+                  <p className="roll__detail">{entry.detail}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       </div>
     </section>

@@ -19,7 +19,7 @@ export const profile = {
 
   // Read in under ten seconds, directly under the name.
   standfirst:
-    'I build finished products — mobile, web and backend — and each one here is open to inspect: a live deployment, a public repository, or a written case study.',
+    'I build finished products across mobile, web and backend, and each one here is open to inspect: a live deployment, a public repository, or a written case study.',
 
   // The about page's opening line. Every clause of it restates bio[0] and
   // the credentials below — it says nothing the longer copy does not
@@ -30,7 +30,7 @@ export const profile = {
   // src/styles/chapters.css. Widen that and it takes fewer lines; narrow it
   // and it takes more.
   blurb:
-    'First Class Computer Science graduate, working across mobile, web and backend — most interested in where a system stops being a diagram and starts being something a person can use.',
+    'First Class Computer Science graduate, working across mobile, web and backend, and most interested in where a system stops being a diagram and starts being something a person can use.',
 
   bio: [
     'I am a software developer and a First Class Computer Science graduate of the University of Westminster. I work across mobile, web and backend, and I care most about the part of the job where a system stops being a diagram and starts being something a person can use.',
@@ -38,26 +38,26 @@ export const profile = {
     'I am open to graduate roles, internships, junior positions, freelance builds and collaboration.',
   ],
 
-  // `icon` names a glyph in src/components/Icon.jsx. It lives here so a row
-  // and its mark cannot drift apart.
+  // Each row carries a label, the matter of record itself, and the line that
+  // qualifies it. There is no `icon` any more: 01 rules these as a ledger,
+  // and a ledger does not have a mark in the margin of every line — the four
+  // that were here were four more figures competing with the ornament the
+  // chapter is actually about.
   credentials: [
     {
       label: 'Degree',
       value: 'BSc (Hons) Computer Science',
       detail: 'First Class Honours',
-      icon: 'degree',
     },
     {
       label: 'Institution',
       value: 'University of Westminster',
       detail: '2023 – 2026',
-      icon: 'institution',
     },
     {
       label: 'Availability',
       value: 'Open to opportunities',
       detail: 'Graduate, junior, internship, freelance',
-      icon: 'open',
     },
   ],
 
@@ -118,8 +118,8 @@ export const photographs = {
     // 1100 x 1100, square, so the window keeps the photograph's own shape.
     // Pushed in far enough to take the man on the near side of the table
     // back to about half, and held low enough to keep the laptop and the
-    // can on the table — the things that say what the room was. Set in the
-    // browser and written down here.
+    // can on the table — the things that say what the room was. The one of
+    // the three whose framing never had to change.
     crop: { zoom: 1.38, focus: '84.9% 61.6%' },
     source: 'src/assets/personal/treated/founder-matcha.jpg',
     alt: 'Eeliya mid-conversation across a table, talking with his hands, in a busy daylit workspace.',
@@ -127,11 +127,18 @@ export const photographs = {
   },
   graduation: {
     stem: 'personal/graduation',
-    // 1536 x 1900, the tallest of the three. Pushed well in and held high
-    // on him, which is what brings him up to the size of the other two
-    // inside a frame three columns wide. Set in the browser and written
-    // down here; the source is 1536 across and the plate is drawn at about
-    // 530, so even at this zoom it is not short of pixels.
+    // 1536 x 1900, the tallest of the three, and the one the band is
+    // composed around. Pushed well in and held high on him, which is what
+    // brings him up to the size of the other two inside a frame three
+    // columns wide. Set against the render and written down here; the
+    // source is 1536 across and the plate is drawn at about 250, so even at
+    // this zoom it is nowhere near short of pixels.
+    //
+    // It was opened out to 1.6 for a while, when the photographs were cut
+    // as diamonds rather than framed — a lozenge is at its narrowest
+    // exactly where a portrait is tallest, and the mortarboard went into
+    // the two upper edges. The octagon takes only the corners, so the tight
+    // crop is right again.
     crop: { zoom: 1.9, focus: '46.4% 33.8%' },
     source: 'src/assets/personal/treated/graduation.jpg',
     alt: 'Eeliya in cap and gown on graduation day, holding his degree folder, on a walkway with the London Eye on the skyline behind him.',
@@ -141,7 +148,9 @@ export const photographs = {
     stem: 'personal/amf1',
     // 1280 x 920, shown whole. The panel, the screen behind it and the
     // stage floor are all evidence of the event, and a tighter window
-    // trades one of them away for no gain.
+    // trades one of them away for no gain. It was held at 1.35 while the
+    // photographs were diamonds, because a long lozenge throws away both
+    // ends of a wide frame; the octagon does not, so it is whole again.
     crop: { zoom: 1, focus: '50% 50%' },
     source: 'src/assets/personal/treated/amf1.jpg',
     alt: 'Eeliya answering a question with a microphone on stage, the screen behind the panel showing Ideathon 2026 Silverstone with the Aston Martin Aramco Formula One Team and Cognizant marks.',

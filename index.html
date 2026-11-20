@@ -4,33 +4,193 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Eeliya Nayeri — Software Developer</title>
+    <title>Eeliya Nayeri | Software Developer | Official Site</title>
     <meta
       name="description"
-      content="Eeliya Nayeri (ایلیا نیری) is a London-based software developer and First Class Computer Science graduate of the University of Westminster. He builds full-stack, mobile and web applications across AI, travel technology and aviation."
+      content="Eeliya Nayeri (ایلیا نیری) is a UK-based software developer and First Class Computer Science graduate from the University of Westminster. He builds full-stack, mobile, and web applications focused on AI, travel technology, and aviation."
     />
     <meta name="author" content="Eeliya Nayeri" />
     <meta
       name="keywords"
-      content="Eeliya, Eeliya Nayeri, ایلیا, ایلیا نیری, نیری, software developer, full-stack developer, University of Westminster, portfolio"
+      content="Eeliya, Eeliya Nayeri, ایلیا, ایلیا نیری, نیری, ایلیا نایری, نایری, software developer, full-stack developer, University of Westminster, portfolio"
     />
     <link rel="canonical" href="https://eeliyanayeri.com/" />
 
     <!-- Set the edition before first paint, so a night visitor never sees the
-         ivory flash past. -->
+         ivory flash past, and whether the overture plays, which is once a
+         session. -->
     <script>
       (function () {
+        var root = document.documentElement;
         try {
           var t = localStorage.getItem('edition');
           if (t !== 'day' && t !== 'night') {
             t = matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
           }
-          document.documentElement.dataset.theme = t;
+          root.dataset.theme = t;
         } catch (e) {
-          document.documentElement.dataset.theme = 'day';
+          root.dataset.theme = 'day';
         }
+        // Storage blocked plays it again: a better failure than never.
+        var seen = false;
+        try {
+          seen = sessionStorage.getItem('overture') === '1';
+        } catch (e) {}
+        root.dataset.overture = seen ? 'seen' : 'play';
       })();
     </script>
+
+    <!-- The overture's own rules, here beside the head rather than in the
+         stylesheet, so they hold before the stylesheet and the script that
+         would otherwise draw it have arrived. Its markup opens the body; the
+         landing is Overture.jsx's. -->
+    <style>
+      .overture {
+        /* One knot of the mark, in whole pixels so it stands crisp at rest. */
+        --mark-knot: 12px;
+        position: fixed;
+        inset: 0;
+        z-index: 400;
+        display: grid;
+        place-items: center;
+        color: var(--accent, #8e1c24);
+      }
+
+      /* Later in the session the page comes from the cache, and there is
+         nothing to wait for. */
+      [data-overture='seen'] .overture {
+        display: none;
+      }
+
+      .overture__ground {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: var(--ground, #f1e9d9);
+      }
+
+      /* The squared paper the mark is knotted on: the weaver's cartoon, a
+         cell to a knot, fading out past the mark. */
+      .overture__cartoon {
+        width: calc(var(--mark-knot) * 17);
+        height: calc(var(--mark-knot) * 17);
+        overflow: visible;
+        color: var(--ink, #1a1512);
+        opacity: 0.12;
+        -webkit-mask-image: radial-gradient(closest-side, #000 40%, transparent);
+        mask-image: radial-gradient(closest-side, #000 40%, transparent);
+      }
+
+      .overture__cartoon path {
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 1px;
+        vector-effect: non-scaling-stroke;
+      }
+
+      .overture__flight {
+        position: relative;
+      }
+
+      .overture__flight,
+      .overture__spin,
+      .overture__knots {
+        display: block;
+        width: calc(var(--mark-knot) * 9);
+        height: calc(var(--mark-knot) * 9);
+      }
+
+      .overture__knots path {
+        fill: currentcolor;
+      }
+
+      [data-theme='night'] .overture {
+        color: var(--accent, #e08c7d);
+      }
+
+      [data-theme='night'] .overture__ground {
+        background: var(--ground, #121010);
+      }
+
+      [data-theme='night'] .overture__cartoon {
+        color: var(--ink, #f0e5d1);
+      }
+
+      /* ایلیا is written in from the right, a column of knots at a time, the
+         way the name is written: the lone alef, the break after it, then the
+         joined run to the last alef. */
+      [data-overture='play'] .overture__knots {
+        animation: overture-write 450ms steps(9, end) both;
+      }
+
+      /* Then it turns, slowly at first, and is spinning at full speed by the
+         end of its first revolution. It goes on spinning until the page is
+         ready; Overture.jsx takes it from wherever it is and lands it on the
+         E. The spin-up is a quadratic ease-in over two periods, so it leaves
+         the first revolution at exactly the speed the spin runs at. */
+      [data-overture='play'] .overture__spin {
+        animation:
+          overture-spin-up 2400ms cubic-bezier(0.333, 0, 0.667, 0.333) 600ms both,
+          overture-spin 1200ms linear 3000ms infinite;
+      }
+
+      @keyframes overture-write {
+        from {
+          clip-path: inset(0 0 0 100%);
+        }
+
+        to {
+          clip-path: inset(0 0 0 0);
+        }
+      }
+
+      @keyframes overture-spin-up {
+        from {
+          rotate: 0deg;
+        }
+
+        to {
+          rotate: 360deg;
+        }
+      }
+
+      @keyframes overture-spin {
+        from {
+          rotate: 0deg;
+        }
+
+        to {
+          rotate: 360deg;
+        }
+      }
+
+      @media (max-width: 40rem) {
+        .overture {
+          --mark-knot: 10px;
+        }
+      }
+
+      /* Still: the E, standing, for as long as the page takes. */
+      @media (prefers-reduced-motion: reduce) {
+        .overture .overture__knots,
+        .overture .overture__spin {
+          animation: none !important;
+        }
+
+        .overture .overture__spin {
+          rotate: 90deg;
+        }
+      }
+    </style>
+    <noscript>
+      <style>
+        .overture {
+          display: none;
+        }
+      </style>
+    </noscript>
+
 
     <link rel="preload" href="/fonts/archivo-var-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/markazi-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -47,7 +207,7 @@
     <meta property="og:title" content="Eeliya Nayeri | Software Developer" />
     <meta
       property="og:description"
-      content="London-based software developer and First Class Computer Science graduate. Seven finished projects across mobile, web and backend."
+      content="Eeliya Nayeri is a UK-based software developer and First Class Computer Science graduate. He builds full-stack, mobile, and web applications."
     />
     <meta property="og:type" content="profile" />
     <meta property="profile:first_name" content="Eeliya" />
@@ -55,7 +215,14 @@
     <meta property="profile:gender" content="male" />
     <meta property="og:url" content="https://eeliyanayeri.com/" />
     <meta property="og:site_name" content="Eeliya Nayeri" />
-    <meta property="og:image" content="https://eeliyanayeri.com/appicon.png" />
+    <!-- Built by `npm run icons` from the mark's own rows. -->
+    <meta property="og:image" content="https://eeliyanayeri.com/share.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="The mark, ایلیا in square Kufic turned to read as an E, beside the name Eeliya Nayeri in English and Persian"
+    />
     <meta property="og:locale" content="en_GB" />
     <meta property="og:locale:alternate" content="fa_IR" />
 
@@ -63,9 +230,13 @@
     <meta name="twitter:title" content="Eeliya Nayeri | Software Developer" />
     <meta
       name="twitter:description"
-      content="London-based software developer and First Class Computer Science graduate. Seven finished projects across mobile, web and backend."
+      content="UK-based software developer and First Class Computer Science graduate. He builds full-stack, mobile, and web apps."
     />
-    <meta name="twitter:image" content="https://eeliyanayeri.com/appicon.png" />
+    <meta name="twitter:image" content="https://eeliyanayeri.com/share.png" />
+    <meta
+      name="twitter:image:alt"
+      content="The mark, ایلیا in square Kufic turned to read as an E, beside the name Eeliya Nayeri in English and Persian"
+    />
 
     <!-- Person entity: the name in English and Persian, and that Eeliya is he/him -->
     <script type="application/ld+json">
@@ -73,13 +244,17 @@
         "@context": "https://schema.org",
         "@type": "Person",
         "name": "Eeliya Nayeri",
-        "alternateName": ["ایلیا نیری", "Eeliya", "ایلیا"],
+        "alternateName": [
+          "ایلیا نیری",
+          "Eeliya",
+          "ایلیا"
+        ],
         "givenName": "Eeliya",
         "familyName": "Nayeri",
         "gender": "Male",
         "pronouns": "he/him",
         "jobTitle": "Software Developer",
-        "description": "Eeliya Nayeri is a London-based software developer and First Class Computer Science graduate from the University of Westminster. He builds full-stack, mobile and web applications.",
+        "description": "Eeliya Nayeri is a UK-based male software developer and First Class Computer Science graduate from the University of Westminster. He builds full-stack, mobile, and web applications.",
         "url": "https://eeliyanayeri.com",
         "image": "https://eeliyanayeri.com/image.png",
         "alumniOf": {
@@ -94,22 +269,24 @@
           "Artificial Intelligence",
           "Travel Technology",
           "Aviation",
-          "React",
-          "React Native",
           "Flutter",
           "Dart",
           "Swift",
           "SwiftUI",
+          "React",
           "Node.js",
           "Express",
           "Firebase",
           "Django",
-          "Python",
           "SQL",
           "JavaScript",
-          "TypeScript"
+          "HTML",
+          "CSS"
         ],
-        "sameAs": ["https://www.linkedin.com/in/eeliya", "https://github.com/eeliya-hub"]
+        "sameAs": [
+          "https://www.linkedin.com/in/eeliya",
+          "https://github.com/eeliya-hub"
+        ]
       }
     </script>
 
@@ -127,33 +304,55 @@
   </head>
   <body>
     <!--
-      THESIS: This page is a naqsheh — the squared cartoon a Persian weaver
-      works from, which is a colour-indexed bitmap five centuries before the
-      bitmap. Ornament is never wallpaper; it is the grid resolving into a
-      figure. Refuses both the dark-mode dev portfolio and the parchment-and-
-      serif editorial default already on this domain.
+      THESIS: This page is the carpet its naqsheh was the plan for, read
+      lengthwise: colour-blocked bands woven downward as you scroll, one warp
+      thread filling at the edge, the cloth cut off the loom at the foot.
+      Refuses both the dark-mode dev portfolio and the five-framed-pages book
+      this site used to be.
       OWN-WORLD: ivory parchment / lacquer black in two art-directed editions;
       madder crimson as FIELD not accent; terracotta and sand; Archivo width
       axis for display, Markazi for copy, Vazirmatn for Persian. No radius
       anywhere. Controls are double-ruled cartouches that ink in from the foot.
-      STORY: a name at architectural scale, a Persian signature written across
-      it, seven openable files, a crimson close.
+      STORY: a name at architectural scale, then six bands: the album, seven
+      full-screen plates stacking in the dark, eight years ridden sideways on
+      one thread, five registers running as border patterns, a crimson close.
       FIRST VIEWPORT: EELIYA and NAYERI set to opposite margins at display
       scale, the portrait standing between them with the head clear above the
       type, ایلیا نیری signed in madder in the open quarter under the first
       line; actions bottom-left, status bottom-right.
-      SIGNATURE INTERACTION: the selvedge — a woven edge down both margins
-      that is also the progress indicator. Each chapter owns a station;
-      arriving strikes its shamsa onto the ghost drawn on the cartoon.
-      FORM: naqsheh, candidate 7 of the grounded list. Seed b052b99d.
+      SIGNATURE INTERACTION: scroll as the loom: the deck of plates pins and
+      stacks, the route turns scroll into sideways travel along the thread,
+      the skill bands run, and the warp at the right edge fills with --woven.
+      FORM: naqsheh, the carpet read lengthwise. Seed b052b99d, renovation 3.0.
       FINISH: unreviewed and undocumented is unfinished; this build ends with
       the finish review, the verdict, DESIGN.md, and every shipping raster
       carrying its provenance.
     -->
+
+    <!-- The overture: ایلیا, written in knots and turned a quarter to stand
+         as the E, spinning on the cartoon while the page it is waiting for
+         arrives, then home to the square at the top left. Its paths are
+         filled in at build from src/lib/mark.js (vite.config.js), its rules
+         are in the head, and Overture.jsx lands it. -->
+    <div class="overture" id="overture" aria-hidden="true">
+      <div class="overture__ground">
+        <svg class="overture__cartoon" viewBox="-4 -4 17 17" focusable="false">
+          <path data-mark="cartoon" />
+        </svg>
+      </div>
+      <div class="overture__flight">
+        <div class="overture__spin">
+          <svg class="overture__knots" viewBox="0 0 9 9" focusable="false">
+            <path data-mark="knots" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
     <div id="root"></div>
     <noscript>
       <p style="padding: 2rem; font-family: Georgia, serif">
-        Eeliya Nayeri — software developer, London. This site needs JavaScript to run. The CV is at
+        Eeliya Nayeri, software developer, London. This site needs JavaScript to run. The CV is at
         <a href="/docs/eeliya-nayeri-cv.pdf">/docs/eeliya-nayeri-cv.pdf</a>, the code at
         <a href="https://github.com/eeliya-hub">github.com/eeliya-hub</a>.
       </p>

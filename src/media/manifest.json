@@ -10,6 +10,17 @@
       1920
     ]
   },
+  "alumni-api/alumni-1--plate": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
   "alumni-api/alumni-2": {
     "width": 1920,
     "height": 1200,
@@ -30,6 +41,240 @@
       960,
       1440,
       1920
+    ]
+  },
+  "logos/androidstudio": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/css3": {
+    "width": 128,
+    "height": 145,
+    "aspect": 0.8803,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/dart": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/django": {
+    "width": 128,
+    "height": 80,
+    "aspect": 1.6,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/figma": {
+    "width": 128,
+    "height": 72,
+    "aspect": 1.7778,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/firebase": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/flutter": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/git": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/github": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/googlecloud": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/html5": {
+    "width": 128,
+    "height": 145,
+    "aspect": 0.8833,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/java": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/javascript": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/linkedin": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/nodejs": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/php": {
+    "width": 128,
+    "height": 69,
+    "aspect": 1.8533,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/postman": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/python": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/react": {
+    "width": 128,
+    "height": 114,
+    "aspect": 1.1238,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/sql": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/swift": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/swiftui": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/tailwind": {
+    "width": 128,
+    "height": 78,
+    "aspect": 1.6347,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/vite": {
+    "width": 128,
+    "height": 126,
+    "aspect": 1.0143,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/vscode": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
+    ]
+  },
+  "logos/xcode": {
+    "width": 128,
+    "height": 128,
+    "aspect": 1,
+    "widths": [
+      64,
+      128
     ]
   },
   "personal/amf1": {
@@ -64,6 +309,17 @@
     ]
   },
   "pitwall/1": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pitwall/1--plate": {
     "width": 1920,
     "height": 1080,
     "aspect": 1.7778,
@@ -110,6 +366,17 @@
     "width": 1920,
     "height": 1200,
     "aspect": 1.5997,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "prem-predictor/prem-predictor-0--plate": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7774,
     "widths": [
       480,
       960,
@@ -220,6 +487,17 @@
     "width": 1920,
     "height": 1200,
     "aspect": 1.6,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "pulseos/pulseos-1--plate": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
     "widths": [
       480,
       960,
@@ -373,6 +651,17 @@
       1920
     ]
   },
+  "skyhealth/skyhealth-1--plate": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7782,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
   "skyhealth/skyhealth-2": {
     "width": 1920,
     "height": 908,
@@ -407,6 +696,17 @@
     ]
   },
   "traverse/traverse-1": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "traverse/traverse-1--plate": {
     "width": 1920,
     "height": 1080,
     "aspect": 1.7778,
@@ -462,6 +762,17 @@
     ]
   },
   "weather/weather-1": {
+    "width": 1920,
+    "height": 1080,
+    "aspect": 1.7778,
+    "widths": [
+      480,
+      960,
+      1440,
+      1920
+    ]
+  },
+  "weather/weather-1--plate": {
     "width": 1920,
     "height": 1080,
     "aspect": 1.7778,

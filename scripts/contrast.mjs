@@ -95,12 +95,13 @@ const night = {
   focus: '#f0e5d1',
 };
 
-// .on-field — madder region. Inherits the edition's --field as its ground.
+// .on-field — the closing band. Its ground is the edition's --field-deep,
+// madder taken down to where a whole band of it can be read on.
 const fieldScope = (fieldColour, name) => ({
   ground: fieldColour,
   ink: '#f4ead9',
-  ink2: '#e3bdb4',
-  ink3: '#cb8d86',
+  ink2: '#e9cbc3',
+  ink3: '#d9a39b',
   accent: '#f4ead9',
   ruleStrong: '#cb8d86',
   focus: '#f4ead9',
@@ -122,16 +123,30 @@ const lacquer = {
 
 const checks = [
   ...surface('day page', day),
-  ...surface('day madder field', fieldScope('#8e1c24')),
+  ...surface('day madder field', fieldScope('#631a1e')),
+  // The band's figure ("London, United Kingdom") is set in the tertiary, so
+  // on this ground the tertiary is body text and is held to the small bar.
+  ['#d9a39b', '#631a1e', SMALL, 'day madder field: tertiary set as text'],
   ...fieldOnly('day terracotta', '#bd6a45', day.ground, day.ink),
   ...tonal('day sand', '#cdbb97', day.ink),
 
   ...surface('night page', night),
-  ...surface('night madder field', fieldScope('#76191f')),
+  ...surface('night madder field', fieldScope('#561719')),
+  ['#d9a39b', '#561719', SMALL, 'night madder field: tertiary set as text'],
   ...fieldOnly('night brass', '#c9924a', night.ground, '#0b0908'),
   ...tonal('night sand', '#5f5240', night.ink),
 
   ...surface('lacquer dossier', lacquer),
+
+  // The fixed chrome carries its own bone ramp over the two dark bands
+  // (data-dusk on the bar and the warp): measured against lacquer and
+  // against both editions' deep madder, because the bar passes over all
+  // three.
+  ...['#16110f', '#631a1e', '#561719'].flatMap((g) => [
+    ['#f4ead9', g, SMALL, `dusk chrome: ink on ${g}`],
+    ['#e3cdb9', g, SMALL, `dusk chrome: secondary on ${g}`],
+    ['#cfae9d', g, LARGE, `dusk chrome: control edge on ${g}`],
+  ]),
 ];
 
 let failures = 0;

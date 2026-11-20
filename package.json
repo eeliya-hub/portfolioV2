@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "media": "node scripts/optimise-media.mjs",
+    "icons": "node scripts/icons.mjs",
     "treat": "node scripts/treat-photographs.mjs",
     "cutout": "swift scripts/cutout.swift",
     "dev": "vite",

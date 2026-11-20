@@ -72,6 +72,12 @@
   --accent: #8e1c24;
   --accent-lift: #a8303a;
   --field: #8e1c24;
+  /* Madder taken down to where a whole band of it can be read on: the
+     ground of the closing band. At full strength madder is a mark — a
+     button, a word, a corner flash — and it is right there; spread across
+     a whole screen behind a form, the same red was too loud to rest the eye
+     on and too light to set its secondary type on. */
+  --field-deep: #631a1e;
 
   --terracotta: #bd6a45;
   --sand: #cdbb97;
@@ -98,6 +104,24 @@
   color-scheme: light;
   --shadow-lift: 0 2px 4px rgb(26 21 18 / 5%), 0 12px 32px -12px rgb(26 21 18 / 18%);
   --shadow-deep: 0 8px 16px rgb(26 21 18 / 8%), 0 40px 80px -32px rgb(26 21 18 / 32%);
+  /* Cast sideways, for the plate dealt in from the left over the one before
+     it. Two layers, because one soft blur reads as fog: a tight contact
+     shadow that says the two sheets are touching, and a broad cast one that
+     says there is air between them. It is cast FORWARD, in the direction the
+     plate is travelling, because the edge doing the covering is the leading
+     one. --edge-light and --edge-shade draw the sheet's own cut edge: a lit
+     corner, then the shade of the face turning away from it. */
+  /* The channels and the two strengths, not a finished shadow: 02 composes
+     it with an alpha driven by how far through its travel the plate is, so
+     the cast appears as a plate crosses the glass and is gone the moment it
+     lands. A plate parked off the left edge used to cast its shadow back
+     over the frame's own edge — six of them, stacked, which is the dark
+     band that stood down the left side of the band at rest. */
+  --edge-ink: 26 21 18;
+  --edge-cast-1: 0.24;
+  --edge-cast-2: 0.36;
+  --edge-light: rgb(255 253 248 / 72%);
+  --edge-shade: rgb(26 21 18 / 20%);
 }
 
 /* --- The night edition ----------------------------------------------------
@@ -118,6 +142,7 @@
   --accent: #e08c7d;
   --accent-lift: #f0ab96;
   --field: #76191f;
+  --field-deep: #561719;
 
   --terracotta: #c9924a;
   --sand: #5f5240;
@@ -136,6 +161,11 @@
   color-scheme: dark;
   --shadow-lift: 0 2px 4px rgb(0 0 0 / 40%), 0 12px 32px -12px rgb(0 0 0 / 70%);
   --shadow-deep: 0 8px 16px rgb(0 0 0 / 45%), 0 40px 80px -32px rgb(0 0 0 / 80%);
+  --edge-ink: 0 0 0;
+  --edge-cast-1: 0.58;
+  --edge-cast-2: 0.82;
+  --edge-light: rgb(240 229 209 / 26%);
+  --edge-shade: rgb(0 0 0 / 52%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -152,6 +182,7 @@
     --accent: #e08c7d;
     --accent-lift: #f0ab96;
     --field: #76191f;
+    --field-deep: #561719;
 
     --terracotta: #c9924a;
     --sand: #5f5240;
@@ -170,6 +201,11 @@
     color-scheme: dark;
     --shadow-lift: 0 2px 4px rgb(0 0 0 / 40%), 0 12px 32px -12px rgb(0 0 0 / 70%);
     --shadow-deep: 0 8px 16px rgb(0 0 0 / 45%), 0 40px 80px -32px rgb(0 0 0 / 80%);
+    --edge-ink: 0 0 0;
+    --edge-cast-1: 0.58;
+    --edge-cast-2: 0.82;
+    --edge-light: rgb(240 229 209 / 26%);
+    --edge-shade: rgb(0 0 0 / 52%);
   }
 }
 
@@ -189,42 +225,61 @@
   --k16: calc(var(--knot) * 16);
   --k24: calc(var(--knot) * 24);
 
-  /* The selvedge: the woven edge of the carpet, running down both sides of
-     the page. Nothing spans the full width — the field lives between them. */
-  --selvedge: clamp(1.125rem, 3.4vw, 3.75rem);
-  --gutter: clamp(1.125rem, 4vw, 4.5rem);
-  /* The field every chapter is laid in. Under about 1370px it is the 72rem
-     the compositions were tuned at; above that it grows with the viewport and
-     stops at 96rem.
+  /* --- The field's width ------------------------------------------------
+     Three things set how much of the glass the bands are allowed, and they
+     have to move together:
 
-     The cap was taken off for a while — 84vw up to 124rem — on the reasoning
-     that a field holding 57% of a 2560px panel is a strip down the middle.
-     It is, and the page was worse for the fix: a composition tuned at 72rem
-     and let out to 1984px does not fill the extra width, it spaces out inside
-     it, and every chapter grew gaps that had nothing in them. The cap is back,
-     a little higher than the 92rem it was, because the measure is what stops
-     a line of ornament or a rail of seven names from drifting apart. Width
-     past the cap is left as ground, which is what a margin is for. */
-  --measure: min(96rem, max(72rem, 80vw));
+       --selvedge   the woven edge of the carpet, down both sides of the
+                    page. Nothing spans the full width; the field lives
+                    between the two selvedges.
+       --gutter     the margin inside the selvedge that content keeps off.
+       --measure    the widest field a band may lay its content in. The
+                    page is zoomed by --page-zoom (below), so this grows
+                    with the height of the glass as every other rem does.
+
+     Why together: on a 1440 laptop the measure does not bind at all — the
+     margins do, and `min(measure, 100% - 2 * gutter)` resolves to the
+     second term. Raising the measure on its own is a change that is
+     invisible at the width most readers are on.
+
+     There was a reader's control for this for a while — snug, wide and
+     full, cycled from a gauge in the bar. These are the wide values, which
+     is the one that was kept. */
+  --measure: 88rem;
+  --selvedge: clamp(1.125rem, 2.4vw, 2.9rem);
+  --gutter: clamp(1.125rem, 2.8vw, 3.4rem);
 
   /* --- Type ------------------------------------------------------------- */
   --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
   --text: 'Markazi', 'Iowan Old Style', Georgia, serif;
   --persian: 'Vazirmatn', 'Markazi', sans-serif;
 
+  /* The page's zoom — see DESIGN.md, Typography. Not a step on the ramp:
+     it is the size every step on the ramp is counted from. Driven by the
+     window's height, because a chapter is cut to the window's height, and
+     floored at `1rem`, which on the root element is the reader's own
+     default rather than a hard 16px. */
+  --page-zoom: clamp(1rem, calc(0.72rem + 0.55vh), 1.45rem);
+
   --t-body: clamp(1.25rem, 0.5vw + 1.14rem, 1.5rem);
   --t-lead: clamp(1.55rem, 1.25vw + 1.2rem, 2.2rem);
   --t-small: 1.125rem;
   --t-micro: 0.95rem;
   --t-label: 0.82rem;
-  --t-tiny: 0.72rem;
+  /* The floor, and it is a floor rather than simply the next step down: at
+     0.72rem this was 11.5px, and a letterspaced uppercase folio at 11.5px is
+     a thing you lean in to read. 12px is the bottom of what this page sets.
+     It is close to --t-label on purpose — the step between a label and the
+     number beside it is carried by tracking, weight and ink, which no reader
+     can see 1.6px of anyway. */
+  --t-tiny: 0.75rem;
 
   /* Three display steps between the chapter head and the body: the register
      entry, the three focus columns, and the compact menu. Named because
      nineteen one-off sizes were how the small end of this page got ragged. */
   --t-entry: clamp(1.45rem, 2.3vw, 1.95rem);
   --t-focus: clamp(1.3rem, 1.9vw, 1.7rem);
-  --t-menu: clamp(1.9rem, 8vw, 2.9rem);
+  --t-menu: clamp(2rem, min(8.2svh, 9.6vw), 4.6rem);
 
   /* The scrim behind the dossier, and the deeper one behind a plate lifted
      off its sheet: the file is still there under the loupe, taken down one
@@ -232,23 +287,33 @@
   --scrim: rgb(8 6 5 / 72%);
   --scrim-deep: rgb(6 4 4 / 93%);
 
-  /* The deck: a chapter lede written as lines in chapters.js, set to run
-     the width of the rule under its title rather than to a reading measure.
-     It is a display size, not a reading one, which is why it sits here with
-     the chapter titles and not with the body steps.
-
-     The size is a share of the column the lede sits in, divided by the
-     number of characters in the line — `.head__deck` is the container and
-     ChapterHead counts the line. This is the share: it is what makes a line
-     of average Markazi land on the end of the rule. A line of unusually
-     wide or narrow letters comes out a little short or a little long, and
-     `npm run check` fails if one stops fitting on a single line. */
-  --deck-ratio: 3;
-
   /* Chapter titles. The hero name has its own scale — the brief pins
      oversized type there, and it is the one place that leaves this ramp. */
   --t-head: clamp(2.9rem, 6.6vw, 6rem);
   --t-sub: clamp(1.8rem, 2.9vw, 2.9rem);
+
+  /* The announcement step: a band's name, set the way the hero sets the
+     name itself. Width-driven on narrow glass, capped where the measure
+     caps. */
+  --t-mammoth: clamp(2.6rem, 8.6vw, 7.4rem);
+
+  /* The folio: a band's number, struck behind its name at the scale of the
+     band itself. It is ornament carrying meaning rather than type to be
+     read, which is why it is the one step above the announcement. */
+  --t-folio: clamp(5.5rem, 22svh, 13rem);
+  --t-folio-compact: clamp(4.2rem, 24vw, 7rem);
+
+  /* A pull line: the one sentence a band opens on, set in the TEXT face at
+     display scale rather than in the display face. 01 and 05 share it. */
+  --t-pull: clamp(1.6rem, 0.85rem + 2.5vh, 2.6rem);
+
+  /* A project's name, on its own plate in the deck. Below the announcement
+     step: the chapter is the louder of the two. */
+  --t-piece: clamp(2.5rem, 8.2svh, 5.6rem);
+
+  /* A name riding a register band in 04. Large enough to read at a glance
+     while it is moving, which is the only size that matters there. */
+  --t-run: clamp(1.5rem, 3.4svh, 2.6rem);
 
   /* --- Motion -----------------------------------------------------------
      Damped and physical, never snapped: the needle settles, it does not
@@ -275,18 +340,24 @@
    lacquer. Every value here is measured in both editions by
    `npm run contrast`, which fails the build rather than warning.            */
 
-/* The madder field — the close of the page, and the active entry in the
-   register. Secondary type is tinted out of the madder itself, never grey. */
+/* The madder field — the close of the page. Its ground is the deep madder,
+   and inside the scope that IS the field: everything that names --field
+   here (the form's wells, the inverted button, a control filled on hover)
+   is cut from the same deeper cloth rather than from the brighter red.
+   Secondary type is tinted out of the madder itself, never grey, and every
+   step of it is body-text legible — the band's figure ("London, United
+   Kingdom") is set in the tertiary, so the tertiary is held to 4.5:1 too. */
 .on-field {
+  --field: var(--field-deep);
   --ground: var(--field);
   --ground-2: var(--field);
   --paper: color-mix(in oklab, var(--field) 86%, black);
   --ink: #f4ead9;
-  --ink-2: #e3bdb4;
-  --ink-3: #cb8d86;
+  --ink-2: #e9cbc3;
+  --ink-3: #d9a39b;
   --accent: #f4ead9;
   --accent-lift: #fff;
-  --rule: #ab4a4d;
+  --rule: #93484a;
   --rule-strong: #cb8d86;
   --knot-ink: rgb(244 234 217 / 11%);
   --focus: #f4ead9;

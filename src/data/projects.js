@@ -22,30 +22,40 @@ export const projects = [
     context: 'Personal project',
     platform: 'Web',
 
-    oneLine: 'A single-screen command centre where mail, projects and the calendar finally talk to each other.',
+    oneLine: 'A single-screen command centre where mail, projects and the calendar finally talk to each other with AI Assistance.',
 
     standfirst:
-      'A dashboard that gathers everything you check in a day onto one screen that never scrolls — and, since the October release, joins up the three things that were still separate: your inbox, your plans and your days.',
+      'A dashboard that gathers everything you check in a day onto one screen that never scrolls. Since the October release, it also joins up the three things that were still separate: your inbox, your plans and your days.',
 
     body: [
-      'PulseOS pulls the services people check every morning — weather, calendar, news, markets, sport, music and travel — into a single viewport. Every view is composed the same way: a hero set against a living sky, a horizon that lands on the same line in every tab, and one full-bleed surface beneath it divided into columns by hairlines rather than chopped into floating cards.',
+      'PulseOS pulls the services people check every morning (weather, calendar, news, markets, sport, music and travel) into a single viewport. Every view is composed the same way: a hero set against a living sky, a horizon that lands on the same line in every tab, and one full-bleed surface beneath it divided into columns by hairlines rather than chopped into floating cards.',
       'The October 2026 release added the mail hub. Gmail and Outlook sit side by side, and Pulse reads ahead so that what needs a reply and what is due surface on their own. Dates buried inside an email are extracted into the calendar without being asked. Highlight a line and it becomes a task, or a card on one of your project boards. When it is time to answer, you say what you mean, Pulse drafts it, and you press send.',
       'The same release gave projects room to move. Every plan sits on a board of draggable cards, each card holding its own checklist, dates and notes, and the whole thing can be read as a board, as a timeline, or as every card at once. The calendar grew to a full month view that carries the meetings the inbox found. The assistant answers across all of it: what is in flight, what is up next, what is due on Friday.',
-      'Underneath, it is a monorepo — a React and Vite frontend over a layered Node and Express gateway. Every third-party provider is isolated behind its own route, controller and service, with rate limiting and hard usage caps that keep the whole thing inside free tiers.',
+      'Underneath, it is a monorepo: a React and Vite frontend over a layered Node and Express gateway. Every third-party provider is isolated behind its own route, controller and service, with rate limiting and hard usage caps that keep the whole thing inside free tiers.',
     ],
 
     highlights: [
       'Gmail and Outlook in one inbox that reads ahead, surfacing what needs a reply and what is due.',
       'Dates lifted out of an email into the calendar; a highlighted line becomes a task or a project card.',
-      'Project boards with draggable cards — checklist, dates and notes — read as a board, a timeline, or all at once.',
+      'Project boards with draggable cards (checklist, dates and notes) read as a board, a timeline, or all at once.',
       'Replies dictated rather than typed: say what you mean, Pulse drafts it, you press send.',
-      'A background that carries meaning — sky colours follow the hour, and the music view borrows the album’s palette.',
+      'A background that carries meaning: sky colours follow the hour, and the music view borrows the album’s palette.',
       'A layered Express gateway isolating each provider behind its own route, controller and service.',
     ],
 
     stack: ['JavaScript', 'React', 'Vite', 'Tailwind CSS', 'Node.js', 'Express', 'WebSockets', 'Firebase', 'REST APIs'],
 
-    links: { live: null, repo: 'https://github.com/eeliya-hub/pulseOS', doc: '/docs/pulseos.pdf' },
+    // `site` is PulseOS's marketing site — a page about the product, not a
+    // deployment of it — so it is kept out of `live`. `live` means the thing
+    // itself is running: it puts the Live sash on the plate and makes the
+    // plate's screen open it. A product site gets a button of its own and
+    // none of that.
+    links: {
+      live: null,
+      site: 'https://eeliya-hub.github.io/pulseOS/',
+      repo: 'https://github.com/eeliya-hub/pulseOS',
+      doc: '/docs/pulseos.pdf',
+    },
 
     lead: 'pulseos/pulseos-1',
     // NOTE: the gallery still shows the pre-October release. The mail hub,
@@ -78,7 +88,7 @@ export const projects = [
     context: 'Final year project',
     platform: 'iOS & Android',
 
-    oneLine: 'Flight search, hotels, itineraries and budgets in one app, with an AI travel assistant.',
+    oneLine: 'My Final Year Project: Flight search, hotels, itineraries and budgets in one app, with an AI travel assistant.',
 
     standfirst:
       'My final year project: a cross-platform travel app that replaces the half-dozen tabs a trip normally takes with one place to search, plan, budget and ask.',
@@ -128,7 +138,7 @@ export const projects = [
       'A prototype built for the Cognizant and Aston Martin Formula One Ideathon that puts a fan on the pit wall, making the strategy calls under the clock while an AI race engineer argues its corner.',
 
     body: [
-      'During a race the app asks the questions the pit wall is actually asking — stay out or box now, which compound, cover the car behind or chase the one ahead — and it asks them on a timer. An AI race engineer offers its recommendation and rates its own confidence, so a fan can take the advice or overrule it.',
+      'During a race the app asks the questions the pit wall is actually asking (stay out or box now, which compound, cover the car behind or chase the one ahead), and it asks them on a timer. An AI race engineer offers its recommendation and rates its own confidence, so a fan can take the advice or overrule it.',
       'A fan-persona system changes how much each screen shows. A newcomer gets the call and the consequence; an expert gets the telemetry behind it. After the chequered flag a scoring engine grades every decision against the team’s real race strategy.',
     ],
 
@@ -164,13 +174,13 @@ export const projects = [
     context: 'Personal project',
     platform: 'Web',
 
-    oneLine: 'Private Premier League prediction leagues where every pick stays sealed until the deadline.',
+    oneLine: 'A multiplayer prediction app that turns an argument between friends into fun competition.',
 
     standfirst:
       'A multiplayer prediction app that turns an argument between friends into a competition nobody can cheat: you rank all twenty clubs, and no one sees anything until the deadline passes.',
 
     body: [
-      'Players join a private league by invite link or join code, then rank all twenty clubs for the season. Every prediction stays sealed until the deadline — and it is sealed by Firestore security rules on the server, not merely hidden by the interface, which is the difference between a game and a game people trust.',
+      'Players join a private league by invite link or join code, then rank all twenty clubs for the season. Every prediction stays sealed until the deadline, and it is sealed by Firestore security rules on the server, not merely hidden by the interface, which is the difference between a game and a game people trust.',
       'Standings refresh daily from a scheduled CI job. League owners can close, reopen and reveal; everything can leave as a PDF sheet, a score report or JSON.',
     ],
 
@@ -215,7 +225,7 @@ export const projects = [
       'Built from a brief set by Sky UK: a system where staff complete a guided health check, then see their own answers turn into a trend over time.',
 
     body: [
-      'The survey is deliberately one question at a time — the fastest way to get an honest answer is to stop showing people the length of the form. Behind it sits the dashboard logic: employee verification, which sessions are open to whom, and what has already been submitted.',
+      'The survey is deliberately one question at a time: the fastest way to get an honest answer is to stop showing people the length of the form. Behind it sits the dashboard logic: employee verification, which sessions are open to whom, and what has already been submitted.',
       'Past responses are kept and plotted, so the value of filling it in a fourth time is visible on the screen where you fill it in.',
     ],
 
@@ -255,7 +265,7 @@ export const projects = [
 
     body: [
       'One service owns authentication and API keys. The other owns alumni records, the bidding that decides who is featured, and winner selection. Each is layered into routing, business logic and database access, so a change to how a profile is stored never reaches into how a request is authorised.',
-      'Profiles span linked sections — biography, qualifications, employment — and every endpoint is documented and exercised in Postman.',
+      'Profiles span linked sections (biography, qualifications, employment), and every endpoint is documented and exercised in Postman.',
     ],
 
     highlights: [
@@ -293,7 +303,7 @@ export const projects = [
 
     body: [
       'Current conditions and a short-term forecast for any searched location, with nearby points of interest shown on a map where the list and the annotations drive each other.',
-      'Saved locations persist through SwiftData, so the places you check often are where you left them. The whole app is structured MVVM — the view never reaches past its model.',
+      'Saved locations persist through SwiftData, so the places you check often are where you left them. The whole app is structured MVVM: the view never reaches past its model.',
     ],
 
     highlights: [

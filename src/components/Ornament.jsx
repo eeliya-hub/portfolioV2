@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
-import { DRAW_LENGTH, fieldUrl, khatamFrame, knotRun, polygon, shamsa } from '../lib/girih.js';
+import { DRAW_LENGTH, fieldUrl, khatamFrame, polygon, shamsa } from '../lib/girih.js';
 
 /**
  * A shamsa — the eight-pointed rosette struck at the centre of a carpet and
@@ -38,62 +38,6 @@ export function Shamsa({ className = '', size = 100 }) {
   );
 }
 
-/**
- * The selvedge: the woven edge that runs down both sides of every page of
- * this site, and the reason nothing here spans the full width.
- *
- * It is also the progress indicator. A carpet grows from one end of the loom
- * to the other, and so does this: each chapter owns a station on the band,
- * and as you reach that chapter its shamsa is struck and the run of knots
- * above it is woven in. By the contact chapter the edge is finished. Nothing
- * about it animates per frame — `reached` flips a data attribute and the
- * stylesheet does the rest.
- *
- * @param {object} props
- * @param {'left'|'right'} props.side
- * @param {Array<{id: string, label: string}>} props.stations
- * @param {Set<string>} props.reached chapters the reader has arrived at
- * @param {string} props.active the chapter they are in now
- */
-export function Selvedge({ side, stations, reached, active }) {
-  // One repeating unit of the running band, used as a mask so the knots take
-  // their colour from the theme rather than being baked into an image.
-  const run = useMemo(() => {
-    const d = knotRun(24, 34, 1);
-    const svg =
-      `<svg xmlns='http://www.w3.org/2000/svg' width='24' height='34' viewBox='0 0 24 34'>` +
-      `<path d='${d}' fill='none' stroke='#000' stroke-width='1.1'/></svg>`;
-    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-  }, []);
-
-  return (
-    <div className={`selvedge selvedge--${side}`} aria-hidden="true" style={{ '--run': run }}>
-      {stations.map((station, index) => (
-        <div
-          className="selvedge__station"
-          key={station.id}
-          data-woven={reached.has(station.id) ? 'true' : undefined}
-          data-here={station.id === active ? 'true' : undefined}
-          style={{ '--i': index }}
-        >
-          <span className="selvedge__run" />
-          {/* The ghost is struck on the cartoon from the start; the ink is
-              drawn over it, stroke by stroke, as the reader arrives. */}
-          <span className="selvedge__markwrap">
-            <Shamsa className="selvedge__mark" />
-            <Shamsa className="selvedge__ink" />
-          </span>
-        </div>
-      ))}
-      <span className="selvedge__run selvedge__run--tail" />
-    </div>
-  );
-}
-
-/**
- * A band that closes a chapter. The same running knot as the selvedge, laid
- * horizontally and drawn across as it arrives.
- */
 /**
  * A framed khatam window.
  *
@@ -158,16 +102,6 @@ export function Khatam({ aspect }) {
   );
 }
 
-export function GuardBand({ className = '' }) {
-  return (
-    <span className={`guard reveal reveal--rule ${className}`.trim()} aria-hidden="true">
-      <span className="guard__band" />
-      <Shamsa className="guard__mark" />
-      <span className="guard__band" />
-    </span>
-  );
-}
-
 export default Shamsa;
 
 /**
@@ -180,8 +114,55 @@ export default Shamsa;
  */
 export function Weave() {
   const tile = useMemo(() => fieldUrl(132, 1), []);
+  const root = useRef(null);
+
+  // The field answers the pointer. Two numbers are written to the element —
+  // where the pointer is, as a fraction of the glass, each side of centre —
+  // and the stylesheet turns them into a few pixels of travel on each pass,
+  // in opposite directions, so the ground has a near side and a far one.
+  //
+  // One listener for the page, written inside a frame and never read back,
+  // so nothing here forces layout. It is not installed at all for a coarse
+  // pointer or for a reader who asked for stillness: on a touchscreen there
+  // is no pointer to answer, and the whole effect is motion.
+  useEffect(() => {
+    const node = root.current;
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!node || !fine.matches || still.matches) return undefined;
+
+    let frame = 0;
+    let x = 0;
+    let y = 0;
+
+    const write = () => {
+      frame = 0;
+      node.style.setProperty('--near-x', x.toFixed(4));
+      node.style.setProperty('--near-y', y.toFixed(4));
+    };
+
+    const onMove = (event) => {
+      x = event.clientX / window.innerWidth - 0.5;
+      y = event.clientY / window.innerHeight - 0.5;
+      if (!frame) frame = requestAnimationFrame(write);
+    };
+
+    window.addEventListener('pointermove', onMove, { passive: true });
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener('pointermove', onMove);
+      node.style.removeProperty('--near-x');
+      node.style.removeProperty('--near-y');
+    };
+  }, []);
+
   return (
-    <div className="weave" aria-hidden="true" style={{ '--tile': tile, '--tile-size': '132px' }}>
+    <div
+      className="weave"
+      ref={root}
+      aria-hidden="true"
+      style={{ '--tile': tile, '--tile-size': '132px' }}
+    >
       <span className="weave__pass" />
       <span className="weave__pass weave__pass--fine" />
     </div>

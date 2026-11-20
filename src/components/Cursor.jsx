@@ -46,9 +46,16 @@ export function Cursor() {
     document.documentElement.dataset.pointer = 'drawn';
     setOn(true);
 
+    // Where the pointer is assumed to be until it says. The centre of the
+    // window is the least wrong guess, but it is still a guess, and the
+    // reticle is kept from the page until the first real move rather than
+    // drawn at it — otherwise a madder mark sits in the middle of the hero
+    // for as long as the reader leaves the mouse alone, which on a page
+    // people arrive at and read is not a short time.
     const target = { x: innerWidth / 2, y: innerHeight / 2 };
     const eased = { ...target };
     let frame = 0;
+    let placed = false;
 
     const tick = () => {
       eased.x += (target.x - eased.x) * DRAG;
@@ -85,6 +92,15 @@ export function Cursor() {
     const onMove = (event) => {
       target.x = event.clientX;
       target.y = event.clientY;
+
+      // The first move is where the pointer actually is, so the reticle is
+      // put there rather than gliding to it from the middle of the window.
+      if (!placed) {
+        placed = true;
+        eased.x = target.x;
+        eased.y = target.y;
+        root.current?.setAttribute('data-placed', '');
+      }
 
       const hit = event.target instanceof Element ? event.target : null;
       const interactive = hit?.closest('a, button, [data-cursor], summary, input, textarea');

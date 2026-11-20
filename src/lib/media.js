@@ -27,7 +27,7 @@ export function picture(stem) {
   const variants = byStem.get(stem);
   const meta = manifest[stem];
   if (!variants?.length || !meta) {
-    if (import.meta.env.DEV) console.warn(`[media] no image for stem "${stem}" — run npm run media`);
+    if (import.meta.env.DEV) console.warn(`[media] no image for stem "${stem}"; run npm run media`);
     return null;
   }
   return {

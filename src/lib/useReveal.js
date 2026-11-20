@@ -29,15 +29,33 @@ export function useReveal() {
       (entries) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
+          // An element has arrived when either test passes, and it needs both
+          // tests because the page is built two ways at once.
+          //
+          // The second test is the original one: the element's top has risen
+          // past a band held off the bottom edge, so it starts moving by the
+          // time it is properly in view rather than finishing off-screen.
+          // That is right for a column you scroll down, and it is wrong for a
+          // chapter that is exactly one frame tall — there, whatever stands in
+          // that bottom band is in full view with no further scroll inside the
+          // chapter to release it, so it stayed hidden while the reader looked
+          // straight at it and then appeared as they left. That is how both
+          // guard bands were being missed.
+          //
+          // The first test covers it: something the window contains entirely
+          // is not something barely peeking in, whatever height it sits at.
+          const room = entry.rootBounds?.height ?? window.innerHeight;
+          const whole = entry.intersectionRatio >= 0.92;
+          const risen = entry.boundingClientRect.top <= room * 0.92;
+          if (!whole && !risen) continue;
           reveal(entry.target);
           observer.unobserve(entry.target);
         }
       },
-      // A little short of the bottom edge, so an element has started moving by
-      // the time it is properly in view rather than finishing off-screen.
-      // Threshold 0: any overlap at all counts, which keeps this working for
-      // an element taller than the window.
-      { rootMargin: '0px 0px -8% 0px', threshold: 0 },
+      // Thresholds, not a rootMargin: the band is applied in the callback now,
+      // because a margin cannot express "or". 0 catches first contact for an
+      // element taller than the window, which never reaches 0.92 at all.
+      { threshold: [0, 0.92, 1] },
     );
 
     const watch = (root) => {

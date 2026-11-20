@@ -11,8 +11,10 @@ colors:
   ink-3: "#8d7f6e"
   madder: "#8e1c24"
   madder-lift: "#a8303a"
+  madder-deep: "#631a1e"
   on-madder: "#f4ead9"
-  on-madder-2: "#e3bdb4"
+  on-madder-2: "#e9cbc3"
+  on-madder-3: "#d9a39b"
   terracotta: "#bd6a45"
   sand: "#cdbb97"
   rule: "#d2c4a3"
@@ -26,6 +28,7 @@ colors:
   night-ink-3: "#7e7161"
   night-madder: "#e08c7d"
   night-field: "#76191f"
+  night-madder-deep: "#561719"
   night-brass: "#c9924a"
   night-sand: "#5f5240"
   night-rule: "#2e2723"
@@ -195,8 +198,16 @@ lower, and graded into the ground it no longer has to float on.
 ## Colors
 
 Madder is a **field**, not an accent. It carries whole regions: the contact chapter is a
-full crimson ground, and the active row in the work register is a madder block. It is never
-scattered as trim.
+full madder ground. It is never scattered as trim.
+
+**A whole band of it is the deep madder.** At full strength (`madder`, #8e1c24) madder is
+right for a mark — a button, the Persian surname, a corner flash. Spread across a screen
+behind a form it was too loud to rest the eye on and too light to set secondary type on, and
+the girih struck over it in darker lines was the loudest thing in the band. So the close is
+`madder-deep` (#631a1e; `night-madder-deep` #561719 at night, a step deeper as the night
+field always is), its weave is worked in its own cream thread at 7% rather than in dark
+lines, and inside `.on-field` the deep madder *is* `--field`, so the wells, the inverted
+button and anything filled on hover are cut from the same cloth.
 
 Three surface scopes redefine the whole ink ramp, so a control written once works on every
 ground:
@@ -204,18 +215,19 @@ ground:
 | Scope | Ground | Body ink | Use |
 |---|---|---|---|
 | page | `ground` / `ground-2` / `paper` | `ink` | everything by default |
-| `.on-field` | `madder` (day) / `night-field` (night) | `on-madder` | the contact close, active register rows |
+| `.on-field` | `madder-deep` (day) / `night-madder-deep` (night) | `on-madder` | the contact close |
 | `.on-lacquer` | `lacquer` | `#f2e8d5` | the project dossier, **pinned in both editions** |
 
 **Terracotta, brass and sand are field colours.** Nothing sets small type on them — they
 carry timeline bars, filled knots and tonal panels. Anything that does land on them takes
 the darkest ink available.
 
-Secondary text on a coloured ground is tinted from that hue (`on-madder-2` is drawn out of
-the madder itself), never grey.
+Secondary text on a coloured ground is tinted from that hue (`on-madder-2` and `-3` are
+drawn out of the madder itself), never grey. On the close the tertiary is set as text — the
+band's figure — so it is held to 4.5:1 there, not to the 3:1 a mark needs.
 
 Every pairing is computed by `scripts/contrast.mjs`, not eyeballed. `npm run contrast`
-measures 48 pairings across all three scopes in both editions and **exits non-zero** on any
+measures 59 pairings across all three scopes in both editions and **exits non-zero** on any
 failure, so a palette edit that breaks a pairing fails the build.
 
 ## Typography
@@ -300,25 +312,30 @@ column and left the right half of the page empty.
 without re-deriving the rest breaks the fit.
 
 **The khatam frame.** The About photographs sit in octagonal windows, not the rotated squares
-they were sketched as. An octagon takes the corners off a photograph where a diamond takes
-half of it, and half of these is the half that says where they were taken — the London Eye
-above the graduation, the team's name behind the stage. The corner is cut at 45°, where the
-two squares of a khatam cross.
+they were sketched as, and not the lozenges they were cut to for one version. An octagon takes
+the corners off a photograph where a diamond takes half of it — and half of these is the half
+that says where they were taken: the London Eye above the graduation, the team's name behind
+the stage. The corner is cut at 45°, where the two squares of a khatam cross.
 
-Around each window is the border a carpet actually carries: **two rules, a run of lozenge
-knots between them along each straight edge, and a rosette struck over each of the four cut
-corners** where the runs would otherwise collide. The rosette is small enough to sit inside the
-band and its mat, and its ground is an octagon of its own figure, drawn still. A square ground
-cut a straight notch out of the photograph's chamfered corner, and because it turned with the
-rosette the notch moved — which is what read as the frame being cut off at random. At this size
-the rosette carries three strokes: the outer ring, the star and the eye. The full figure's
-inner ring and radial ties close up into a blot. `khatamFrame(aspect)` in `girih.js` builds
-all of it in units where the plate is 100 tall, so one SVG scales to any size without
-distorting — and because the geometry is *built from* the aspect rather than stretched to it,
-the band keeps one width the whole way round a wide plate as readily as a square one. The
-window is handed to the image as a `clip-path` struck from the same construction, so an
-ordinary responsive image element keeps its `srcset` instead of becoming an SVG image with a
-single fixed source.
+Around each window is the border a carpet actually carries: **two rules, a run of lozenge knots
+between them along each straight edge, and a rosette struck over each of the four cut corners**
+where the runs would otherwise collide. The rosette's ground is an octagon of its own figure,
+drawn still — a square ground cut a straight notch out of the chamfered corner, and because it
+turned with the rosette the notch moved, which is what read as the frame being cut off at
+random. At this size the rosette carries three strokes: the outer ring, the star and the eye;
+the full figure's inner ring and radial ties close up into a blot.
+
+`khatamFrame(aspect)` in `girih.js` builds all of it in units where the plate is 100 tall, so
+one SVG scales to any size without distorting — and because the geometry is *built from* the
+aspect rather than stretched to it, the band keeps one width the whole way round a wide plate
+as readily as a square one. The window is handed to the image as a `clip-path` struck from the
+same construction, so an ordinary responsive image keeps its `srcset` instead of becoming an
+SVG `<image>` with a single fixed source.
+
+The three crops in `profile.js` are tuned to this window. They were opened out for one version
+when the photographs were cut as diamonds — a lozenge is at its narrowest exactly where a
+portrait is tallest, and the mortarboard went into the two upper edges — and they are back to
+the tight framing now, because the octagon does not take that half.
 
 **The band moves with the reader.** The three plates carry a scroll-driven animation —
 `animation-timeline: view()` — so they pass the viewport at three different rates and the band
@@ -370,77 +387,19 @@ did not answer to the knob that was supposed to own it. It sets `--space-below-s
 now, and `every chapter takes its head and foot from the same two knobs` in `scripts/check.mjs`
 turns both knobs on all five sections and insists the padding follows.
 
-**One frame, and the same frame — all five.** Every chapter carries `chapter--fit` and is given
-`--frame` as a `min-block-size`, so all five come out the same height as each other as well as the
-same height as the glass — whatever is in them, and without any one being told what that height
-is. `--frame` is `100svh` less `--bar`, capped at 62rem, and `--bar` is what the fixed bar takes
-off the top: a floor of four knots, or the bar's content and its two knots of padding, whichever is
-taller. The bar's row takes its own height from that same figure rather than the other way
-round, so the two cannot drift apart. Inside each section the head and the closing band take
-what they need and the body row stretches, which is where the air a tall screen has spare
-collects — around the photographs in 01, around the artefact in 02.
+**Bands size to what is in them.** The page is a *length*, not a stack of frames. Every band
+takes the same head and foot — `padding-block: clamp(4.5rem, 13svh, 8.5rem) clamp(4rem, 11svh,
+7.5rem)` — and is then as tall as its content; the two that pin (02 and 03) are taller than the
+glass by design, because their height *is* their scroll. The hero is the one band cut to the
+window, and it is the one band whose composition would be cropped by anything else.
 
-The cap is the "obvious extent", and it is measured rather than picked. With the floor lifted
-off, the tallest chapter wants 944px at 2560×1146 and 969px at 2560×1440: the compositions have a
-size they want, and past it they do not fill the extra height, they space out inside it. The cap
-was 76rem for a while and every chapter on a tall screen carried 400px of ground it had nothing to
-do with — holes between the things that belonged together, which is worse than a margin. At 62rem
-a 1080p window is 12px short of the glass and a 1440p one shows the next chapter at the bottom
-edge, which is what a page should do anyway. On a phone no chapter fits one screen and none is
-made to — the frame is a floor, so each simply runs as long as it needs. `every chapter is the
-same height` and `and that height is one screen under the bar` in `scripts/check.mjs` hold both
-halves.
-
-Each chapter has a short-window rule (`max-height: 52rem`) that closes its own air up on a
-768px laptop — the rows of the journey, the lines of the letter, the knobs of 02. They are the
-floor the figures come down to, not the figures to turn.
-
-Both grid rows involved are `1fr` rather than `minmax(0, 1fr)`. With a zero floor a row keeps
-the height the frame gave it and lets its contents out of the bottom instead, which is how the
-row of controls in 02 came to be painted below the end of its own section.
-
-**The two columns close on one line.** The register spans both rows of the grid and the
-photographs are stood at the foot of the second, so whatever the register is taller than the
-sentence by lands in that row and the medallion comes to rest level with it — no figure
-anywhere says so. Where the photographs are the taller column instead, the register stretches
-to meet them rather than the other way round: `align-self: stretch` with `grid-auto-rows: 1fr`,
-so the column is divided into four equal rows and the extra height is shared between them
-instead of pooling at the foot. Equal rows do three things at once — the register ends with the
-medallion, the entries keep an even measure, and the band between two of them falls at the same
-interval every time, which is what lets it be an ornament rather than a hairline landing
-wherever the copy leaves it. Each entry is centred in its row, so the air above it and the air
-below it are the same and the band sits midway. `.about` itself is `align-self: start`, which
-is what keeps the
-frame's spare height below the block rather than inside it — stretched, this grid took all of
-it into the second row and opened a 270px hole between the sentence and the photographs.
-
-**Composed to a screen.** About carries `chapter--fit`, and everything in it that decides its
-height is measured in viewport height rather than in knots: the caps on the heading and on the
-two blocks of type, `--band` (the height the medallion is drawn to), and six named spacing
-knobs — `--space-above-title`, `--space-above-blurb`, `--space-below-blurb`,
-`--space-between-entries`, `--space-below-photos` and `--space-below-section`. The knot is a
-width module and cannot know how tall the glass is.
-
-Each knob moves one piece of air and nothing else, which is why the grid's row gap is zero and
-the bands carry their own margins: one gap cannot be two different numbers. Set any of them to
-a fixed length and that piece stops moving with the height of the screen. Measured at
-1440×900 they come out at 41, 27, 36, 10, 18 and 23 pixels.
-
-They were none of those things for a while. Every one of the six was written
-`clamp(min, 100.6vh, max)`, and 100.6vh is past every cap here, so all six sat pinned at their
-caps and not one of them ever answered to the height of the glass. That is how a chapter
-composed to stand in one screen came to be 1563px tall on a 768px one. The middle terms are
-real figures now; keep any replacement in vh.
-
-The band is then sized backwards from that height, which is the reverse of the usual: the
-centre plate is 3.65 twelfths of the band after the gaps and its photograph is 0.808 wide to
-tall, so its height is 0.3766 of the band's width. Inverting that gives the width that draws
-the medallion at `--band`, capped at the measure.
-
-Measured, the section stands in exactly one frame at 1280×800, 1366×768, 1440×900, 1512×982,
-1680×1050, 1920×1080 and 2560×1440 — the same height as chapter 02 at every one of them, to
-within a pixel. `the two composed chapters are the same height` and `and that height is one
-screen under the bar` in `scripts/check.mjs` hold both halves of that.
+An earlier build did the opposite: every chapter carried `chapter--fit` and was given a
+`--frame` as a `min-block-size`, with six named vh knobs per chapter moving the air inside it,
+so all five came out the same height as each other and as the glass. It is gone. Five
+compositions of genuinely different content do not have one height in common, and forcing one
+on them spent the difference as holes — a 270px gap between a sentence and a photograph in 01,
+400px of ground under 04 on a tall screen. What replaced it is the carpet read lengthwise: one
+head, one foot, and whatever the band needs between them.
 
 Under 64rem of width it stops standing in one frame, and is meant to: the reading column and
 the register together need more width than there is, and squeezed into an 872px measure the
@@ -457,107 +416,82 @@ its own octagon has to be one step away from it (`--chapter-patch`). Left pointi
 ground, the rosettes came out as pale octagons on the sand and the register's marks vanished
 into it.
 
-**The composition.** Two columns. The left one reads — the statement, and under it the
-medallion of three photographs that is the evidence for it. The right one is the register of
-record, set as a colophon is set: four entries read down, nothing drawn round them, and a band
-of knots woven between them. Each is a mark in the margin, the matter in small caps, the fact
-under it, the qualification under that.
+**The composition.** Two columns. The left one reads — the sentence under the rosette, and
+beneath it the three photographs in their khatam frames. The right one is the register of
+record, read down. Nothing in the band is boxed and nothing carries a patterned ground: both
+were tried, and a panel with the girih field struck on it put a second kind of surface into a
+page that already has a woven one.
 
-It was boxed before — closed top and bottom, a spine down the left edge, a plain hairline
-between every entry — and the box was the problem, not the division. It was the only thing on
-the page with a rule drawn round it, while everything else here that lists is a line under a
-row and nothing more. Four rules and a spine read as a table pasted into a manuscript.
+**The band of three is solved, not chosen.** The frames are ornate enough that crowding them
+turns the band to clutter, so the arrangement does the work: three plates side by side on **one
+baseline**, the upright photograph in the middle drawn 1.3 times the height of the two flanking
+it, and those two drawn to *exactly* the same height as each other. `align-items: end` is what
+makes it a medallion rather than a row — the centre's extra height all goes upward, so the
+flanks sit lower without being given an offset to sit at.
 
-So the box went and the division stayed, as the page's own ornament rather than a hairline: the
-band between two entries is the knot run woven across the foot of every chapter and struck at
-every chapter join, taken down to a twelfth of its height and half its weight. Drawn as a mask
-over a flat colour, so it takes the edition's own ink and costs no second asset. A register
-divided by plain rules is a table; divided by the figure that closes a chapter it belongs to
-the page it is set on.
-
-The marks are outlined now rather than filled. The figure was always the octagon the
-photographs are cut to — the smallest ornament on the page and the largest being the same shape
-is the point of it — but filled, with an icon sitting in it, it read as a chip, which is a
-component and not an ornament. Drawn as a hairline it is the khatam frame below it at a twelfth
-the size. It takes two clipped layers, because a `clip-path` cannot be stroked: the outer one
-is the line, the inner one punches the ground back out of it. A statement and a credential are different
-kinds of claim, and setting them side by side rather than one above the other says so without
-needing a label to say it.
-
-It was three bands down the page before — statement, register, medallion — with the register
-four cells across. Across, each entry had a quarter of the measure to fit a label, a value and
-a detail into, so the longest wrapped to three lines while the shortest took one and the whole
-row was ruled to the tallest. Down a column each entry has the width of the column and takes
-exactly the height its own copy needs. The mark beside each one spans the entry rather than
-sitting in the label's row, where it was the tallest thing in that row and quietly added
-ninety pixels to the ledger for an ornament that was never meant to set the leading.
-
-The statement is centred, and `--blurb` on `.about` is how wide it is allowed to run — which
-is the same thing as how many lines it takes, since it is one sentence and it wraps. 24rem
-gives it six lines, 34rem four, 46rem three, and 70rem — what it is set to — two, from about
-1180px of viewport up. Below that the column runs out before the knob does and the paragraph
-takes the lines it needs. It is the text column alone: the
-rosette in the margin is not part of it, and the pair stays centred as the number changes. The
-chapter lede above it goes the other way and has its break written down in `chapters.js`,
-because that line has to land exactly at the end of the rule. A written break is right for a
-line that has to land somewhere; a width is right for a paragraph whose shape should follow
-the space it is in.
-
-**The medallion.** The tall portrait in the middle, the two landscape plates flanking it, all
-three standing on one baseline. `align-items: end` is what makes it a medallion rather than a
-row: the centre's extra height all goes upward, so the flanks sit lower without being given an
-offset to sit at, and the captions are held to two lines so the bottoms being aligned aligns
-the frames and not just the type beneath them.
-
-The three spans were solved, not chosen — the flanks come out at the same height as each other
-and the centre about 1.3 times taller:
+The three spans follow from the ratios, in twelfths of the band after its two gaps are taken
+out:
 
 ```
 flank height h, centre height 1.3h
-square   (1.000)  w = h       -> 3.50 twelfths
-portrait (0.808)  w = 1.05h   -> 3.65
-wide     (1.391)  w = 1.391h  -> 4.85
+square   (1.0000)  w = h          ->  3.486 twelfths
+portrait (0.8084)  w = 1.0509h    ->  3.664
+wide     (1.3913)  w = 1.3913h    ->  4.850
+                                     ------
+                                     12.000
 ```
 
-Change one and the other two have to be re-solved, or the medallion stops standing level. They
-are declared beside the photographs in `About.jsx`, not as nth-child rules here: they are a
-composition, not a style, and have to be read next to what they are composing. How large the
-band is drawn is `--plate`, and how close together is `--plate-gap`; both are separate from
-the spans on purpose, so the size of the band and the proportions inside it can be changed
-without disturbing each other.
+Change one and the other two have to be re-solved, or the band stops standing level. They are
+declared in `About.jsx` beside the photographs rather than as nth-child rules in the
+stylesheet: they are a composition, not a style. The share is measured **after** the gaps are
+taken out — measured before them, three bases plus two gaps came to more than the band at some
+widths and the first plate overhung its edge.
 
-The plates were overlapped once, staggered across a 24-column grid, and later fell to the
-right in a cascade. The frames are ornate enough that crowding them turned the band to
-clutter, and the cascade read as three unrelated plates rather than one figure. A medallion is
-the arrangement the ornament already belongs to.
+The captions reserve three lines' worth whatever they say. The row is aligned on its bottom
+edge, so without a reserve the bottoms that line up are the *captions'* and the frames stand at
+three different heights.
 
-**The register.** Four matters of record in four equal rows, divided by the page's own knot
-run at a twelfth of its height — never boxed, never ruled round. Each mark is an *outlined*
-octagon of the same figure the photographs are cut to, so the smallest ornament on the page is
-the largest drawn small. The matter is set at `--t-micro`, a step above the page's label size,
-and the qualification under the fact at `--t-small` in `--ink-2`: it was `--t-micro` in `--ink-3`
-for a while, about 3:1 on the sand, small and faint at once for the line that says First Class.
-The photo captions stay at `--t-label` but moved out of `--ink-3` for the same reason; a step
-larger put the longest caption onto a fourth line at laptop widths and stood its frame off the
-medallion's baseline. Under about 1400px all three reserve four lines, because there the
-longest one needs them.
+**The register.** Four entries of equal share, stretched to end level with the plates, each
+centred in its own share. Equal shares do three things at once: the last entry ends with the
+band of three, the entries keep an even measure, and the knot run between two of them falls at
+the same interval every time — which is what lets it be an ornament rather than a hairline
+landing wherever the copy leaves it. Centred rather than packed, because the rows are equal and
+the entries are not quite: packed up, the spare air collected at the foot of each row and the
+band came out three times closer to the entry below it than the one above.
 
-Every size in these chapters is a step on the type ramp in `tokens.css`. A few were literal
-values for a while — 0.86rem, 1.06rem, 1.04rem — each tuned to make one thing fit, and the design
-hook was right to flag them: a size that is not on the ramp is a size nobody can find again.
+**The divider is the page's own knot run** — the figure woven across every chapter join — taken
+down to a twelfth of its height and half its weight, drawn as a mask over a flat colour so it
+takes the edition's ink and costs no second asset. A register divided by plain hairlines is a
+table; divided by the same ornament that closes a chapter, it belongs to the page.
 
-The frame has nothing in flow — both the image and the ornament are absolute — so an `auto`
-grid column sizes it from its `aspect-ratio` and lets it overhang its own figure. It takes a
-`minmax(0, 1fr)` column, which has to accept the width it is given.
+**The marks are glyphs, not ornament.** Four outlined octagons stood in the margin before —
+the same figure at four sizes, said four times, which marks a list as a list but never tells
+you which row you are on. Each row now carries the glyph for what it is about: a mortarboard, a
+colonnade, a door standing open, and a marker that is the knot's own lozenge-within-a-lozenge
+drawn long enough to come to a point. Drawn on the set's own 24-unit grid at its own weight, so
+they read as part of the icon set and not as clip art. The mark spans the entry's rows and is
+centred on the whole entry, not set beside its label — in the first row it was the tallest
+thing there, so every entry carried the mark's own height above its value.
 
-**The frame draws itself.** Every ornament path carries `pathLength="1"`, so one
-`stroke-dasharray` of `1` covers a path exactly whatever its real length, with nothing measured
-in JavaScript. **A path that forgets `pathLength` gets a one-unit dash against its true length
-and renders as a dotted line** — which is what the rosettes did until they were given it.
-Stroke widths are in the frame's own units rather than `vector-effect: non-scaling-stroke`:
-all three plates come out the same height, so one user-unit weight reads the same across the
-band and nothing depends on how a browser scales a dash. The rosette's ground is filled rather
-than stroked, so it is excluded from the dash and the animation rather than overridden.
+**The frames do not drift.** They used to breathe on a timer, each plate on its own phase, and
+pass the viewport at three rates under a scroll-driven timeline. Both are gone. This band's
+whole claim is that the three stand on one line and the flanks come out at the same height, and
+three plates each a few pixels up or down at any given moment do not stand on one line. What is
+left is the reader's own: the frame assembles on arrival in the order a draughtsman strikes it
+— rules, then the running band, then the rosettes over the corners — and lifts under the
+pointer.
+
+Every one of those claims is a claim about pixels, so `scripts/check.mjs` measures all of them:
+the feet within a pixel, the flanks within a pixel, the centre at 1.3×, each frame's drawn ratio
+against its own `--ar`, four equal shares, each knot run within a pixel of the midpoint, four
+distinct marks, and the register's foot level with the plates'. Measured at 1280×800, 1440×900
+and 2560×1440 across all three field widths: feet **0.00–0.63px**, flanks **0.02px**, centre
+**1.3001×**, register foot **0.00px**.
+
+At phone width the two columns stop being two. The plates wrap — two across, the wide one on
+its own line — the caption reserve is dropped, since wrapped they have no shared baseline left
+to keep, and the register goes underneath and takes its own height, because there is no band of
+three beside it to end level with.
 On arrival the frame assembles in the order a draughtsman strikes it: the two rules, then the
 running band, then the rosettes over the corners. The rosettes turn once settled — about their
 own origin, since `transform-box: fill-box` cannot be relied on for a `<g>` — and the cluster
@@ -571,33 +505,69 @@ the figure that earns the space.
 
 ## Layout
 
-**The measure grows with the screen, and then stops.** `--measure` is
-`min(96rem, max(72rem, 80vw))`: under about 1370px it is the `72rem` the compositions were tuned
-at, above that it grows with the viewport, and it stops at 96rem.
+**The field has three widths, and the reader picks one.** Three values set how much of the
+glass the bands are allowed, and they only work together:
 
-The cap was taken off for a while — 84vw up to 124rem — on the reasoning that a field holding 57%
-of a 2560px panel is a strip down the middle with a hand of empty ground either side. It is, and
-the page was worse for the fix: a composition tuned at 72rem and let out to 1984px does not fill
-the extra width, it spaces out inside it, and every chapter grew gaps that had nothing in them.
-The cap is back, a little above the 92rem it was. Width past it is left as ground, which is what a
-margin is for. What grows up to the cap is the field — the artefact, the loom, the photographs,
-the specimen — never a line of type: anything that reads as prose carries its own cap in `ch`.
+| | `--measure` | `--selvedge` | `--gutter` |
+|---|---|---|---|
+| snug | 75rem | `clamp(1.125rem, 3.4vw, 3.75rem)` | `clamp(1.125rem, 4vw, 4.5rem)` |
+| **wide** *(ships)* | 88rem | `clamp(1.125rem, 2.4vw, 2.9rem)` | `clamp(1.125rem, 2.8vw, 3.4rem)` |
+| full | 108rem | `clamp(1.125rem, 1.3vw, 1.9rem)` | `clamp(1.125rem, 1.5vw, 2.2rem)` |
+
+**Raising the measure on its own does nothing at the width most readers are on.** On a 1440
+laptop the measure never binds — `min(measure, 100% - 2 * gutter)` resolves to the second term,
+and the margins are the only thing holding the page in. That is why the measure was moved three
+times with no visible effect before the margins were moved with it. Measured at the bands:
+1235 / 1359 / 1397 at 1440, and 1458 / 1711 / 2100 at 2560.
+
+The setting lives on the root as `data-field`, is applied by an inline script before first
+paint for the same reason the edition is (a stored width applied after paint reflows the whole
+page under the reader), and is cycled from a gauge in the bar — three rules of increasing
+length, lit up to the current setting, so the control says which of the three it is on while
+standing still. `src/lib/field.js`.
+
+**Phone width is deliberately identical in all three.** Every gutter floors at the same
+`1.125rem`, because on a phone there is no field to widen — there is one column and the edge of
+the glass.
+
+**Nothing is cut off at the edge of a phone.** The page cannot scroll sideways, so anything too
+wide for the glass is not overflow anyone sees in a scrollbar: it is simply cut off. Four rules
+keep it inside, and the phone block of `npm run check` holds them at 360 and 390:
+
+- A one-column grid on a phone is `minmax(0, 1fr)`, never a bare `1fr`. A bare `1fr` is never
+  narrower than its longest word, and one long title used to take a whole plate (screen and all)
+  out past the edge.
+- Display type sized off the glass's height is also capped by its column: a plate's title fits
+  its longest word (`--chars` from Work.jsx, 0.82em a letter), the same rule as the file's title.
+- A register's columns stay equal unless a name cannot fit its half; then that column takes
+  what its longest word needs (`minmax(min-content, 1fr)`) and the word is never broken.
+- Anything that turns is clipped sideways where it lives: the hero's halo swings its corners
+  past the glass, so the hero is `overflow-x: clip` (clip, not hidden, so it is not a scroller).
+
+**The hero has a ceiling the other bands do not**, and it needs one. Everything in its
+composition is sized in `cqw` off its own box — the name, the head room, the portrait — so the
+box's width sets the composition's *height*, and the composition has to land inside one
+viewport or the actions and the status line fall below the fold. At `full` it did: 918px of
+content in a 900px band at 1440, and 251px over at 2560. The third term of its `min()` is
+`calc(34rem + 78svh)`, solved against the render at 1440×900 and 2560×1440 where the fit is
+tightest. The bands below need no such thing — they are as tall as their content and the reader
+scrolls.
 
 One module: **the knot**, `clamp(0.8125rem, 1.05vw, 1.1875rem)`. Every measure is a whole
 number of knots, the way every measure on a weaver's cartoon is a whole number of cells.
 
-**Nothing spans the full width.** The *selvedge* — the woven edge of a carpet — holds both
-page margins at `clamp(1.125rem, 3.4vw, 3.75rem)`, and the field lives between them:
+**Nothing spans the full width.** The *selvedge* — the woven edge of a carpet — holds both page
+margins, and the field lives between them:
 
 ```
 .chapter__inner {
-  width: min(var(--measure), 100% - (var(--selvedge) + var(--gutter)) * 2);
+  width: min(var(--measure), 100% - 2 * var(--gutter));
   margin-inline: auto;
 }
 ```
 
-`--measure` is `72rem`. One responsive system serves every width; there are no separate
-mobile components, only compositions that restack.
+One responsive system serves every width; there are no separate mobile components, only
+compositions that restack.
 
 **Chapter heads** place the folio number in the *margin*, turned on its side, the way a
 manuscript page is numbered. It is never a label stacked above the heading — that eyebrow
@@ -621,6 +591,9 @@ Two shadow tokens exist and are used sparingly, both with an offset *and* a blur
 
 Real depth comes from **z-ordered planes moving at different speeds**: in the hero the type
 moves 7px against the cursor, the figure 17px. Three planes, three rates.
+The lean is read only while the pointer is over the hero. Anywhere else the planes stand at
+rest, so a reader scrolling back up finds the composition exactly as it was set, never
+part way through a lean.
 
 ## Shapes
 
@@ -911,6 +884,47 @@ artefact is what you clicked to get here, and drawing it again at half the size 
 copy of the page you just left.
 
 ## Components
+
+**The mark is ایلیا in square Kufic, turned to stand as an E.** Square Kufic (bannā'ī) is the
+brick script of Iranian walls, laid on a grid where a stroke and the gap beside it are the
+same width — the naqsheh's own rule, one cell one knot. Written on its baseline the name is
+five uprights that nearly mirror (alef, yeh, lam, yeh, alef: tall, short, tall, short, tall),
+the yehs and the lam joined along the baseline and the first alef standing apart; turned a
+quarter, as bannā'ī walls turn words freely, the three tall letters are an E's arms, the
+baseline its spine, and the lone alef its foot set one knot off. One drawing in both scripts,
+as the hero sets the name in both.
+
+- The rows live in `src/lib/mark.js` and nowhere else. The bar draws them as an inline SVG;
+  `npm run icons` (`scripts/icons.mjs`) builds every tab and home-screen icon and the share card
+  (`share.png`, the og:image) from the same rows, and `vite.config.js` writes the overture's
+  paths into `index.html` from them at build. Never redraw it by hand, set it in a font, or add
+  dots to it — bannā'ī is undotted.
+- **A knot is a whole number of pixels.** In the bar it is 2px (an 18px mark, `crispEdges`);
+  in an icon it is the tile's sixteenth, rounded. A fractional knot blurs.
+- It stands **half a knot right of centre**: the spine is its heaviest stroke, and on the
+  centre line the figure reads as sliding left.
+- The tab icon is cream on `madder`. In the bar it takes the bar's own ink inside the ruled
+  square, and on hover the square floods with the accent.
+- The share card is the hero's lockup cut down: the mark on its cartoon, EELIYA and NAYERI at
+  the hero's solved widths, and one line under them reading outward from both margins — the
+  role from the left, ایلیا نیری from the right — level with the mark's foot.
+
+**The overture is the mark, turning.** ایلیا is written onto the cartoon from the right, a
+column of knots at a time — the lone alef, the break, the joined run — and then turns, slowly
+at first, gathering to a steady spin, for as long as the page takes. When the faces are loaded
+and the portrait decoded it is taken from wherever it is and eased, at the speed it was going,
+into the next E; from a standing start it goes once round and a quarter, so even a page that
+was ready at once is seen to turn. It rests on the cartoon for a beat, then flies home to the
+empty square at the top left as the ground lifts and the hero, held behind it, arrives.
+
+- It lives in `index.html`, markup and rules both, not in the app: a loader has to be on the
+  glass before the script that would draw it. `Overture.jsx` only lands it. The writing and the
+  spin are timed in the head's rules; the landing's knobs are named at the top of the component.
+- While it plays, `html[data-overture]` holds the hero's entrance paused and the bar's square
+  empty; the lift releases both.
+- Once a session. Any input clears it in a quarter of a second, and a second visit never shows
+  it. A reader who asked for stillness gets the E standing — no writing, no spin — until the
+  page is ready, and then the ground simply goes.
 
 **Controls are double-ruled cartouches.** A squared panel, a 1px outer rule, a second rule
 inset by 3px, and ink that wipes up from the bottom edge on hover — the direction a carpet

@@ -1,5 +1,5 @@
-// The chronology, oldest first. Rendered as a loom: years across, each
-// chapter of the life a weft bar, grouped as the CV groups them.
+// The chronology, oldest first. Rendered twice by 03: as a thread with a knot
+// at the date each chapter began, and as the record that thread folds into.
 //
 // `role` is the job title or the qualification; `org` is the company or the
 // institution. Both are taken from the CV published with this site
@@ -11,9 +11,11 @@
 //
 // `kind` is the CV section the entry sits under — Education or Experience.
 //
-// `from` and `to` are decimal years used only to draw each chapter's span, so
-// overlapping chapters (working while studying) stay visible. `to: null`
-// means it is still running.
+// `from` is the decimal year the chapter began, and it is the only thing that
+// places the entry on the thread. `to` is no longer drawn — spans made the
+// chapter a Gantt chart nobody asked for — and is kept only to work out the
+// last year the chronology covers; `to: null` means it is still running. The
+// span a reader actually reads is `period`, in words, in the record.
 
 export const chronology = [
   {
@@ -23,6 +25,7 @@ export const chronology = [
     from: 2018.67,
     to: 2021.5,
     role: 'GCSEs',
+    org: 'The North School',
     detail:
       'Eleven GCSEs, including a grade 9 in Computer Science and a grade 8 in Mathematics.',
   },
@@ -35,7 +38,7 @@ export const chronology = [
     role: 'Customer Advisor',
     org: 'B&Q',
     detail:
-      'Customer-facing retail work, held continuously alongside A-Levels, the degree and every project on this site. Six years of explaining things to people who did not ask for a technical answer.',
+      'Customer-facing retail work, held continuously alongside A-Levels, the degree and every project on this site. Worked multiple roles across two stores, dealing with customer complaints, outbound delivery logistics, and shelf/aisle layout and replenishment.',
   },
   {
     id: 'a-levels',
@@ -44,6 +47,7 @@ export const chronology = [
     from: 2021.67,
     to: 2023.5,
     role: 'A-Levels',
+    org: 'The Norton Knatchbull School, Kent',
     detail:
       'Studied towards A-Levels while working part-time and building personal projects.',
   },
@@ -78,7 +82,7 @@ export const chronology = [
     role: 'Software Development Intern',
     org: 'Foundermatcha',
     detail:
-      'Two months at a startup as primarily a UI/UX developer, building early-stage product features.',
+      'Worked as a frontend developer, alongside the lead developer and founder whilst collaborating with the UI/UX designer and backend developer to implement responsive Flutter interfaces from Figma designs and integrate them with backend services. Applied industry practices including design handoff, component-based UI development and version-controlled collaborative workflows, and gained a practical understanding of how a software product is structured and delivered.',
   },
   {
     id: 'ideathon',
@@ -89,15 +93,6 @@ export const chronology = [
     role: 'Ideathon team member',
     org: 'Cognizant × Aston Martin F1',
     detail:
-      'Worked in a team on how AI could improve the Formula One fan experience for Aston Martin and Cognizant. Pit Wall is what came out of it.',
+      'Helped lead a five-person team in a 2026 Cognizant × Aston Martin F1 ideathon, developing Pit Wall, an AI-driven app concept to improve fan engagement around the 2026 F1 regulations. Owned project planning and delivery, and presented the solution to a panel of AMF1 stakeholders and engineers.',
   },
-];
-
-// The span the chart is drawn across.
-export const chronologyRange = { from: 2018.4, to: 2026.9 };
-
-// The two sections of the CV, in the order it gives them.
-export const chronologyKinds = [
-  { kind: 'education', title: 'Education' },
-  { kind: 'experience', title: 'Experience' },
 ];

@@ -1,198 +1,116 @@
-import { useRef, useState } from 'react';
-
-import ChapterHead from '../components/ChapterHead.jsx';
-import { GuardBand } from '../components/Ornament.jsx';
-import { folio } from '../lib/chapters.js';
-import { projects } from '../data/projects.js';
+import Announce from '../components/Announce.jsx';
+import Icon from '../components/Icon.jsx';
 import { stackRegisters } from '../data/stack.js';
-import { usedIn } from '../lib/stack.js';
-
-const TOTAL = stackRegisters.reduce((sum, group) => sum + group.items.length, 0);
-const OF = projects.length;
-
-// Each register's names ordered the way a specimen is ordered, the largest
-// first, and otherwise in the order the register gives them.
-//
-// A register is set by size only when at least two of its names turn up in
-// the projects — size is a comparison, and it needs two things to compare.
-// Tools has one (Postman, in the Alumni API's stack), so sizing it would set
-// Postman large and Git, GitHub and Figma small, which reads as the reverse
-// of the truth: they are simply not the kind of thing a project lists as its
-// stack. Tools and the ways of working with people are set even instead.
-const REGISTERS = stackRegisters.map((group) => {
-  const items = group.items
-    .map((name, order) => ({ name, order, uses: usedIn(name) }))
-    .sort((a, b) => b.uses.length - a.uses.length || a.order - b.order);
-  const listed = items.filter((item) => item.uses.length > 0).length;
-  return { ...group, items, sized: listed >= 2, listed: listed > 0 };
-});
-
-// The step a name is set at: how many of the seven list it, held to four.
-const step = (item, sized) => (sized ? String(Math.min(item.uses.length, 4)) : 'even');
+import { picture } from '../lib/media.js';
 
 /**
- * The stack, as a type specimen.
+ * 04 — the running bands.
  *
- * Every name in a register is set in one wall of type, and the size it is
- * set at is how many of the seven projects actually use it — counted from
- * the project data at render time and never typed here. JavaScript, in four
- * of them, is the largest thing in the chapter; Java and PHP, which are on
- * the CV and in none of the seven, are set small and quiet. That is the
- * chapter's own claim made visible: counted from the work rather than
- * claimed. Size is never the only place the number lives — a figure stands
- * beside every counted name, and the reading under the wall says it in words.
+ * Five registers, five bands, and the bands run: every name rides past the
+ * way a border pattern repeats along a carpet, each band at its own pace and
+ * every second one the other way. Nothing is behind a tab or a click — the
+ * whole stack is on the page at once, moving.
  *
- * Choosing a name is a click. The reading under the wall then gives the
- * count as knots out of seven and lists the projects as links into their
- * files. Each register remembers what was chosen in it.
+ * Each name carries its own mark. A product carries its own logo; a practice
+ * carries a glyph drawn in this site's stroke, because a way of working has
+ * no logo and borrowing one for it would be a claim about a tool rather than
+ * a description of the work. Where a product has no logo file the mark is a
+ * monogram struck in the site's octagon — a drawn mark rather than a hole.
+ *
+ * The motion is one CSS animation on one transform. Each band holds its list
+ * twice and the second lap is aria-hidden: the first lap is the register, the
+ * second is the mechanism that makes the loop seamless. A fine pointer can
+ * hold a band still by resting on it, and a reader who asked for stillness
+ * gets all five bands standing, wrapped, with nothing duplicated visible.
  */
-export function Stack({ onOpen }) {
-  const [index, setIndex] = useState(0);
-  const [picked, setPicked] = useState(() => REGISTERS.map((group) => group.items[0].name));
-  const tabRefs = useRef([]);
+const TOTAL = stackRegisters.reduce((sum, group) => sum + group.items.length, 0);
 
-  const group = REGISTERS[index];
-  const current = group.items.find((item) => item.name === picked[index]) ?? group.items[0];
-  const count = current.uses.length;
+// Seconds per lap. Different rates read as texture; one rate reads as a
+// machine. Slowest where the names are longest.
+//
+// Set about 1.8x slower than they first ran. A band that moves at reading
+// pace is a band the reader fights — they start tracking a name across the
+// glass instead of taking the register in. These are meant to drift at the
+// edge of noticing, the way a border pattern does when you are looking at
+// the field.
+const PACE = [94, 130, 158, 100, 116];
 
-  // Selection and focus move together, or the keyboard is left on a button
-  // that is no longer tabbable while the ring sits on an unselected tab.
-  const go = (next) => {
-    const target = (next + REGISTERS.length) % REGISTERS.length;
-    setIndex(target);
-    tabRefs.current[target]?.focus();
-  };
+/** One item's mark: its logo, its glyph, or its monogram. */
+function Mark({ item }) {
+  if (item.logo) {
+    const image = picture(`logos/${item.logo}`);
+    if (!image) return null;
+    return (
+      <span className="run__mark" data-dark={item.dark ? 'true' : undefined}>
+        <img
+          src={image.src}
+          srcSet={image.srcSet}
+          sizes="2rem"
+          width={image.width}
+          height={image.height}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      </span>
+    );
+  }
 
-  const pick = (name) => setPicked((list) => list.map((entry, n) => (n === index ? name : entry)));
+  if (item.icon) {
+    return (
+      <span className="run__mark run__mark--drawn">
+        <Icon name={item.icon} />
+      </span>
+    );
+  }
 
   return (
-    <section className="chapter chapter--fit" id="stack" aria-labelledby="stack-heading">
+    <span className="run__mark run__mark--mono" aria-hidden="true">
+      {/* The letters are sized on their own element. Set on the tile, the
+          smaller font-size would resolve the tile's own `em` box against
+          itself and the monogram would come out a third of every other
+          mark in the band. */}
+      <span className="run__mono">{item.mono}</span>
+    </span>
+  );
+}
+
+function Lap({ items, hidden }) {
+  return (
+    <ul className="run__lap" aria-hidden={hidden ? 'true' : undefined}>
+      {items.map((item) => (
+        <li className="run__item" key={item.name}>
+          <Mark item={item} />
+          <span className="run__name-text">{item.name}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function Stack() {
+  return (
+    <section className="chapter stack" id="stack" aria-labelledby="stack-heading">
       <div className="chapter__inner">
-        <ChapterHead id="stack" figure={`${TOTAL} in all`} />
+        <Announce id="stack" figure={`${TOTAL} in all`} />
+      </div>
 
-        <div className="stackbody">
-          <ul className="registers__tabs reveal" role="tablist" aria-label="Stack registers">
-            {REGISTERS.map((entry, position) => (
-              <li key={entry.id} role="presentation">
-                <button
-                  type="button"
-                  role="tab"
-                  id={`tab-${entry.id}`}
-                  aria-selected={position === index}
-                  aria-controls={`panel-${entry.id}`}
-                  tabIndex={position === index ? 0 : -1}
-                  className="tab"
-                  ref={(node) => {
-                    tabRefs.current[position] = node;
-                  }}
-                  onClick={() => setIndex(position)}
-                  onKeyDown={(event) => {
-                    const keys = {
-                      ArrowRight: position + 1,
-                      ArrowLeft: position - 1,
-                      Home: 0,
-                      End: REGISTERS.length - 1,
-                    };
-                    if (event.key in keys) {
-                      event.preventDefault();
-                      go(keys[event.key]);
-                    }
-                  }}
-                >
-                  {entry.title}
-                  <span className="tab__n figures">{folio(entry.items.length)}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          {REGISTERS.map((register) => (
-            <div
-              className="specimen"
-              id={`panel-${register.id}`}
-              role="tabpanel"
-              aria-labelledby={`tab-${register.id}`}
-              hidden={register.id !== group.id}
-              key={register.id}
-            >
-              <ul className="specimen__wall">
-                {register.items.map((item, position) => {
-                  const uses = item.uses.length;
-                  return (
-                    <li key={item.name}>
-                      <button
-                        type="button"
-                        className="specimen__name"
-                        data-step={step(item, register.sized)}
-                        aria-current={item.name === current.name && register.id === group.id ? 'true' : undefined}
-                        aria-controls="stack-reading"
-                        onClick={() => pick(item.name)}
-                        data-cursor="open"
-                        data-cursor-label="Read"
-                        style={{ '--i': position }}
-                      >
-                        {item.name}
-                        {uses ? (
-                          <span className="specimen__n figures" aria-hidden="true">
-                            {folio(uses)}
-                          </span>
-                        ) : null}
-                        {register.listed ? (
-                          <span className="visually-hidden">{`, in ${uses} of the ${OF} projects`}</span>
-                        ) : null}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+      <div className="runs">
+        {stackRegisters.map((register, index) => (
+          <section
+            className="run reveal"
+            style={{ '--i': index, '--lap': `${PACE[index % PACE.length]}s` }}
+            data-back={index % 2 ? 'true' : undefined}
+            key={register.id}
+            aria-label={register.title}
+          >
+            <h3 className="run__name label">{register.title}</h3>
+            <div className="run__belt">
+              <Lap items={register.items} />
+              <Lap items={register.items} hidden />
             </div>
-          ))}
-
-          <div className="reading reveal" id="stack-reading" aria-live="polite">
-            <div className="reading__head" key={`${group.id}-${current.name}`}>
-              <p className="reading__name">{current.name}</p>
-              <p className="reading__count">
-                {group.listed ? (
-                  <>
-                    <span className="reading__knots" aria-hidden="true">
-                      {Array.from({ length: OF }, (_, knot) => (
-                        <span
-                          className="reading__knot"
-                          key={knot}
-                          data-filled={knot < count || undefined}
-                          style={{ '--k': knot }}
-                        />
-                      ))}
-                    </span>
-                    {/* Said as what the data knows: whether a project names it
-                        in its stack, not whether it was ever touched. */}
-                    {count ? `In ${count} of the ${OF} projects` : `Not in the listed stack of any of the ${OF}`}
-                  </>
-                ) : (
-                  'Not counted from the projects'
-                )}
-              </p>
-            </div>
-
-            <ul className="reading__projects" key={`${group.id}-${current.name}-projects`}>
-              {current.uses.map((project, n) => (
-                <li key={project.id} style={{ '--i': n }}>
-                  <button
-                    type="button"
-                    className="chip reading__project"
-                    onClick={() => onOpen(project.id)}
-                    data-cursor="open"
-                    data-cursor-label="Open"
-                  >
-                    {project.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <GuardBand />
+          </section>
+        ))}
       </div>
     </section>
   );

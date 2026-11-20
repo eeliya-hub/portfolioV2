@@ -1,72 +1,138 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import Icon from "./Icon.jsx";
-import { Shamsa } from "./Ornament.jsx";
 import { folio } from "../lib/chapters.js";
+import { markFor } from "../lib/marks.js";
 import { picture } from "../lib/media.js";
 import { projectById } from "../data/projects.js";
 
+// A product site is a page ABOUT the work rather than the work running, so it
+// is never called live. It leads the file only where nothing is live — a
+// project never carries both.
 const LINKS = [
   { key: "live", label: "Open the live site", icon: "external", primary: true },
+  { key: "site", label: "Visit the product site", icon: "external", primary: true },
   { key: "repo", label: "Read the code", icon: "repo" },
   { key: "doc", label: "Read the case study", icon: "doc" },
 ];
 
-// A capture wider than it is tall takes half the sheet; a narrow panel takes
-// a quarter. The two come out within a few per cent of the same height — a
-// half-width 16:10 and a quarter-width 3:4 differ by about one line of type —
-// so a project whose captures are not all the same shape still rules up into
-// even rows, and nothing is cropped or set in a letterbox to get there.
-const WIDE = 1.2;
+// The frame is cut to the work, not the work to the frame.
+//
+// A project's captures are mostly one shape — a phone app's are 1.78, a web
+// app's 1.6, a dashboard's 2.1 — so each file gets a STAGE in that shape:
+// the largest group of captures within SAME of each other, at the group's
+// median. The bordered frame is then sized to the capture actually being
+// shown. Where the capture is the stage's shape it fills it exactly; where it
+// is not (PulseOS's four portrait panels among ten wide screens) the frame is
+// cut to the capture and stands centred in the stage, so the lozenges either
+// side never move under the reader's pointer while they step.
+//
+// Every figure here is in units of the reference drawing the file is laid out
+// to: the stage is at most 712 wide and 445 tall, which is a 1.6 capture at
+// the full width of the frame column.
+const SAME = 0.06;
+// Within this of the stage a capture fills it, trimmed by at most the
+// difference — under 1% for every capture in the register. Past it, the
+// capture keeps every pixel and gets a frame of its own, at the stage's
+// height so nothing moves vertically between one capture and the next.
+// Sky Health's four dashboards run 2.02 to 2.12: at one shared fill the
+// 2.02 lost 4.5% off its top and bottom edges, which on that screen is the
+// greeting bar.
+const FILL = 0.02;
+const STAGE_W = 712;
+const STAGE_H = 445;
+
+function stageOf(gallery) {
+  const shapes = gallery
+    .map((shot) => picture(shot.stem)?.aspect)
+    .filter(Boolean)
+    .sort((a, b) => a - b);
+  if (!shapes.length) return STAGE_W / STAGE_H;
+  // Clusters of shapes within SAME of the first in the cluster.
+  const groups = [];
+  for (const shape of shapes) {
+    const last = groups.at(-1);
+    if (last && shape / last[0] - 1 <= SAME) last.push(shape);
+    else groups.push([shape]);
+  }
+  const biggest = groups.reduce((a, b) => (b.length > a.length || (b.length === a.length && b[0] > a[0]) ? b : a));
+  return biggest[Math.floor(biggest.length / 2)];
+}
+
+/** The stage and the frame inside it, in reference units. */
+function cut(stageAr, shotAr) {
+  const stageW = Math.min(STAGE_W, STAGE_H * stageAr);
+  const stageH = stageW / stageAr;
+  if (Math.abs(shotAr / stageAr - 1) <= FILL) return { stageW, stageH, shotW: stageW, shotH: stageH };
+  const shotW = Math.min(stageW, stageH * shotAr);
+  return { stageW, stageH, shotW, shotH: shotW / shotAr };
+}
+
+// Three points to a file, and three to every file. A list that is six long
+// on one project and three on the next is not a summary, it is whatever was
+// written down; three is short enough that a reader takes all of it.
+const POINTS = 3;
 
 // What each image is told to expect of its box, so the browser never fetches
 // a full-width variant for a thumbnail or a thumbnail for the loupe.
 const SIZES = {
-  half: "(max-width: 62rem) 92vw, 44vw",
-  quarter: "(max-width: 62rem) 44vw, 22vw",
+  half: "(max-width: 62rem) 92vw, 52vw",
   loupe: "(max-width: 62rem) 94vw, 82vw",
 };
 
 /**
- * One capture on the sheet, at its own shape, numbered in the margin.
- *
- * The image carries no alt text of its own: the caption under it says the
- * same thing in the open, and the control that holds it is named for what
- * it does. Three readings of one line is two too many.
+ * The mark beside a name in Built with: the product's own logo where there
+ * is a file for one, a drawn glyph where the thing is a practice rather
+ * than a product, and the knot — the lozenge every part carries in the
+ * reference this file is drawn to — otherwise.
+ * It is the same mark 04 gives the same name, looked up rather than listed
+ * again — see src/lib/marks.js.
  */
-function Plate({ shot, index, onOpen }) {
-  const image = picture(shot.stem);
-  if (!image) return null;
-  const wide = image.aspect >= WIDE;
-
-  return (
-    <figure className="plate" data-width={wide ? "half" : "quarter"}>
-      <button
-        type="button"
-        className="plate__open"
-        onClick={() => onOpen(index)}
-        aria-label={`Plate ${folio(index + 1)}, enlarge`}
-        data-cursor="open"
-        data-cursor-label="Enlarge"
-      >
-        <img
-          src={image.src}
-          srcSet={image.srcSet}
-          sizes={wide ? SIZES.half : SIZES.quarter}
-          width={image.width}
-          height={image.height}
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
-      </button>
-      <figcaption className="plate__caption">
-        <span className="plate__no figures" aria-hidden="true">
-          {folio(index + 1)}
+function Badge({ item }) {
+  if (item.logo) {
+    const image = picture(`logos/${item.logo}`);
+    if (image) {
+      return (
+        <span className="case__mark" data-dark={item.dark ? "true" : undefined}>
+          <img
+            src={image.src}
+            srcSet={image.srcSet}
+            sizes="2rem"
+            width={image.width}
+            height={image.height}
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
         </span>
-        <span className="plate__alt">{shot.alt}</span>
-      </figcaption>
-    </figure>
+      );
+    }
+  }
+
+  if (item.icon) {
+    return (
+      <span className="case__mark case__mark--drawn" aria-hidden="true">
+        <Icon name={item.icon} />
+      </span>
+    );
+  }
+
+  // No logo file: the knot, as the reference marks every part. A monogram
+  // at this size is two letters six pixels tall — a smudge, not a mark.
+  return <span className="case__mark case__mark--knot" aria-hidden="true" />;
+}
+
+
+/**
+ * The arrow inside a step control: a long shaft and an open head, drawn on
+ * its own box rather than taken from the icon set — the set's arrows are
+ * drawn to sit beside a word, and these stand alone inside a lozenge.
+ */
+function Arrow({ toward }) {
+  return (
+    <svg className="case__arrow" viewBox="0 0 34 16" aria-hidden="true" focusable="false">
+      <path d={toward === "back" ? "M33 8H2M9 1 2 8l7 7" : "M1 8h31M25 1l7 7-7 7"} />
+    </svg>
   );
 }
 
@@ -269,15 +335,16 @@ function Loupe({ project, at, onMove, onClose }) {
  * question. Who and what — the title block, where the name is set at the size
  * the chapter headings are, and under it one line carrying both standing
  * facts: who it was made for, and what it runs on. Why it exists — the
- * standfirst, and the three ways out to the thing itself. What it does and
- * what it is made of — side by side, because the two are read against each
- * other. And then the evidence: every capture there is, on one sheet, at the
- * shape it was taken in, each one opening into the loupe.
+ * standfirst, and the ways out to the thing itself — and, beside it, the
+ * work: ONE capture at the size a screen can actually be read, stepped
+ * through rather than scrolled past. Under both, what it does and what it is
+ * made of, side by side, because the two are read against each other.
  *
- * The screens are the last movement and the longest, which is the whole
- * argument of the thing: a project is a claim, and the sheet is the proof.
- * They are not behind a strip you have to drag sideways to discover, because
- * a reader who does not find the handle never learns the work exists.
+ * It was a sheet of every capture there is, stacked down the page at the
+ * shape each was taken in. A fourteen-plate project ran four screens deep
+ * and the reader met the same screenshot at three sizes before reaching the
+ * end of it; the frame shows one at a time, says which of how many, and
+ * keeps the whole set one arrow away.
  *
  * It is a native `<dialog>`, so modality, Escape, the top layer and focus
  * return to the row you opened it from are all the platform's job rather
@@ -291,7 +358,21 @@ export function Dossier({ id, onClose }) {
   const scrollRef = useRef(null);
   const [shown, setShown] = useState(false);
   const [plate, setPlate] = useState(null);
+  // Which capture the frame is showing. Not the loupe's index — the loupe
+  // opens ON this one and can then be stepped independently.
+  const [at, setAt] = useState(0);
   const project = id ? projectById(id) : null;
+  const gallery = project?.gallery ?? [];
+  const frames = gallery.length;
+  const shot = gallery[Math.min(at, Math.max(0, frames - 1))] ?? null;
+  const image = shot ? picture(shot.stem) : null;
+  const stageAr = stageOf(gallery);
+  const size = image ? cut(stageAr, image.aspect) : null;
+
+  const turn = useCallback(
+    (by) => setAt((current) => (frames ? (current + by + frames) % frames : 0)),
+    [frames],
+  );
 
   const close = useCallback(() => {
     const node = ref.current;
@@ -312,6 +393,7 @@ export function Dossier({ id, onClose }) {
       document.body.dataset.locked = "true";
       scrollRef.current?.scrollTo(0, 0);
       setPlate(null);
+      setAt(0);
       // One frame, so the opening transition has a state to move from.
       requestAnimationFrame(() => setShown(true));
     }
@@ -361,117 +443,171 @@ export function Dossier({ id, onClose }) {
                 <Icon name="close" />
               </button>
 
-              {/* The title block. The number is set in the margin and turned
-                on its side, the way every chapter is numbered on this site;
-                the name takes the whole measure; and under it runs one line
-                holding the two things asked of any piece of work before it
-                is looked at — who it was for, and what it runs on. */}
-              <header className="dossier__head">
-                <p className="dossier__folio figures" aria-hidden="true">
-                  {project.no}
-                  {project.year ? (
-                    <span className="dossier__year">{project.year}</span>
-                  ) : null}
-                </p>
-
-                <h2 className="dossier__title" id="dossier-title">
-                  {project.title}
-                </h2>
-
-                <p className="dossier__for">
-                  {project.context}
-                  {project.platform ? (
-                    <span className="dossier__platform">
-                      <span className="dossier__mid" aria-hidden="true" />
-                      {project.platform}
-                    </span>
-                  ) : null}
-                </p>
-              </header>
-
-              <p className="dossier__standfirst">{project.standfirst}</p>
-
-              <div className="dossier__links">
-                {LINKS.map((link) =>
-                  project.links[link.key] ? (
-                    <a
-                      key={link.key}
-                      className={`btn ${link.primary ? "btn--primary" : ""}`.trim()}
-                      href={project.links[link.key]}
-                      target="_blank"
-                      rel="noreferrer"
-                      data-cursor="control"
-                    >
-                      <Icon name={link.icon} />
-                      {link.label}
-                    </a>
-                  ) : null,
-                )}
-              </div>
-
-              <div className="dossier__body">
-                <section className="dossier__panel">
-                  <h3 className="dossier__sub">What it does</h3>
-                  <ul className="points">
-                    {project.highlights.map((point, index) => (
-                      <li className="points__row" key={point}>
-                        <span className="points__no figures" aria-hidden="true">
-                          {folio(index + 1)}
-                        </span>
-                        {point}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-
-                <section className="dossier__panel">
-                  <h3 className="dossier__sub">Built with</h3>
-                  <ul className="spec">
-                    {project.stack.map((item) => (
-                      <li className="spec__row" key={item}>
-                        <span className="spec__mark" aria-hidden="true" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              </div>
-
-              <section
-                className="dossier__gallery"
-                aria-label={`${project.title} screenshots`}
+              {/* The file, as one composition measured off the reference
+                  it was drawn to: on the left what the project IS, on the
+                  right one capture of it with a lozenge either side to step
+                  through the rest, and under a single rule what it does
+                  beside what it is made of. Every length in it is stated in
+                  --rp, one reference pixel, so the whole file is that
+                  drawing at any size and always lands in one frame. */}
+              <div
+                className="case"
+                style={{
+                  "--chars": project.title.length,
+                  // The meta line is fitted to one line like the title: the
+                  // context, the knot and the platform, counted together.
+                  "--meta-chars": (project.context?.length ?? 0) + (project.platform?.length ?? 0) + 3,
+                }}
               >
-                <div className="dossier__galleryhead">
-                  <h3 className="dossier__sub">Every screen</h3>
-                  <p className="label figures">
-                    {folio(project.gallery.length)} plates — open one
+                <div className="case__about">
+                  <p className="case__no figures" aria-hidden="true">
+                    {project.no}
                   </p>
+
+                  <h2 className="case__title" id="dossier-title">
+                    {project.title}
+                  </h2>
+
+                  <p className="case__meta">
+                    <span className="case__ctx">{project.context}</span>
+                    {project.platform ? (
+                      <>
+                        <span className="case__lozenge" aria-hidden="true" />
+                        <span className="case__plat">{project.platform}</span>
+                      </>
+                    ) : null}
+                  </p>
+
+                  <p className="case__text">{project.standfirst}</p>
+
+                  <div className="case__acts">
+                    {LINKS.map((link) =>
+                      project.links[link.key] ? (
+                        <a
+                          key={link.key}
+                          className={`btn ${link.primary ? "btn--primary" : ""}`.trim()}
+                          href={project.links[link.key]}
+                          target="_blank"
+                          rel="noreferrer"
+                          data-cursor="control"
+                        >
+                          <Icon name={link.icon} />
+                          {link.label}
+                        </a>
+                      ) : null,
+                    )}
+                  </div>
                 </div>
 
-                <div className="sheet">
-                  {project.gallery.map((shot, index) => (
-                    <Plate
-                      key={shot.stem}
-                      shot={shot}
-                      index={index}
-                      onOpen={setPlate}
-                    />
-                  ))}
-                </div>
-              </section>
+                {image ? (
+                  <figure
+                    className="case__frame"
+                    aria-roledescription="carousel"
+                    aria-label={`${project.title} screens`}
+                    style={{
+                      "--stage-w": size.stageW,
+                      "--stage-h": size.stageH,
+                      "--shot-w": size.shotW,
+                      "--shot-h": size.shotH,
+                    }}
+                  >
+                    <div className="case__stage">
+                      <button
+                        type="button"
+                        className="case__shot"
+                        onClick={() => setPlate(at)}
+                        aria-label={`Screen ${folio(at + 1)} of ${folio(frames)}, enlarge`}
+                        data-cursor="open"
+                        data-cursor-label="Enlarge"
+                      >
+                        <img
+                          key={shot.stem}
+                          src={image.src}
+                          srcSet={image.srcSet}
+                          sizes={SIZES.half}
+                          width={image.width}
+                          height={image.height}
+                          alt=""
+                          decoding="async"
+                        />
+                      </button>
 
-              <footer className="dossier__foot">
-                <Shamsa className="dossier__mark" />
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={close}
-                  data-cursor="control"
-                >
-                  <Icon name="arrowLeft" />
-                  Back to the register
-                </button>
-              </footer>
+                      <button
+                        type="button"
+                        className="case__step"
+                        data-side="back"
+                        onClick={() => turn(-1)}
+                        disabled={frames < 2}
+                        aria-label="Previous screen"
+                        data-cursor="control"
+                      >
+                        <Arrow toward="back" />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="case__step"
+                        data-side="on"
+                        onClick={() => turn(1)}
+                        disabled={frames < 2}
+                        aria-label="Next screen"
+                        data-cursor="control"
+                      >
+                        <Arrow toward="on" />
+                      </button>
+                    </div>
+
+                    <figcaption className="case__cap">
+                      <span className="case__said">
+                        <span className="case__name">{project.title}</span>
+                        <span className="case__lozenge" aria-hidden="true" />
+                        <span className="case__alt">{shot.alt}</span>
+                      </span>
+                      <span className="case__count figures" aria-live="polite">
+                        {folio(at + 1)} / {folio(frames)}
+                      </span>
+                    </figcaption>
+                  </figure>
+                ) : null}
+
+                <div className="case__lower">
+                  <section className="case__col">
+                    <h3 className="case__label">What it does</h3>
+                    <ol className="case__points">
+                      {project.highlights.slice(0, POINTS).map((point, index) => (
+                        <li className="case__point" key={point}>
+                          <span className="case__pno figures" aria-hidden="true">
+                            {folio(index + 1)}
+                          </span>
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+
+                  <span className="case__divider" aria-hidden="true" />
+
+                  <section className="case__col">
+                    <h3 className="case__label">Built with</h3>
+                    {/* Past five parts the list goes to two columns, read
+                        down then across, so the longest stack in the
+                        register is still five rows — the height the
+                        reference was drawn at. */}
+                    <ul
+                      className="case__parts"
+                      data-many={project.stack.length > 5 ? "true" : undefined}
+                      style={{ "--rows": Math.min(5, Math.ceil(project.stack.length / 2)) }}
+                    >
+                      {project.stack.map((item) => (
+                        <li className="case__part" key={item}>
+                          <Badge item={markFor(item)} />
+                          <span className="case__partname">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                </div>
+              </div>
             </div>
           </div>
         ) : null}

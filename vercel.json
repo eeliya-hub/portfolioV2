@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/assets/(.*)eeliya-nayeri-cv-BNxoJfO7.pdf", "destination": "/docs/eeliya-nayeri-cv.pdf", "permanent": true },
+    { "source": "/assets/(.*)-BWkunnly.pdf", "destination": "/docs/pulseos.pdf", "permanent": true },
+    { "source": "/assets/(.*)-CVpJ4buX.pdf", "destination": "/docs/traverse.pdf", "permanent": true },
+    { "source": "/assets/(.*)-Bbiz4--u.pdf", "destination": "/docs/pit-wall.pdf", "permanent": true },
+    { "source": "/assets/(.*)-D2rl5WIA.pdf", "destination": "/docs/prem-predictor.pdf", "permanent": true },
+    { "source": "/assets/(.*)-BfEECKaW.pdf", "destination": "/docs/sky-health.pdf", "permanent": true },
+    { "source": "/assets/(.*)-D_Lw2EXT.pdf", "destination": "/docs/alumni-api.pdf", "permanent": true },
+    { "source": "/assets/(.*)-CatdTDdU.pdf", "destination": "/docs/weather-app.pdf", "permanent": true }
+  ]
+}

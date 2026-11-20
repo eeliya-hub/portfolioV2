@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Icon from './Icon.jsx';
 import { Shamsa } from './Ornament.jsx';
-import { SECTIONS } from '../lib/chapters.js';
-import { folio } from '../lib/chapters.js';
+import { SECTIONS, folio } from '../lib/chapters.js';
 import { profile } from '../data/profile.js';
 import { readEdition, setEdition } from '../lib/theme.js';
+import { GRID, TURNED, outline } from '../lib/mark.js';
 
 const ELSEWHERE = [
   { key: 'github', label: 'GitHub', icon: 'repo' },
@@ -44,71 +44,13 @@ function EditionToggle() {
 }
 
 /**
- * The section nav. The marker is one element that slides and resizes onto the
- * active link rather than a border that blinks between them — measured from
- * the links themselves, so it stays correct through font loading and resize.
+ * The menu — one menu, every width. Opening it is part of the experience
+ * rather than a fallback for small screens: the five bands at display
+ * scale, each with its Persian pair, over lacquer. Native `<dialog>`
+ * handles modality, Escape and focus return, so none of that is
+ * reimplemented here.
  */
-function SectionNav({ active }) {
-  const listRef = useRef(null);
-  const linkRefs = useRef(new Map());
-  const [marker, setMarker] = useState(null);
-
-  const place = useCallback(() => {
-    const list = listRef.current;
-    const link = linkRefs.current.get(active);
-    if (!list || !link) return setMarker(null);
-    const a = link.getBoundingClientRect();
-    const b = list.getBoundingClientRect();
-    return setMarker({ left: a.left - b.left + list.scrollLeft, width: a.width });
-  }, [active]);
-
-  useLayoutEffect(() => {
-    place();
-    const onResize = () => place();
-    window.addEventListener('resize', onResize);
-    document.fonts?.ready?.then(place);
-    return () => window.removeEventListener('resize', onResize);
-  }, [place]);
-
-  return (
-    <nav className="nav" aria-label="Sections">
-      <div className="nav__list" ref={listRef}>
-        {marker ? (
-          /* 100px wide and scaled, so it slides and resizes on the
-             compositor rather than relaying out every frame. */
-          <span
-            className="nav__marker"
-            aria-hidden="true"
-            style={{ '--x': `${marker.left}px`, '--s': marker.width / 100 }}
-          />
-        ) : null}
-        {SECTIONS.map((section) => (
-          <a
-            key={section.id}
-            ref={(node) => {
-              if (node) linkRefs.current.set(section.id, node);
-              else linkRefs.current.delete(section.id);
-            }}
-            className="nav__link"
-            href={`#${section.id}`}
-            aria-current={active === section.id ? 'true' : undefined}
-          >
-            <span className="nav__no figures">{folio(section.no)}</span>
-            <span className="nav__label">{section.label}</span>
-          </a>
-        ))}
-      </div>
-    </nav>
-  );
-}
-
-/**
- * The compact menu: a full panel rather than a cramped dropdown, because at
- * this width the nav is the page for as long as it is open. Native `<dialog>`
- * handles modality, Escape and focus return, so none of that is reimplemented
- * here.
- */
-function CompactMenu({ active }) {
+function Menu({ active }) {
   const dialogRef = useRef(null);
   const [open, setOpen] = useState(false);
 
@@ -141,6 +83,7 @@ function CompactMenu({ active }) {
         onClick={show}
         aria-haspopup="dialog"
         aria-expanded={open}
+        data-cursor="control"
       >
         <span className="burger__bars" aria-hidden="true">
           <span />
@@ -149,10 +92,10 @@ function CompactMenu({ active }) {
         Menu
       </button>
 
-      <dialog className="menu" ref={dialogRef} aria-label="Sections">
+      <dialog className="menu on-lacquer" ref={dialogRef} aria-label="Sections">
         <div className="menu__inner">
           <div className="menu__top">
-            <p className="menu__fa" lang="fa" dir="rtl">
+            <p className="menu__fa" lang="fa" dir="rtl" translate="no">
               {profile.namePersian}
             </p>
             <button type="button" className="iconbtn" onClick={close} aria-label="Close the menu">
@@ -160,7 +103,7 @@ function CompactMenu({ active }) {
             </button>
           </div>
 
-          <nav>
+          <nav className="menu__nav">
             <ul className="menu__list">
               {SECTIONS.map((section, index) => (
                 <li key={section.id} style={{ '--i': index }}>
@@ -170,83 +113,132 @@ function CompactMenu({ active }) {
                     aria-current={active === section.id ? 'true' : undefined}
                     onClick={close}
                   >
-                    <span className="menu__no figures">{folio(section.no)}</span>
-                    <span className="menu__word">{section.title ?? section.label}</span>
+                    <span className="menu__no figures" aria-hidden="true">
+                      {folio(section.no)}
+                    </span>
+                    <span className="menu__word">{section.title}</span>
+                    <span className="menu__pair" lang="fa" dir="rtl" aria-hidden="true">
+                      {section.fa}
+                    </span>
                   </a>
                 </li>
               ))}
             </ul>
           </nav>
 
-          <Shamsa className="menu__mark" />
-
-          <ul className="menu__elsewhere">
-            {ELSEWHERE.map((entry) => (
-              <li key={entry.key}>
-                <a
-                  className="btn"
-                  href={profile.links[entry.key]}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={close}
-                >
-                  <Icon name={entry.icon} />
-                  {entry.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <div className="menu__foot">
+            <ul className="menu__elsewhere">
+              {ELSEWHERE.map((entry) => (
+                <li key={entry.key}>
+                  <a
+                    className="btn"
+                    href={profile.links[entry.key]}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={close}
+                  >
+                    <Icon name={entry.icon} />
+                    {entry.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <Shamsa className="menu__mark" />
+          </div>
         </div>
       </dialog>
     </>
   );
 }
 
-export function TopBar({ active }) {
-  const [scrolled, setScrolled] = useState(false);
+// Traced once: the rows never change, so neither does the outline.
+const MARK = outline(TURNED);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 32);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
+/**
+ * The mark at the top left: ایلیا in square Kufic, turned to stand as an E
+ * (see src/lib/mark.js), in the ruled square the monogram has always stood
+ * in. Drawn in the bar's own ink, so it is charcoal on parchment, bone on
+ * lacquer and cream over the madder close without being told which. The
+ * same knots, in cream on a madder tile, are the tab icon.
+ *
+ * Nine knots of 2px each. A knot has to be a whole number of pixels or its
+ * edges blur, and the bar sits at fractional offsets wherever the gutter is
+ * a percentage of the glass — so the mark is a fixed eighteen pixels, and
+ * `crispEdges` snaps every edge by the same fraction, which keeps every
+ * stroke exactly two pixels wide wherever it lands.
+ *
+ * Decorative here: the link it sits in is already named for where it goes.
+ */
+function Mark() {
   return (
-    <header className={`topbar ${scrolled ? 'is-scrolled' : ''}`.trim()}>
+    <span className="monogram__mark" aria-hidden="true">
+      <svg
+        className="monogram__knots"
+        viewBox={`0 0 ${GRID} ${GRID}`}
+        focusable="false"
+        shapeRendering="crispEdges"
+      >
+        <path d={MARK} fill="currentColor" />
+      </svg>
+    </span>
+  );
+}
+
+// The band whose ground is dark in both editions — the madder close. Over
+// it the fixed chrome takes bone ink; everywhere else it takes the
+// edition's own ramp. Projects used to be here too, back when that band was
+// pinned to lacquer.
+const DUSK = new Set(['contact']);
+
+export function TopBar({ active }) {
+  return (
+    <header className="topbar" data-dusk={DUSK.has(active) ? 'true' : undefined}>
       <div className="topbar__row">
-        <a className="monogram" href="#hero" aria-label={`${profile.name} — back to the top`}>
-          <span className="monogram__mark" aria-hidden="true">
-            EN
-          </span>
+        <a className="monogram" href="#hero" aria-label={`${profile.name}, back to the top`}>
+          <Mark />
           <span className="monogram__name">{profile.name}</span>
         </a>
 
-        <SectionNav active={active} />
-
         <div className="topbar__actions">
-          {ELSEWHERE.map((entry) => (
-            <a
-              key={entry.key}
-              className="iconlink"
-              href={profile.links[entry.key]}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`${entry.label} (opens in a new tab)`}
-              data-cursor-label={entry.label}
-            >
-              <Icon name={entry.icon} />
-            </a>
-          ))}
-          <span className="topbar__divider" aria-hidden="true" />
           <EditionToggle />
+          <Menu active={active} />
         </div>
-
-        <CompactMenu active={active} />
       </div>
-
-      <span className="topbar__progress" aria-hidden="true" />
     </header>
+  );
+}
+
+/**
+ * The warp: the page's one thread, hung down the right edge.
+ *
+ * A carpet is woven from one end of the loom to the other, and so is this
+ * page — the thread fills with `--woven`, which the loom engine writes on
+ * the root as the reader scrolls. Each band owns a knot on it; the knot of
+ * the band you are in is struck open, and every knot is a control that
+ * carries you there.
+ */
+export function Warp({ active }) {
+  return (
+    <nav className="warp" aria-label="Progress" data-dusk={DUSK.has(active) ? 'true' : undefined}>
+      <span className="warp__track" aria-hidden="true" />
+      <span className="warp__fill" aria-hidden="true" />
+      <ul className="warp__knots">
+        {SECTIONS.map((section, index) => (
+          <li key={section.id} style={{ '--i': index }}>
+            <a
+              className="warp__knot"
+              href={`#${section.id}`}
+              aria-current={active === section.id ? 'true' : undefined}
+              aria-label={`${folio(section.no)}, ${section.title}`}
+              data-cursor="control"
+              data-cursor-label={section.label}
+            >
+              <span className="warp__gem" aria-hidden="true" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }
 

@@ -1,10 +1,11 @@
-// The chapters, in order. Read by the selvedge, the nav, the observer, App,
-// and each chapter's own heading.
+// The bands of the carpet, in order. Read by the warp, the menu, the
+// observer, App, and each band's own announcement.
 //
-// `lede` is the line under the title: what the chapter holds, in one
-// sentence. Any figure that belongs in a head — a count, a span of years — is
-// passed in by the chapter itself from its own data, never written here, so
-// the two can never disagree.
+// `title` is the band's name as announced; `fa` is its Persian pair, struck
+// beside the Latin the way the hero pairs the name itself. `lede` is one
+// line under the rule: what the band holds. Any figure that belongs in an
+// announcement — a count, a span of years — is passed in by the band itself
+// from its own data, never written here, so the two can never disagree.
 
 export const CHAPTERS = [
   { id: 'hero', no: 0, label: 'Top' },
@@ -13,46 +14,44 @@ export const CHAPTERS = [
     no: 1,
     label: 'About',
     title: 'About me',
-    // Written as lines, like profile.blurb: each entry is one line of the
-    // page on a wide screen, and below that they run together and wrap.
-    lede: ['Where I studied, what I build, and three photographs of it actually happening.'],
+    fa: 'درباره',
+    lede: ['A brief introduction to who I am and what I do.'],
   },
   {
     id: 'work',
     no: 2,
-    label: 'Work',
-    title: 'Selected work',
-    // Written as one line, so it runs the width of the rule under the
-    // title rather than wrapping inside a reading measure.
-    lede: ['Seven finished products. Open one and you get the whole file: what it does, and how it is built.'],
+    label: 'Projects',
+    title: 'Projects',
+    fa: 'کارها',
+    lede: ['Seven finished products, from academic work to personal projects and professional endeavors.'],
   },
   {
     id: 'journey',
     no: 3,
-    label: 'Journey',
-    title: 'How it went',
-    // One line across the rule, like 01 and 02 — every chapter now stands in
-    // one screen, and a sentence wrapped to a second line is a line the body
-    // under it has to give back.
-    lede: ['School, degree, placements and the job that paid for all of it — on one axis, overlaps and all.'],
+    label: 'Experience',
+    title: 'Experience',
+    fa: 'مسیر',
+    lede: ['Eight years worth of experiences under one timeline.'],
   },
   {
     id: 'stack',
     no: 4,
-    label: 'Stack',
-    title: 'What I build with',
-    lede: ['Counted from the work above rather than claimed: the figure beside a name is how many of the seven actually use it.'],
+    label: 'Skills',
+    title: 'Skills',
+    fa: 'مهارت‌ها',
+    lede: ['Languages, frameworks, practice, tools, and the personal skills I bring to the table.'],
   },
   {
     id: 'contact',
     no: 5,
     label: 'Contact',
     title: 'Get in touch',
+    fa: 'تماس',
     lede: ['A graduate role, an internship, a freelance build, or an idea you want a second pair of hands on.'],
   },
 ];
 
-/** The five numbered chapters — everything except the hero. */
+/** The five numbered bands — everything except the hero. */
 export const SECTIONS = CHAPTERS.filter((entry) => entry.id !== 'hero');
 
 export const chapter = (id) => CHAPTERS.find((entry) => entry.id === id);

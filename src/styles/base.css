@@ -21,10 +21,42 @@
 }
 
 html {
+  /* The page's zoom, and the one place the whole composition is scaled.
+
+     Every size on this site is written in rem or in a module derived from
+     one, so moving this moves all of them together and the page comes out
+     the same composition drawn larger — which is the thing a big monitor
+     actually wants. Left at a fixed 16px the ceilings on the type bind
+     while the window keeps growing, and a 1440p screen gets laptop-sized
+     type spread over a frame half as tall again, with the difference
+     standing as holes between the parts.
+
+     It is driven by the height and not the width because a chapter is cut
+     to the height of the window: a wide short window must not be given type
+     it has no room for. The floor is `1rem`, which on the root element
+     means the reader's own default rather than a hard 16px — so this
+     scales their preference up and never overrides it.
+
+     The numbers: ~16.5px on a 900-tall window, ~17.5px at 1080, ~19.4px at
+     1440, and no further. The value itself is --page-zoom in tokens.css,
+     beside the ramp it scales. */
+  font-size: var(--page-zoom);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
-  scroll-padding-top: var(--k8);
+  /* Where a jump lands: the band's top edge — the join, where its run of
+     knots is woven — 2px under the top of the window, for every band, so
+     the knot run is the first thing on the glass and the ground of the
+     band before shows as a hair above it.
+
+     Measured, not picked: the figure is taken off a reference capture the
+     band was set against, where the previous band shows for exactly two
+     rows of pixels above the join. It used to be `--bar`, the height of
+     the top bar, on the reasoning that a jump should clear the bar. The
+     bar has no ground and the band's own head padding already clears it,
+     so all that clearance bought was 69px of the PREVIOUS band hanging at
+     the top of the glass and the knot run lost under the monogram. */
+  scroll-padding-top: 2px;
 }
 
 body {
@@ -198,6 +230,12 @@ p {
   animation:
     drift-back 83s linear infinite,
     breath 23s ease-in-out infinite alternate;
+  /* The drift is composed with whatever the lean below has put on
+     `translate` rather than overwriting it, which is what lets the two share
+     the property. The breath is left to replace: it animates opacity between
+     two stated values, and adding those to the 0.45 above would simply make
+     the pass brighter. */
+  animation-composition: add, replace;
 }
 
 /* The drift walks a whole tile, so the pattern lands exactly where it
@@ -210,7 +248,15 @@ p {
   }
 }
 
+/* Both ends are stated. An implicit `from` is the element's own value for
+   the property, and the lean now writes to this one — so left implicit the
+   drift would start from wherever the pointer had put the field and walk a
+   tile from there, which is not a loop that closes. */
 @keyframes drift-back {
+  from {
+    translate: 0 0;
+  }
+
   to {
     translate: calc(var(--tile-size) / -2.5) calc(var(--tile-size) / 2.5);
   }
@@ -245,6 +291,10 @@ p {
       breath 23s ease-in-out infinite alternate,
       sweep-far linear;
     animation-timeline: auto, auto, scroll(root block);
+    /* Restated with the list, because an animation shorthand here replaces
+       the one above and the composition list has to match it item for item.
+       The sweep has `transform` to itself, so it replaces. */
+    animation-composition: add, replace, replace;
   }
 
   @keyframes sweep {
@@ -258,6 +308,35 @@ p {
       transform: translate3d(0, calc(var(--tile-size) * 0.85), 0);
     }
   }
+}
+
+/* The fourth movement: the lean. Ornament.jsx writes where the pointer is as
+   two fractions each side of centre, and each pass leans a few pixels by it —
+   the near one with the pointer, the far one against. Two passes moving
+   opposite ways under one hand is what makes a flat field read as having a
+   near side and a far one.
+ 
+   The near pass leans by the container, which owns no animated property.
+   The far pass has to lean by something of its own, and every property it
+   could use is already spoken for: the drift has `translate`, the sweep has
+   `transform`, the breath has `opacity`. It leaned by `margin` for exactly
+   that reason, and a margin transition relays out the whole field on every
+   frame it runs. So it shares `translate` with the drift instead and the
+   drift is told to compose rather than replace — see
+   `animation-composition` above. */
+.weave {
+  --near-x: 0;
+  --near-y: 0;
+
+  translate: calc(var(--near-x) * 26px) calc(var(--near-y) * 18px);
+  transition: translate 900ms var(--ease-soft);
+}
+
+.weave__pass--fine {
+  /* Against the near pass, and further, so the two separate under the
+     pointer rather than sliding together. */
+  translate: calc(var(--near-x) * -44px) calc(var(--near-y) * -30px);
+  transition: translate 1200ms var(--ease-soft);
 }
 
 /* The blanket reduced-motion rule further down collapses every animation to
@@ -575,6 +654,18 @@ a:hover {
      IntersectionObserver watching an element that has collapsed itself can
      never see it arrive, so it would stay hidden for good. The same reason
      the wipe above puts its transform on the inner span. */
+  .reveal--rule {
+    /* And the element itself is neither hidden nor moved, the same way the
+       wipe form above exempts itself. Without this it inherits the base
+       form's drop as well as its own stroke, which is how both guard bands
+       came to be invisible: the drop put the band's foot past the bottom of
+       the window, nothing that far down counts as arrived, so it never
+       rose — and it is the last thing in a chapter exactly one frame tall,
+       so there was no further scroll to break the circle. */
+    opacity: 1;
+    transform: none;
+  }
+
   .reveal--rule > * {
     transform: scaleX(0);
     transform-origin: left center;
@@ -649,7 +740,7 @@ a:hover {
    has to stand in one. It answers to the glass instead, and the reader can
    still pull it taller. */
 .field textarea {
-  height: clamp(5rem, 14vh, 9rem);
+  height: clamp(5rem, 16svh, 16rem);
   min-height: 4.5rem;
   resize: vertical;
 }

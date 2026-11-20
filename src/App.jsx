@@ -1,19 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { TopBar } from './components/Chrome.jsx';
+import { TopBar, Warp } from './components/Chrome.jsx';
 import Cursor from './components/Cursor.jsx';
 import Dossier from './components/Dossier.jsx';
 import Overture from './components/Overture.jsx';
-import { Selvedge, Weave } from './components/Ornament.jsx';
+import { Weave } from './components/Ornament.jsx';
 import About from './chapters/About.jsx';
 import Contact from './chapters/Contact.jsx';
 import Hero from './chapters/Hero.jsx';
 import Journey from './chapters/Journey.jsx';
 import Stack from './chapters/Stack.jsx';
 import Work from './chapters/Work.jsx';
-import { CHAPTERS, SECTIONS } from './lib/chapters.js';
+import { CHAPTERS } from './lib/chapters.js';
 import { projects } from './data/projects.js';
 import { useActiveChapter } from './lib/useActiveChapter.js';
+import { useLoom } from './lib/useLoom.js';
 import { useReveal } from './lib/useReveal.js';
 
 const IDS = CHAPTERS.map((entry) => entry.id);
@@ -33,16 +34,10 @@ export function App() {
   // the address rather than leaving a dead project hash behind.
   const returnTo = useRef('');
 
-  // Entrances are per element and fire as that element arrives, so a long
-  // chapter does not animate its whole length the moment its top edge shows.
+  // Entrances are per element and fire as that element arrives.
   useReveal();
-
-  // The selvedge records where the reader has been, not only where they are:
-  // a carpet does not unweave itself when you walk back up it.
-  const [reached, setReached] = useState(() => new Set());
-  useEffect(() => {
-    setReached((current) => (current.has(active) ? current : new Set(current).add(active)));
-  }, [active]);
+  // The scroll engine: writes --p, --travel and --woven. See lib/useLoom.js.
+  useLoom();
 
   const openProject = useCallback((id) => {
     returnTo.current = window.location.hash;
@@ -58,15 +53,13 @@ export function App() {
   }, []);
 
   // A project address is shareable: landing on one opens that file, and the
-  // back and forward buttons move between the register and the file.
+  // back and forward buttons move between the page and the file.
   useEffect(() => {
     const sync = () => setOpen(projectFromHash());
     sync();
     window.addEventListener('hashchange', sync);
     return () => window.removeEventListener('hashchange', sync);
   }, []);
-
-  const stations = useMemo(() => SECTIONS, []);
 
   return (
     <>
@@ -78,8 +71,7 @@ export function App() {
       <Cursor />
 
       <Weave />
-      <Selvedge side="left" stations={stations} reached={reached} active={active} />
-      <Selvedge side="right" stations={stations} reached={reached} active={active} />
+      <Warp active={active} />
 
       <TopBar active={active} />
 
@@ -88,7 +80,7 @@ export function App() {
         <About />
         <Work onOpen={openProject} />
         <Journey />
-        <Stack onOpen={openProject} />
+        <Stack />
         <Contact />
       </main>
 
