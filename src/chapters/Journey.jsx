@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Announce from '../components/Announce.jsx';
 import { folio } from '../lib/chapters.js';
@@ -138,15 +138,47 @@ const KINDS = { education: 'Education', experience: 'Experience' };
  */
 const began = (period) => period.split('–')[0].trim();
 
+/* One quick line for a card, cut off the front of the entry's own detail.
+   Nothing here is written a second time: the card and the record cannot say
+   different things, because there is only ever one copy of the words. The
+   card gets the opening claim and the record, further down the same leg,
+   gets the whole of it.
+
+   A first sentence is not by itself a quick line. The longest one here runs
+   to two hundred and forty characters, which is six lines of type on a card
+   seventeen rems wide — a paragraph riding past on a thread, read by nobody,
+   and the two newest chapters were the two buried deepest in it. So a line
+   over CARD characters is cut back to the first whole clause past CLAUSE,
+   never mid-clause and never with an ellipsis, and closed with a full stop.
+   What stands on a card is always a whole clause in the writer's own words,
+   and always ends like a sentence. */
+
+/** How long a card's line may run before it is cut back. */
+const CARD = 86;
+/** And how short a cut line may be left: a clause, not a fragment. */
+const CLAUSE = 60;
 /**
- * The first sentence of the entry's own detail, which is what a card has
- * room for. Taken from the copy rather than written a second time, so the
- * card and the record can never say different things — the card gets the
- * opening claim, the record gets the whole of it.
+ * Where a clause may be cut, strongest boundary first. Punctuation is a
+ * boundary the writer put there. A joining word is weaker, and `and` is the
+ * weakest of all, because it joins two nouns as readily as two clauses: cut
+ * at the `and` in 'the lead developer and founder' and the card drops half a
+ * phrase, where cutting at the `whilst` after it ends on a whole one.
  */
+const MARKS = [[', ', '; '], [' whilst ', ' while ', ' alongside '], [' and ']];
+
 const brief = (detail) => {
   const stop = detail.indexOf('. ');
-  return stop < 0 ? detail : detail.slice(0, stop + 1);
+  const line = (stop < 0 ? detail : detail.slice(0, stop)).replace(/\.$/, '');
+  if (line.length <= CARD) return `${line}.`;
+  // The first break past CLAUSE, not the last one that fits: the last one
+  // that fits lands in the middle of a list and leaves its tail hanging
+  // ('alongside A-Levels, the degree'), where the first one past the floor
+  // closes the clause it is in.
+  for (const tier of MARKS) {
+    const cuts = tier.map((mark) => line.indexOf(mark, CLAUSE)).filter((at) => at > 0);
+    if (cuts.length) return `${line.slice(0, Math.min(...cuts))}.`;
+  }
+  return `${line}.`;
 };
 
 function Station({ entry, index, lit }) {
@@ -184,13 +216,32 @@ export function Journey() {
   // record reads the same whether a pointer exists or not.
   const [lit, setLit] = useState(-1);
 
+  // The roll's height as typeset, for the stylesheet's arithmetic: it works
+  // out how much of the record the frame under the axis cannot hold, and
+  // leaves that much room after the leg (see --roll-over). The laid-out
+  // height, so the translate and the wipe the roll rides in on do not enter
+  // into it. Copy grows, and the record grows with it; nothing here is
+  // tuned to the entries as they stand.
+  const leg = useRef(null);
+  const roll = useRef(null);
+  useEffect(() => {
+    const route = leg.current;
+    const record = roll.current;
+    if (!route || !record || typeof ResizeObserver === 'undefined') return undefined;
+    const watch = new ResizeObserver(() => {
+      route.style.setProperty('--roll-h', `${record.offsetHeight}px`);
+    });
+    watch.observe(record);
+    return () => watch.disconnect();
+  }, []);
+
   return (
     <section className="chapter chapter--sand journey" id="journey" aria-labelledby="journey-heading">
       <div className="chapter__inner">
         <Announce id="journey" figure={`${FIRST} – ${LAST}`} />
       </div>
 
-      <div className="route" data-loom="travel">
+      <div className="route" data-loom="travel" ref={leg}>
         <div className="route__pin">
           {/* The full view names itself, above the axis it is read under.
               By the time it is read the band's announcement is two screens
@@ -248,7 +299,7 @@ export function Journey() {
               and only the roll. Every cell is a direct child of its row, so
               one grid can set four columns on a desk and two on a phone
               without the markup changing underneath it. */}
-          <div className="roll" onPointerLeave={() => setLit(-1)}>
+          <div className="roll" ref={roll} onPointerLeave={() => setLit(-1)}>
             <div className="roll__head" aria-hidden="true">
               <span className="label">When</span>
               <span className="label">What</span>

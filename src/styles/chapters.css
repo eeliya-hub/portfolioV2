@@ -2345,9 +2345,24 @@ html[data-overture='play']
   --roll-gap: clamp(1.25rem, 4.2svh, 2.75rem);
   --axis-top: calc(var(--bar) + var(--head-air) + var(--head-h) + var(--head-gap));
   --axis-h: 5.9rem;
+  /* What the frame cannot hold. A pinned frame cuts off whatever it cannot
+     fit, and the record is as long as its copy: when it runs past the foot
+     of the glass, the overrun hangs below the frame instead, and the leg
+     leaves exactly that much room after it. When the hold ends and the
+     frame moves on, the last rows scroll into view like any other line of
+     the page, still on the band's own ground. Where the record fits this
+     is nothing, and the leg is as it was. --roll-h is the record's own
+     height, written by the chapter; --roll-air is what is left under its
+     last row. */
+  --roll-air: 1.5rem;
+  --roll-over: max(
+    0px,
+    var(--axis-top) + var(--axis-h) + var(--roll-gap) + var(--roll-h, 0px) + var(--roll-air) - 100svh
+  );
 
   height: calc(var(--legs) * 100svh);
   margin-block-start: clamp(1rem, 4svh, 3rem);
+  margin-block-end: var(--roll-over);
 }
 
 .route__pin {
@@ -2355,7 +2370,10 @@ html[data-overture='play']
   top: 0;
   height: 100svh;
   display: grid;
-  overflow: clip;
+  /* Across only. The thread is several glasses wide while it rides, and
+     that is what has to be cut; a record taller than the glass hangs below
+     the frame rather than being cut off at its foot (see --roll-over). */
+  overflow-x: clip;
 }
 
 /* The two readings occupy the same frame. The first does not leave it: it
@@ -2660,9 +2678,12 @@ html[data-overture='play']
   color: var(--ink-2);
 }
 
-/* What the entry was, in its own first sentence. The card gets the opening
-   claim and the record gets the whole of it, so a reader riding past has
-   something to go on and nobody reads the same paragraph twice. */
+/* What the entry was, in one quick line of its own copy. The card gets the
+   opening claim and the record gets the whole of it, so a reader riding
+   past has something to go on and nobody reads the same paragraph twice.
+   Two lines of type is the most this ever runs to: the line is cut to a
+   clause in Journey.jsx, not clamped here, so what is dropped is dropped in
+   words and never under an ellipsis. */
 .station__brief {
   margin-block-start: 0.5rem;
   padding-block-start: 0.5rem;
@@ -2926,21 +2947,13 @@ html[data-overture='play']
     width: min(13rem, 62vw);
   }
 
-  /* Two columns on a phone: the period and what kind of thing it was down
-     the left, the role and the place down the right. The account of it is
-     the one cell that cannot come — seven paragraphs will not stand in one
-     frame at this width, and standing in one frame is the whole point of
-     the roll. It is on the card, in its own first sentence, on the way
-     past. */
   /* Three lines to a row on a phone: the span and what kind of thing it was
      on one rule, then the role, then the place. The account of it is the
      one cell that cannot come — seven paragraphs will not stand in one
      frame at this width, and standing in one frame is the whole point of
-     the roll. It is on the card, in its own first sentence, on the way
-     past. */
+     the roll. It is on the card, in one quick line, on the way past. */
   .roll {
     --cols: max-content minmax(0, 1fr);
-
   }
 
   .roll__head {
@@ -2985,6 +2998,8 @@ html[data-overture='play']
 @media (prefers-reduced-motion: reduce) {
   .route {
     height: auto;
+    /* Nothing is pinned, so nothing hangs below a frame. */
+    margin-block-end: 0;
   }
 
   .route__pin {

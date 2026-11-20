@@ -544,6 +544,14 @@ keep it inside, and the phone block of `npm run check` holds them at 360 and 390
 - Anything that turns is clipped sideways where it lives: the hero's halo swings its corners
   past the glass, so the hero is `overflow-x: clip` (clip, not hidden, so it is not a scroller).
 
+**Nothing is cut off at the foot of a pinned frame either.** A pinned frame cannot be scrolled
+inside, so what it cannot fit is lost. The record under 03's axis is as long as its copy, and
+when the copy grows past the glass the overrun hangs below the frame (`.route__pin` clips
+across only) while the leg leaves exactly that much room after it (`--roll-over`, from the
+record's own height). When the hold ends the last rows scroll into view like the rest of the
+page. Where the record fits, the leg is unchanged. `the record holds every entry, in full, and
+none of it is out of reach` holds it.
+
 **The hero has a ceiling the other bands do not**, and it needs one. Everything in its
 composition is sized in `cqw` off its own box — the name, the head room, the portrait — so the
 box's width sets the composition's *height*, and the composition has to land inside one
@@ -970,6 +978,12 @@ brand logos, no emoji, no icon font.
 - Derive every figure from the data. `usedIn()` counts projects at render time; timeline
   bars are struck from real dates. A number that was typed can drift; one that was computed
   cannot.
+- Derive the short copy from the long copy the same way. A card on 03's thread carries one
+  quick line cut off the front of the entry's own detail (`brief()` in `Journey.jsx`): a
+  whole clause, in the writer's words, closed with a full stop, never an ellipsis. The record
+  below carries the whole of it. Two versions of a sentence drift apart; one cannot. The cut
+  is the knob, not the copy: `CARD` is how long a line may run before it is cut back, `CLAUSE`
+  how short a cut may leave it.
 - Let a region change its ground by taking a scope class, not by recolouring its children.
 - Give motion one authored grammar — `rise`, `wipe`, `rule-draw` — staggered by `--i`.
   Damped and physical; the needle settles, it never snaps.

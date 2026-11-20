@@ -760,15 +760,22 @@ const browser = await chromium.launch();
     route.stations.length === chronology.length && route.stations.every((s) => s.role && s.when && s.kind),
     `${route.stations.length} stations`,
   );
-  // A card says what the entry was in its own first sentence, and says it in
-  // the entry's own words — the card gets the opening claim, the record gets
-  // the whole of it, and neither is written twice.
+  // A card says what the entry was in one quick line, and says it in the
+  // entry's own words: the line is cut off the front of the same copy the
+  // record carries in full, so neither is written twice and neither can
+  // contradict the other. A card is a thing read while it rides past, so
+  // the line has to stay a line — a first sentence of two hundred and forty
+  // characters is a paragraph, and nobody reads a paragraph going by.
+  const QUICK = 92;
   check(
-    'and each card says what it was, from its own copy',
+    'and each card says what it was in one quick line of its own copy',
     route.stations.every(
-      (s) => s.brief && chronology.find((e) => e.role === s.role)?.detail.startsWith(s.brief),
+      (s) =>
+        s.brief &&
+        s.brief.length <= QUICK &&
+        chronology.find((e) => e.role === s.role)?.detail.startsWith(s.brief.replace(/\.$/, '')),
     ),
-    route.stations.map((s) => (s.brief ? '·' : '✗')).join(''),
+    `longest ${Math.max(...route.stations.map((s) => s.brief?.length ?? 0))} characters`,
   );
   check('nothing is drawn to say where an entry ended', route.spans === 0, `${route.spans} spans`);
   check('no two stations collide', route.collisions === 0, `${route.collisions} overlaps`);
@@ -803,16 +810,28 @@ const browser = await chromium.launch();
           r.querySelector('.roll__role')?.textContent.trim() &&
           r.querySelector('.roll__detail')?.textContent.trim(),
       ),
-      fits: box.height <= innerHeight - 24 && box.top >= 0 && box.bottom <= innerHeight,
       // The axis stands above the record, not across it.
       clear: box.top >= axis.bottom - 2,
       written: rows.every((r) => getComputedStyle(r).clipPath === 'none' || !getComputedStyle(r).clipPath.includes('100%')),
     };
   });
+  // A record longer than the room under the axis is not cut off at the
+  // foot of the frame: the overrun hangs below it and the leg leaves that
+  // much room, so the last row scrolls into view as the frame moves on, on
+  // the band's own ground. Measured at the far end of that room.
+  const overrun = await page.evaluate(async () => {
+    const route = document.querySelector('.route');
+    const over = parseFloat(getComputedStyle(route).marginBlockEnd) || 0;
+    scrollTo(0, route.getBoundingClientRect().top + scrollY + route.offsetHeight - innerHeight + over);
+    await new Promise((r) => setTimeout(r, 250));
+    const last = [...document.querySelectorAll('.roll__row')].at(-1).getBoundingClientRect();
+    const band = document.getElementById('journey').getBoundingClientRect();
+    return { over: Math.round(over), bottom: Math.round(last.bottom), onBand: last.bottom <= band.bottom };
+  });
   check(
-    'the record holds every entry, in full, in one frame',
-    held.rows === chronology.length && held.full && held.fits,
-    `${held.rows} rows, ${held.fits ? 'fits' : 'overflows'}`,
+    'the record holds every entry, in full, and none of it is out of reach',
+    held.rows === chronology.length && held.full && overrun.bottom <= 900 && overrun.onBand,
+    `${held.rows} rows, ${overrun.over ? `${overrun.over}px carried past the frame` : 'in one frame'}, last row ends at ${overrun.bottom}`,
   );
   check('the axis stands clear above it', held.clear);
   // The axis is at its tightest once folded — one glass wide — and that is
