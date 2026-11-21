@@ -917,17 +917,32 @@ as the hero sets the name in both.
   the hero's solved widths, and one line under them reading outward from both margins — the
   role from the left, ایلیا نیری from the right — level with the mark's foot.
 
-**The overture is the mark, turning.** ایلیا is written onto the cartoon from the right, a
-column of knots at a time — the lone alef, the break, the joined run — and then turns, slowly
-at first, gathering to a steady spin, for as long as the page takes. When the faces are loaded
-and the portrait decoded it is taken from wherever it is and eased, at the speed it was going,
-into the next E; from a standing start it goes once round and a quarter, so even a page that
-was ready at once is seen to turn. It rests on the cartoon for a beat, then flies home to the
-empty square at the top left as the ground lifts and the hero, held behind it, arrives.
+**The overture is the loom being dressed, and then the mark, turning.** It is read in four
+movements. The warp is strung, upright by upright from the left; the weft runs through it,
+crossing by crossing from the top, and the squared paper the site is drawn on exists. ایلیا is
+knotted onto it from the right, a column at a time — the lone alef, the break, the joined run.
+A shamsa's frame is struck around the finished name and turns against it, eight-pointed, so an
+eighth of a turn brings it back to itself and the loop never shows a seam. Then the mark turns,
+slowly at first, gathering to a steady spin. Every figure is *drawn* rather than faded up: one
+`stroke-dashoffset` running the length of a path normalised to 1, which is why the uprights
+arrive one after another instead of all at once.
 
+Then it lands. The spin is taken from wherever it is and eased, at the speed it was going, into
+the next E; from a standing start it goes once round and a quarter, so even a page that was
+ready at once is seen to turn. It rests on the cartoon for a beat, then flies home to the empty
+square at the top left as the ground lifts and the hero, held behind it, arrives.
+
+- **`PLAY` in `Overture.jsx` is the whole of the timing.** It is how long the mark stands on
+  the glass, three seconds, measured from the first frame drawn; the landing is subtracted from
+  it to find the moment the brake comes on (`STRIKE`), and everything in the head's rules is
+  timed to finish inside it. A page slower than `PLAY` to be ready goes on spinning and lands
+  when it is ready: the one part of this not on a clock. `the mark stands for its three
+  seconds, then goes` holds it.
 - It lives in `index.html`, markup and rules both, not in the app: a loader has to be on the
   glass before the script that would draw it. `Overture.jsx` only lands it. The writing and the
   spin are timed in the head's rules; the landing's knobs are named at the top of the component.
+- Its paths are written in at build by `vite.config.js` from `mark.js` and `girih.js`, so the
+  loader's grid, name and rosette are the same drawings the page itself is made of.
 - While it plays, `html[data-overture]` holds the hero's entrance paused and the bar's square
   empty; the lift releases both.
 - Once a session. Any input clears it in a quarter of a second, and a second visit never shows
@@ -938,6 +953,61 @@ empty square at the top left as the ground lifts and the hero, held behind it, a
 inset by 3px, and ink that wipes up from the bottom edge on hover — the direction a carpet
 grows on the loom. This is the single button grammar; there is no pill, no filled rectangle
 with a radius, no ghost variant.
+
+**…and one quiet control beside it.** `.quietbtn` is the label alone, standing on a single rule,
+the rule striking madder from its leading edge when the control is wanted. It is for the thing
+a reader may want and must never be sold: the way into a list they can already see running
+past, or the longer account under a sentence that has already said the short one. A cartouche
+asks for the eye; this asks for a word of the page's attention. Two control weights is the
+whole set, and a third would be a decision nobody could repeat.
+
+**A second reading, standing still.** Three chapters say in a frame what they cannot say at
+length — the record rides past on a thread, the registers run as border patterns, the band
+opens on one sentence — and none of those is a way to read or to look something up. Each is
+given a counterpart that stands still and is opened from the chapter itself:
+
+- **The leaf** (03, narrow screens only). The account of an entry is the one cell a phone's
+  record cannot carry, so the row carries it: the whole row is a control exactly where the last
+  column is not drawn, and what it opens is that entry in full, as a sheet rising from the foot
+  of the glass with the row's own lane colour at its head. One media query owns both the cut
+  column and the control, so a screen that can read the account is never offered a way to open
+  it.
+- **The sampler** (04, both). Every name in the five registers at once, ruled, under a toggle
+  that takes the list down to one register at a time — the weaver's sampler to the carpet's
+  border, the same knots set out to be looked up rather than looked at. It takes the chapter's
+  own parchment, not the file's lacquer: a page of the same book, not the lights going down.
+- **The gloss** (01, both). A gloss is the long note written beside a short line, and that is
+  the relation: the band opens on one sentence, which is what a reader passing through owes
+  themselves, and the whole account stands behind a quiet `More` set in that sentence after its
+  full stop. The account itself is five paragraphs of `profile.bio`, opening words struck in
+  madder the way the sentence above them is, and the practical line at the foot ruled off and
+  marked in the margin with the site's square on point.
+
+All three are native `<dialog>`s, which is where modality, Escape, the top layer and the focus
+coming back to where it was all come from. **Setting `display` on a dialog overrides the one
+rule that keeps a closed one off the page**, so each says `:not([open]) { display: none }` out
+loud. Each is laid out in a grid whose tracks are `minmax(0, 1fr)`: an `auto` track takes the
+widest and tallest thing inside it, and a sheet measuring its own `100%` against that runs off
+the glass rather than fitting in it.
+
+**A sheet is sized by what is on it.** The sampler is a list to look a name up in and takes
+72rem; the gloss is prose and takes 40rem, which is not a taste but a solution — it is the
+width that puts the account at about 67 characters a line, and `check.mjs` measures the line
+rather than trusting the number. The same sheet at the sampler's width ran to 111. Where a
+sheet scrolls, its foot is faded rather than cut, because a line sliced through the middle at
+the edge of the glass reads as the end of the text; the fade is kept shallower than the
+scroller's own end padding, so at the bottom of the account it falls on empty paper and the
+last line comes up solid.
+
+**A control set in a sentence costs a band nothing.** 01 ends with the plate captions and
+carries no reserve under them: it came to rest three pixels inside the glass at 1440 by 900,
+so a control on a line of its own under the sentence pushed the fourth entry of the register
+and all three captions out of the frame, and its height had to be found somewhere. Setting it
+inline, after the full stop, settles that: it rides on a line the sentence had already paid
+for, the band measures exactly what it measured before the control existed, and the word is
+quieter for being in the text rather than standing under it. `check.mjs` holds it there —
+`the way in is set in the sentence, costing the band no line of its own` fails the moment the
+word wraps, which is the one way this arrangement can break.
 
 **The selvedge** is the signature interaction and the site's only progress indicator. Each
 chapter owns a station. Two rosettes sit at each: a *ghost* struck on the cartoon from the

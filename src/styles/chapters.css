@@ -664,20 +664,50 @@ html:has(.contact:hover) .cursor {
 
 /* Over a control that carries its own label, the reticle stays open and
    does not fill: a filled one is a blot sitting on the word the reader is
-   reading, and on a madder control a madder one is a hole. It is drawn in
-   the ink that sits on madder because a control is only ever under the
-   cursor while it is hovered, and hovered it is filled — with ink on the
-   ruled ones, with madder on the lead one — so cream is the one colour that
-   holds on both. */
+   reading, and on a madder control a madder one is a hole.
+
+   What it is drawn IN is the one thing it cannot assume. This was cream,
+   on the reasoning that a control under the pointer is a hovered control
+   and a hovered control is inked in. Half of them are not: the menu's
+   cartouche only changes its own ink, so do the selvedge knots, the quiet
+   control at the foot of 04 and the sampler's toggle, and over every one of
+   those a cream reticle was cream on parchment, which is no reticle at all.
+   The knots were the worst of it, because they carry a word: the name of
+   the band you were pointing at, written in cream on cream.
+
+   So the reticle takes the ground's colour only where the control actually
+   inks in, and the page's own madder everywhere else. The ground is right
+   for the inked ones in both editions — the night's ink is the light one,
+   and cream on it is as invisible as cream on parchment was here. */
+.cursor {
+  --reticle: var(--accent);
+}
+
+html:has(
+    .btn:hover,
+    .iconbtn:hover:not(:disabled),
+    .case__step:hover:not(:disabled),
+    .loupe__thread:hover
+  )
+  .cursor {
+  --reticle: var(--ground);
+}
+
 .cursor__ring[data-mode='control']::before {
   background: none;
-  border-color: var(--on-madder);
+  border-color: var(--reticle);
   transform: rotate(45deg) scale(0.74);
 }
 
 .cursor__ring[data-mode='control'] ~ .cursor__dot {
   opacity: 1;
-  background: var(--on-madder);
+  background: var(--reticle);
+}
+
+/* The word the reticle carries is drawn on the lozenge where the lozenge is
+   filled, and on the page where it is not. */
+.cursor__ring[data-mode='control'] .cursor__label {
+  color: var(--reticle);
 }
 
 .cursor__dot {
@@ -1395,6 +1425,13 @@ html[data-overture='play']
    while everything else here that lists is a line under a row and nothing
    more.                                                                   */
 
+/* These two gaps are the band's own air and are left alone. They were
+   tightened for a while to pay for the control that opens the gloss, which
+   stood on a line of its own under the sentence: this band ends with the
+   plate captions and carries no reserve under them, so it came to rest
+   three pixels inside the glass at 1440 by 900 and anything added to it
+   had to be taken from somewhere. Setting the control in the sentence
+   instead settled the debt, and the air came back. */
 .about__body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 31%);
@@ -1432,6 +1469,215 @@ html[data-overture='play']
 .about__rubric {
   color: var(--accent);
   font-weight: 700;
+}
+
+/* The control that opens the gloss, set in the sentence after its full
+   stop. Inline, so it rides on the last line's own baseline and costs the
+   band nothing; the rule under it is the quiet control's, held clear of
+   the sentence's descenders rather than sitting on its baseline. */
+.about__more {
+  margin-inline-start: 0.5em;
+  translate: 0 -0.12em;
+}
+
+/* --- The gloss --------------------------------------------------------------
+   The long account, standing still on its own leaf. A gloss is the long
+   note written beside a short line, and this one is set the way the band
+   it came out of is set: the opening words struck in madder, the paragraphs
+   on a reading measure, and the practical line at the foot ruled off and
+   marked in the margin with the site's own square on point.
+
+   The scaffolding is the sampler's, and for the same two reasons. Both
+   grid tracks are told they may be narrower and shorter than what is in
+   them, because an `auto` track takes the measure of its content and a
+   sheet's own `max-height: 100%` then measures itself against that rather
+   than against the glass. And the closed state is said out loud, because
+   setting `display` here overrides the platform's own rule for a dialog
+   that is not open, which would otherwise leave the whole account sitting
+   in the page.                                                            */
+
+.gloss {
+  position: fixed;
+  inset: 0;
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: clamp(1.5rem, 6svh, 4rem) var(--gutter);
+  border: 0;
+  background: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  overflow: hidden;
+}
+
+.gloss:not([open]) {
+  display: none;
+}
+
+.gloss::backdrop {
+  background: var(--scrim);
+  opacity: 0;
+  transition: opacity 240ms var(--ease-soft);
+}
+
+.gloss[data-shown='true']::backdrop {
+  opacity: 1;
+}
+
+.gloss__sheet {
+  display: flex;
+  flex-direction: column;
+  /* Narrower than the sampler, and deliberately: that sheet is a list to
+     look something up in, this one is prose to read, and prose on a 72rem
+     measure is prose nobody finishes. This width is solved rather than
+     picked — it is what puts the account at about sixty-seven characters
+     a line, which is the measure a column of type is set to. At 48rem it
+     ran to a hundred and eleven. */
+  width: min(40rem, 100%);
+  max-width: 100%;
+  max-height: 100%;
+  background: var(--ground);
+  border: 1px solid var(--rule-strong);
+  box-shadow: var(--shadow-lift);
+  opacity: 0;
+  translate: 0 1.2rem;
+  transition:
+    opacity 240ms var(--ease-soft),
+    translate 300ms var(--ease);
+}
+
+.gloss[data-shown='true'] .gloss__sheet {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* The head keeps its height and the account takes the rest of it. Left to
+   the default, both give way together and the title is squeezed. */
+.gloss__bar {
+  flex: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: var(--k2);
+  padding: var(--k2) var(--k2) var(--k2) var(--k3);
+  border-block-end: 1px solid var(--rule-strong);
+}
+
+.gloss__mark {
+  inline-size: clamp(1.9rem, 3.4vw, 2.5rem);
+  color: var(--accent);
+  /* Struck on the title's own line, not on the box around it. */
+  margin-block-start: 0.1em;
+}
+
+.gloss__title {
+  font-family: var(--display);
+  font-size: var(--t-entry);
+  font-weight: 740;
+  font-stretch: 110%;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.gloss__figure {
+  margin-block-start: 0.5rem;
+  color: var(--ink-3);
+}
+
+/* The account is longer than any sheet, so the foot of the scroller is
+   faded rather than cut: a line sliced through the middle at the sheet's
+   edge reads as the end of the text, and a reader who believes that stops
+   reading. The fade is shallower than the scroller's own end padding, so
+   at the bottom of the account it is over empty paper and the last line
+   comes up solid. */
+.gloss__read {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--k3);
+
+  --foot: 1.75rem;
+
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--foot)), transparent);
+}
+
+.gloss__read:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
+}
+
+/* The site's own reading size, not the smaller one a dialog usually takes:
+   this sheet is the one place on the site that asks to be read for a
+   minute rather than scanned, and the measure above is set to this. */
+.gloss__para {
+  font-size: var(--t-body);
+  line-height: 1.6;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* The opening paragraph carries the full ink, the way the standfirst of a
+   column does. The rest is the body, and the difference is colour and
+   rubrication rather than a second size. */
+.gloss__para:first-child {
+  color: var(--ink);
+}
+
+.gloss__para + .gloss__para {
+  margin-block-start: 1.15em;
+}
+
+/* The last line is the one a reader is meant to act on, so it is ruled off
+   from the account and marked in the margin with the site's own square on
+   point. The mark hangs outside the text rather than running inline with
+   it, so a line that wraps comes back to the same left edge as the first
+   one instead of under the mark. */
+.gloss__para[data-close] {
+  position: relative;
+  margin-block-start: var(--k2);
+  padding-block-start: var(--k2);
+  padding-inline-start: 1.7em;
+  border-block-start: 1px solid var(--rule);
+  color: var(--ink);
+}
+
+.gloss__para[data-close]::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0.2em;
+  /* On the first line's own middle, worked from the line box. */
+  inset-block-start: calc(var(--k2) + 0.57em);
+  inline-size: 0.46em;
+  block-size: 0.46em;
+  background: var(--accent);
+  rotate: 45deg;
+}
+
+@media (max-width: 42rem) {
+  .gloss {
+    padding: clamp(1rem, 3svh, 2rem) clamp(0.8rem, 4vw, 1.5rem);
+  }
+
+  .gloss__bar {
+    padding: var(--k2);
+    column-gap: var(--k1);
+  }
+
+  .gloss__read {
+    padding: var(--k2);
+    /* Shallower, because the end padding it has to stay inside of is. */
+    --foot: 1.1rem;
+  }
+
+  .gloss__where {
+    display: none;
+  }
 }
 
 /* --- The band of three ---------------------------------------------------- */
@@ -2887,6 +3133,14 @@ html[data-overture='play']
   text-wrap: pretty;
 }
 
+/* Where the account is on the page there is nothing to open, so the control
+   is not drawn at all: not hidden from sight and left in the tab order, not
+   there. The narrow layout that drops the account turns it on. */
+.roll__tap,
+.roll__cue {
+  display: none;
+}
+
 /* A short laptop — 800px of glass — holds the full view's title, the axis
    and the record only if the role comes down a step. Everything else keeps
    its size; the role is set in the display face, so it is the cell that
@@ -2990,6 +3244,58 @@ html[data-overture='play']
   .roll__detail {
     display: none;
   }
+
+  /* …so the row carries it instead. The control is drawn exactly where the
+     account is not: one media query owns both, and a wider screen never
+     gets a tap target for something it can already read. */
+  .roll__row {
+    padding-inline-end: 1.5rem;
+  }
+
+  .roll__tap {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .roll__tap:active {
+    background: color-mix(in oklab, var(--chapter-patch) 70%, transparent);
+  }
+
+  .roll__cue {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: 0;
+    translate: 0 -50%;
+    display: block;
+    color: var(--accent);
+    transition: translate var(--t1) var(--ease);
+  }
+
+  .roll__row[data-kind='experience'] .roll__cue {
+    color: var(--terracotta);
+  }
+
+  .roll__cue svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    stroke-width: 1.6;
+  }
+
+  .roll__tap:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -3px;
+  }
+
+  .roll__tap:active .roll__cue {
+    translate: 0.15rem -50%;
+  }
 }
 
 /* For a reader who asked for stillness there is no pin, no fold and no
@@ -3054,6 +3360,139 @@ html[data-overture='play']
     scale: 1;
   }
 }
+
+/* --- A leaf off the roll ----------------------------------------------------
+   One entry in full, on the narrow screens where the record cannot carry
+   the account of it. A sheet rising from the foot of the glass rather than
+   a card landing in the middle of it: it is opened by a thumb, read under
+   the thumb, and put down the same way.
+
+   It takes the band's own paper, not the file's lacquer. Opening a project
+   is the lights going down; this is turning a page of the record, and the
+   record is still behind it.                                             */
+
+.leaf {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  /* One track, and never wider than the glass: an `auto` track takes the
+     widest thing in the sheet, and the account of an entry set on one line
+     is far wider than a phone. */
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  overflow: hidden;
+}
+
+/* A dialog that is not open is not there. Setting `display` on the element
+   itself overrides the one rule the platform uses to keep a closed dialog
+   off the page, and a closed sheet was left lying over the band with the
+   lights off. */
+.leaf:not([open]) {
+  display: none;
+}
+
+.leaf::backdrop {
+  background: var(--scrim);
+  opacity: 0;
+  transition: opacity 240ms var(--ease-soft);
+}
+
+.leaf[data-shown='true']::backdrop {
+  opacity: 1;
+}
+
+.leaf__sheet {
+  /* The lane the row carries in the record, at the head of the sheet. */
+  --lane: var(--accent);
+
+  position: relative;
+  max-height: 86svh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--k2) var(--gutter) calc(var(--k3) + env(safe-area-inset-bottom));
+  background: var(--chapter-patch, var(--ground));
+  border-block-start: 2px solid var(--lane);
+  box-shadow: var(--shadow-lift);
+  translate: 0 100%;
+  transition: translate 300ms var(--ease);
+}
+
+.leaf[data-kind='experience'] .leaf__sheet {
+  --lane: var(--terracotta);
+}
+
+.leaf[data-shown='true'] .leaf__sheet {
+  translate: 0 0;
+}
+
+.leaf__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--k2);
+  margin-block-end: var(--k2);
+}
+
+.leaf__tag {
+  color: var(--ink-3);
+}
+
+.leaf__no {
+  display: inline-block;
+  min-inline-size: 1.7em;
+  color: var(--lane);
+}
+
+.leaf__when {
+  font-size: var(--t-label);
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+
+.leaf__role {
+  margin-block-start: 0.3rem;
+  font-family: var(--display);
+  font-size: var(--t-sub);
+  font-weight: 720;
+  font-stretch: 104%;
+  line-height: 1.1;
+}
+
+.leaf__org {
+  margin-block-start: 0.2rem;
+  font-size: var(--t-body);
+  color: var(--ink-2);
+}
+
+/* The account, under the rule the record would have ruled beside it. */
+.leaf__detail {
+  margin-block-start: var(--k2);
+  padding-block-start: var(--k2);
+  border-block-start: 1px solid var(--rule);
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaf__sheet {
+    translate: 0 0;
+    transition: none;
+  }
+
+  .leaf::backdrop {
+    transition: none;
+  }
+}
+
 /* --- 04 · Skills ------------------------------------------------------------
    The running bands. Five registers, five full-bleed bands, and the bands
    run: every name rides past the way a border pattern repeats along a
@@ -3222,6 +3661,307 @@ html[data-overture='play']
     width: 100%;
   }
 }
+
+/* The way in to the sampler, set at the foot of the last band and against
+   the trailing edge of the measure: the end of the chapter, and the end of
+   the line. */
+.runs__foot {
+  width: min(var(--measure), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+  margin-block-start: var(--k2);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* --- The sampler -----------------------------------------------------------
+   Every name in the five registers, standing still, under a toggle. The
+   bands are read by letting them pass; this is read by looking something
+   up, so nothing in it moves and nothing is doubled.
+
+   It is the chapter's own parchment rather than the file's lacquer: this is
+   a page of the same book, not the lights going down.                      */
+
+.sampler {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  /* The sheet hangs from a fixed line rather than standing centred: a
+     register of eight and a register of forty-eight are different heights,
+     and centred, the toggle walked up and down the glass every time one was
+     chosen. The padding is the frame it hangs in. */
+  padding: clamp(2.5rem, 7svh, 5rem) var(--gutter) clamp(1.5rem, 5svh, 4rem);
+  border: 0;
+  background: none;
+  display: grid;
+  /* One track that may be narrower than what is in it. Left to `auto` the
+     track takes the widest thing the sheet holds — which is the toggle, six
+     registers set on one line and meant to scroll — and on a phone the
+     whole sheet was laid out a thousand pixels wide, off the side of the
+     glass, with every word of it out of sight. */
+  /* Both tracks are told they may be smaller than what is in them. An auto
+     row is as tall as the list inside it, and the sheet's own `max-height:
+     100%` then measures itself against that rather than against the glass,
+     so a long register ran off the bottom of the screen. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  place-items: start center;
+  overflow: hidden;
+}
+
+/* As with the leaf: `display` here overrides the platform's own rule for a
+   closed dialog, so the closed state has to be said out loud. */
+.sampler:not([open]) {
+  display: none;
+}
+
+.sampler::backdrop {
+  background: var(--scrim);
+  opacity: 0;
+  transition: opacity 240ms var(--ease-soft);
+}
+
+.sampler[data-shown='true']::backdrop {
+  opacity: 1;
+}
+
+/* The sheet: held to the measure on a desk, the whole glass on a phone. */
+.sampler__sheet {
+  display: flex;
+  flex-direction: column;
+  width: min(72rem, 100%);
+  max-width: 100%;
+  max-height: min(100%, 56rem);
+  background: var(--ground);
+  border: 1px solid var(--rule-strong);
+  box-shadow: var(--shadow-lift);
+  opacity: 0;
+  translate: 0 1.2rem;
+  transition:
+    opacity 240ms var(--ease-soft),
+    translate 300ms var(--ease);
+}
+
+.sampler[data-shown='true'] .sampler__sheet {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* The head and the toggle keep their height and the list takes the rest of
+   it. Left to the default, a column of flex items all give way together
+   when the list is longer than the sheet, and the toggle was squeezed to a
+   row of empty cells with its labels clipped out of sight. */
+.sampler__bar,
+.sampler__tabs {
+  flex: none;
+}
+
+.sampler__list {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sampler__bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--k2);
+  padding: var(--k2) var(--k2) var(--k2) var(--k3);
+  border-block-end: 1px solid var(--rule-strong);
+}
+
+.sampler__title {
+  font-family: var(--display);
+  font-size: var(--t-sub);
+  font-weight: 740;
+  font-stretch: 110%;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.sampler__figure {
+  margin-block-start: 0.4rem;
+  color: var(--ink-3);
+}
+
+/* The toggle. One register at a time, or all five; the tabs are the five
+   registers in the order the bands run, so the list and the chapter are
+   read in the same order. */
+.sampler__tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-block-end: 1px solid var(--rule);
+  background: var(--ground-2);
+}
+
+.sampler__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* Narrower than the strip is long, the toggle scrolls, and its trailing
+   edge is faded so it plainly runs on past the cut rather than ending
+   there. Above that width all six stand across the sheet and there is
+   nothing to say. */
+@media (max-width: 74rem) {
+  .sampler__tabs {
+    mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+  }
+}
+
+.sampler__tab {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.85rem clamp(0.9rem, 1.5vw, 1.5rem);
+  border: 0;
+  border-inline-end: 1px solid var(--rule);
+  background: none;
+  /* A tab is a control with a word in it, not a label beside something
+     else: it takes the secondary ink, which clears AA at this size on the
+     toggle's own ground, where the tertiary would not. */
+  color: var(--ink-2);
+  font-family: var(--display);
+  font-size: var(--t-tiny);
+  font-weight: 650;
+  /* Tighter than a label elsewhere, and the padding with it: six registers
+     have to stand across the sheet on a wide screen, and letter-spacing at
+     the usual 0.14em spent a tab's worth of width on air. */
+  letter-spacing: 0.11em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--t1) var(--ease-soft),
+    background var(--t1) var(--ease-soft);
+}
+
+.sampler__tab:last-child {
+  border-inline-end: 0;
+}
+
+.sampler__tab:hover {
+  color: var(--ink);
+}
+
+/* The chosen register takes the paper and is struck on its own foot, so the
+   tab reads as the open page of the list under it rather than as a pressed
+   key. */
+.sampler__tab[aria-selected='true'] {
+  background: var(--ground);
+  color: var(--ink);
+}
+
+.sampler__tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  inset-block-end: -1px;
+  inset-inline: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* The figure beside a name. In a heading it recedes; inside a tab it is
+   part of the control and keeps the control's own ink, told apart by size
+   and by the figures face rather than by going pale. */
+.sampler__count {
+  color: var(--ink-3);
+  font-size: 0.9em;
+  letter-spacing: 0.04em;
+}
+
+.sampler__tab .sampler__count {
+  color: inherit;
+}
+
+.sampler__tab[aria-selected='true'] .sampler__count {
+  color: var(--accent);
+}
+
+.sampler__list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--k3);
+}
+
+.sampler__list:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
+}
+
+.sampler__reg + .sampler__reg {
+  margin-block-start: var(--k3);
+}
+
+.sampler__regname {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding-block-end: 0.5rem;
+  border-block-end: 1px solid var(--rule);
+  color: var(--ink-3);
+}
+
+.sampler__names {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.1rem var(--k2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sampler__name {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding-block: 0.5rem;
+  border-block-end: 1px solid var(--rule);
+  font-size: var(--t-small);
+  line-height: 1.2;
+}
+
+/* The marks are the bands' own, at the bands' own size. */
+.sampler__name .run__mark {
+  flex: none;
+}
+
+@media (max-width: 42rem) {
+  .sampler {
+    padding-block: clamp(1.5rem, 5svh, 3rem) clamp(1rem, 3svh, 2rem);
+  }
+
+  .sampler__bar {
+    padding: var(--k2);
+  }
+
+  .sampler__list {
+    padding: var(--k2);
+  }
+
+  .sampler__names {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sampler__sheet,
+  .sampler::backdrop {
+    transition: none;
+  }
+
+  .sampler__sheet {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
 /* --- 05 · Contact -----------------------------------------------------------
    The field. The one band where madder stops being a mark and becomes the
    ground; everything inside takes its ink from the .on-field scope. The

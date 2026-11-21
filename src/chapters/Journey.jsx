@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Announce from '../components/Announce.jsx';
+import Icon from '../components/Icon.jsx';
 import { folio } from '../lib/chapters.js';
 import { chronology } from '../data/journey.js';
 
@@ -181,6 +182,103 @@ const brief = (detail) => {
   return `${line}.`;
 };
 
+/**
+ * A leaf off the roll: one entry, opened out.
+ *
+ * The record's widest column is the account of what was done, and on a phone
+ * there is no room for it — seven paragraphs will not stand in one pinned
+ * frame at that width, and a pinned frame cannot be scrolled inside. So the
+ * account comes off the roll instead: the row is a control wherever its last
+ * column is not drawn, and tapping it lifts that one entry out in full.
+ *
+ * It is a native `<dialog>`, which is where the modality, Escape, the top
+ * layer and the focus coming back to the row all come from. It carries the
+ * row's own lane colour at its head, so what opens is plainly the row that
+ * was touched.
+ */
+function Leaf({ entry, index, onClose }) {
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+
+  const close = useCallback(() => {
+    const node = ref.current;
+    if (!node?.open) return onClose();
+    // Let the sheet go back down before it leaves the top layer.
+    setShown(false);
+    return setTimeout(() => node.close(), 200);
+  }, [onClose]);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return undefined;
+
+    if (entry && !node.open) {
+      node.showModal();
+      document.body.dataset.locked = 'true';
+      requestAnimationFrame(() => setShown(true));
+    }
+
+    const onCancel = (event) => {
+      event.preventDefault();
+      close();
+    };
+    const onClosed = () => {
+      delete document.body.dataset.locked;
+      onClose();
+    };
+
+    node.addEventListener('cancel', onCancel);
+    node.addEventListener('close', onClosed);
+    return () => {
+      node.removeEventListener('cancel', onCancel);
+      node.removeEventListener('close', onClosed);
+    };
+  }, [entry, close, onClose]);
+
+  useEffect(() => () => delete document.body.dataset.locked, []);
+
+  return (
+    <dialog
+      className="leaf"
+      ref={ref}
+      data-kind={entry?.kind}
+      data-shown={shown ? 'true' : undefined}
+      aria-labelledby={entry ? 'leaf-role' : undefined}
+      // A tap on the dark above the sheet lands on the dialog itself.
+      onClick={(event) => {
+        if (event.target === ref.current) close();
+      }}
+    >
+      {entry ? (
+        <div className="leaf__sheet">
+          <div className="leaf__bar">
+            <p className="leaf__tag label">
+              <span className="leaf__no figures">{folio(index + 1)}</span>
+              {KINDS[entry.kind]}
+            </p>
+            <button
+              type="button"
+              className="iconbtn"
+              onClick={close}
+              aria-label="Close the entry"
+              data-cursor="close"
+            >
+              <Icon name="close" />
+            </button>
+          </div>
+
+          <p className="leaf__when figures">{entry.period}</p>
+          <h3 className="leaf__role" id="leaf-role">
+            {entry.role}
+          </h3>
+          {entry.org ? <p className="leaf__org">{entry.org}</p> : null}
+          <p className="leaf__detail">{entry.detail}</p>
+        </div>
+      ) : null}
+    </dialog>
+  );
+}
+
 function Station({ entry, index, lit }) {
   return (
     <article
@@ -215,6 +313,9 @@ export function Journey() {
   // Decoration, and only decoration: nothing is reachable through it and the
   // record reads the same whether a pointer exists or not.
   const [lit, setLit] = useState(-1);
+  // Which entry is open as a leaf, where the account is not on the page.
+  const [open, setOpen] = useState(-1);
+  const shut = useCallback(() => setOpen(-1), []);
 
   // The roll's height as typeset, for the stylesheet's arithmetic: it works
   // out how much of the record the frame under the axis cannot hold, and
@@ -327,12 +428,30 @@ export function Journey() {
                   <p className="roll__kind label">{KINDS[entry.kind]}</p>
                   {entry.org && <p className="roll__org">{entry.org}</p>}
                   <p className="roll__detail">{entry.detail}</p>
+
+                  {/* The row as a control, drawn only where the account
+                      beside it is not. It covers the whole row rather than
+                      standing in a corner of it: the thing being tapped is
+                      the entry, and a thumb should not have to find a
+                      target inside it. */}
+                  <button
+                    type="button"
+                    className="roll__tap"
+                    onClick={() => setOpen(index)}
+                    aria-label={`Read the full account: ${entry.role}${entry.org ? `, ${entry.org}` : ''}`}
+                  >
+                    <span className="roll__cue" aria-hidden="true">
+                      <Icon name="chevronRight" />
+                    </span>
+                  </button>
                 </li>
               ))}
             </ol>
           </div>
         </div>
       </div>
+
+      <Leaf entry={SEQUENCE[open] ?? null} index={open} onClose={shut} />
     </section>
   );
 }

@@ -84,7 +84,11 @@ export const stackRegisters = [
   },
   {
     id: 'working',
-    title: 'Working with people',
+    // The chapter's own line calls these the personal skills; the register
+    // is named the same, so the band, the toggle and the sentence over them
+    // all say one thing. It was 'Working with people', which named half of
+    // what is in it and was the one tab too long for the toggle.
+    title: 'Personal skills',
     items: [
       { name: 'Communication', icon: 'speak' },
       { name: 'Team collaboration', icon: 'team' },

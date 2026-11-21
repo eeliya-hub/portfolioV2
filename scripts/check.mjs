@@ -12,12 +12,14 @@
 import { createRequire } from 'node:module';
 
 import { projects } from '../src/data/projects.js';
+import { profile } from '../src/data/profile.js';
 import { chronology } from '../src/data/journey.js';
 import { stackRegisters } from '../src/data/stack.js';
 import { UPRIGHT, outline } from '../src/lib/mark.js';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
+const sharp = require('sharp');
 
 const BASE = process.argv[2] ?? 'http://localhost:4317';
 
@@ -32,6 +34,45 @@ let failures = 0;
 const check = (name, ok, detail = '') => {
   if (!ok) failures += 1;
   console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${name}${detail ? ` — ${detail}` : ''}`);
+};
+
+/**
+ * Whether the drawn cursor can be seen where it is standing.
+ *
+ * The reticle is drawn by the page, not by the system, so it can be the
+ * colour of the thing behind it and simply not be there — which is what it
+ * was over every control that does not ink in under the pointer. There is
+ * no way to ask the page that question, so it is answered the way a reader
+ * answers it: the same patch of glass is photographed with the cursor shown
+ * and with it hidden, and the two are compared. A reticle that changes
+ * nothing is a reticle nobody can see.
+ *
+ * Returns the number of pixels it changed by more than a hair.
+ */
+const reticleShows = async (page, el) => {
+  const box = await el.boundingBox();
+  if (!box) return 0;
+  const at = { x: Math.round(box.x + box.width / 2), y: Math.round(box.y + box.height / 2) };
+  await page.mouse.move(at.x, at.y);
+  await page.waitForTimeout(550);
+  const glass = page.viewportSize();
+  const clip = { x: Math.max(0, at.x - 45), y: Math.max(0, at.y - 45), width: 90, height: 90 };
+  clip.width = Math.min(clip.width, glass.width - clip.x);
+  clip.height = Math.min(clip.height, glass.height - clip.y);
+  const grey = async (buf) => sharp(buf).greyscale().raw().toBuffer();
+  const shown = await grey(await page.screenshot({ clip }));
+  await page.addStyleTag({ content: '.cursor{visibility:hidden !important}' });
+  await page.waitForTimeout(120);
+  const hidden = await grey(await page.screenshot({ clip }));
+  await page.evaluate(() => {
+    for (const tag of document.querySelectorAll('style')) {
+      if (tag.textContent.includes('.cursor{visibility:hidden')) tag.remove();
+    }
+  });
+  await page.waitForTimeout(120);
+  let changed = 0;
+  for (let i = 0; i < shown.length; i += 1) if (Math.abs(shown[i] - hidden[i]) > 12) changed += 1;
+  return changed;
 };
 
 // Wait for a smooth scroll to come to rest instead of guessing a duration.
@@ -90,12 +131,17 @@ const dealt = (page) =>
  * hero waited behind it. Runs in the page, as an init script.
  */
 const recordOverture = () => {
-  const seen = { phases: [], knots: null, shown: null, first: null, landed: null, held: null };
+  const seen = { phases: [], at: {}, knots: null, shown: null, first: null, landed: null, held: null, loom: null };
   window.__overture = seen;
   const note = () => {
     const phase = document.documentElement?.dataset.overture ?? 'gone';
     // Nothing is recorded before the head script has said which it is.
-    if (seen.phases.at(-1) !== phase && (seen.phases.length || phase !== 'gone')) seen.phases.push(phase);
+    if (seen.phases.at(-1) !== phase && (seen.phases.length || phase !== 'gone')) {
+      seen.phases.push(phase);
+      // When each phase began, so the overture's own length can be read
+      // off afterwards: it is over long before a check could watch it.
+      seen.at[phase] ??= performance.now();
+    }
     const stage = document.getElementById('overture');
     const spin = stage?.querySelector('.overture__spin');
     if (stage && seen.shown === null) seen.shown = getComputedStyle(stage).display !== 'none';
@@ -103,6 +149,12 @@ const recordOverture = () => {
     // own tag is parsed, before the paths inside it are.
     const knots = stage?.querySelector('.overture__knots path')?.getAttribute('d');
     if (knots && !seen.knots) seen.knots = knots;
+    // The loom the name is knotted on: uprights strung first, crossings run
+    // through them after. Both are read off the markup, once they exist.
+    const warp = stage?.querySelector('.overture__warp')?.getAttribute('d');
+    const weft = stage?.querySelector('.overture__weft')?.getAttribute('d');
+    const ring = stage?.querySelector('.overture__ring path')?.getAttribute('d');
+    if (warp && weft && ring && !seen.loom) seen.loom = { warp, weft, ring };
     if (spin && seen.first === null) {
       seen.first = { rotate: getComputedStyle(spin).rotate, animations: spin.getAnimations().length };
     }
@@ -164,6 +216,23 @@ const browser = await chromium.launch();
   );
   check('it comes to rest on the E', Math.round(parseFloat(journey.landed)) % 360 === 90, journey.landed);
   check('the hero waits behind it and arrives as it lifts', journey.held === true);
+  // The loom is dressed before anything is knotted on it: the uprights are
+  // strung, and the crossings run through them. Two paths, each in one
+  // direction only, from the same grid the mark is drawn on.
+  check(
+    'the loom is dressed, warp one way and weft the other',
+    Boolean(journey.loom) &&
+      /^[M\d\s.V-]+$/.test(journey.loom.warp) &&
+      /^[M\d\s.H-]+$/.test(journey.loom.weft) &&
+      journey.loom.ring.length > 0,
+    journey.loom ? `${journey.loom.warp.split('M').length - 1} up, ${journey.loom.weft.split('M').length - 1} across` : 'no loom',
+  );
+  // It is meant to be watched, not waited out: the mark stands on the glass
+  // for the three seconds PLAY sets in Overture.jsx, and leaves. The upper
+  // bound is loose on purpose — a page that is slow to be ready goes on
+  // spinning until it is, which is the one part of this not on a clock.
+  const stood = Math.round(journey.at.lift - journey.at.play);
+  check('the mark stands for its three seconds, then goes', stood >= 2800 && stood < 4600, `${stood}ms`);
   await instant(page);
 
   // The colour arc: sand, parchment, sand, parchment, madder. The scroll has
@@ -343,6 +412,109 @@ const browser = await chromium.launch();
     'the record rules four entries, each with its matter',
     record.length === 4 && record.every((row) => row.label && row.value),
     record.map((row) => row.label).join(', '),
+  );
+
+  // --- the gloss ----------------------------------------------------------
+  // One sentence is what a reader passing through owes themselves. The
+  // whole account stands behind a quiet word set in that sentence, and it
+  // is the account in profile.js, not a second copy written into the page.
+  //
+  // The word is set after the full stop rather than under the sentence, so
+  // it rides a line the band had already paid for. 01 ends with the plate
+  // captions and has no reserve under them, so a line of its own costs the
+  // fourth entry of the register and all three captions. Wrapping is the
+  // one way that can break, and it is measured: the control's line box
+  // against the last line box of the text in front of it.
+  const inSentence = await page.evaluate(() => {
+    const para = document.querySelector('.about__blurb');
+    const btn = para.querySelector('.about__more');
+    const upTo = document.createRange();
+    upTo.setStart(para, 0);
+    upTo.setEndBefore(btn);
+    const lines = [...upTo.getClientRects()].filter((box) => box.height > 4);
+    const last = lines.at(-1);
+    const control = btn.getBoundingClientRect();
+    return {
+      on: Math.abs(control.top - last.top) < last.height,
+      label: btn.firstChild?.textContent.trim(),
+      tap: [Math.round(control.width), Math.round(control.height)],
+    };
+  });
+  check(
+    'the way in is set in the sentence, costing the band no line of its own',
+    inSentence.on && inSentence.label === 'More',
+    inSentence.on ? `“${inSentence.label}” on the last line` : 'wrapped below the sentence',
+  );
+  check(
+    'and is still big enough to hit',
+    inSentence.tap[0] >= 24 && inSentence.tap[1] >= 24,
+    `${inSentence.tap[0]}x${inSentence.tap[1]}`,
+  );
+  await page.locator('.about__more').click();
+  await page.waitForTimeout(400);
+  const gloss = await page.evaluate(() => {
+    const sheet = document.querySelector('.gloss__sheet').getBoundingClientRect();
+    const read = document.querySelector('.gloss__read');
+    const para = document.querySelector('.gloss__para');
+    const cs = getComputedStyle(para);
+    // How long the line runs, measured rather than assumed: a sample set
+    // in the paragraph's own face, divided into the paragraph's width.
+    const probe = document.createElement('span');
+    probe.style.cssText = `position:absolute;visibility:hidden;white-space:nowrap;font:${cs.font};letter-spacing:${cs.letterSpacing}`;
+    probe.textContent = 'The quick brown fox jumps over the lazy dog and keeps on running past it';
+    para.append(probe);
+    const per = probe.getBoundingClientRect().width / probe.textContent.length;
+    probe.remove();
+    return {
+      open: Boolean(document.querySelector('.gloss')?.open),
+      paras: [...document.querySelectorAll('.gloss__para')].map((p) => p.textContent.trim()),
+      rubric: document.querySelector('.gloss__para .about__rubric')?.textContent.trim(),
+      inside:
+        sheet.left >= -1 &&
+        sheet.right <= innerWidth + 1 &&
+        sheet.top >= -1 &&
+        sheet.bottom <= innerHeight + 1,
+      measure: Math.round(para.getBoundingClientRect().width / per),
+      // The foot of the scroller fades, and the fade has to be shallower
+      // than the end padding or it eats the last line of the account.
+      fade: Number.parseFloat(getComputedStyle(read).getPropertyValue('--foot')) * 16,
+      tail: Number.parseFloat(getComputedStyle(read).paddingBlockEnd),
+    };
+  });
+  check(
+    'the quiet control under the sentence opens the whole account',
+    gloss.open && gloss.paras.length === profile.bio.length,
+    `${gloss.paras.length} of ${profile.bio.length} paragraphs`,
+  );
+  check(
+    'and it is the account in profile.js, word for word',
+    profile.bio.every((para, i) => gloss.paras[i] === para),
+  );
+  check(
+    'struck in madder where it opens, the way the band above it is',
+    gloss.rubric === profile.bio[0].split(' ').slice(0, 2).join(' '),
+    gloss.rubric,
+  );
+  // Prose, not a list: the sheet is sized so the line comes out at a
+  // measure a column of type is set to, rather than running the width of
+  // whatever glass it opened on.
+  check(
+    'set on a reading measure, not the width of the glass',
+    gloss.measure >= 45 && gloss.measure <= 80,
+    `${gloss.measure} characters a line`,
+  );
+  check('and the whole sheet stands inside the glass', gloss.inside);
+  check(
+    'the foot fades inside its own margin, so the last line comes up solid',
+    gloss.fade < gloss.tail,
+    `${Math.round(gloss.fade)}px fade in ${Math.round(gloss.tail)}px`,
+  );
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(350);
+  check(
+    'the account closes and gives the page back',
+    !(await page.evaluate(() => document.querySelector('.gloss')?.open)) &&
+      !(await page.evaluate(() => document.body.dataset.locked)),
   );
 
   // --- 02 · the deck ------------------------------------------------------
@@ -778,6 +950,15 @@ const browser = await chromium.launch();
     `longest ${Math.max(...route.stations.map((s) => s.brief?.length ?? 0))} characters`,
   );
   check('nothing is drawn to say where an entry ended', route.spans === 0, `${route.spans} spans`);
+  // The account is beside every row on a desk, so there is nothing here to
+  // open and no control to open it with: the tap target belongs to the
+  // widths that drop the column, and nowhere else.
+  check(
+    'and no row offers to open what is already beside it',
+    await page.evaluate(() =>
+      [...document.querySelectorAll('.roll__tap')].every((n) => getComputedStyle(n).display === 'none'),
+    ),
+  );
   check('no two stations collide', route.collisions === 0, `${route.collisions} overlaps`);
   // Inside a squeezed run the ticks stand a few pixels apart, so the years
   // there are not labelled at all — the break mark stands for them. What
@@ -921,6 +1102,82 @@ const browser = await chromium.launch();
   await page.waitForTimeout(400);
   const h1 = await page.evaluate(() => document.querySelector('.run__lap').getBoundingClientRect().x);
   check('resting on a band holds it still', Math.abs(h1 - h0) < 0.5, `${(h1 - h0).toFixed(2)}px while held`);
+
+  // --- the sampler --------------------------------------------------------
+  // A band is read by letting it pass. Looking one name up in it means
+  // standing and waiting for it to come round, so the same five registers
+  // are given a second reading that stands still, with a toggle on it.
+  await page.locator('.stack .quietbtn').click();
+  await page.waitForTimeout(400);
+  const sampler = await page.evaluate(() => {
+    const sheet = document.querySelector('.sampler__sheet').getBoundingClientRect();
+    return {
+      open: Boolean(document.querySelector('.sampler')?.open),
+      names: [...document.querySelectorAll('.sampler__who')].map((n) => n.textContent.trim()),
+      tabs: document.querySelectorAll('.sampler__tab').length,
+      inside: sheet.left >= -1 && sheet.right <= innerWidth + 1 && sheet.bottom <= innerHeight + 1,
+    };
+  });
+  const every = stackRegisters.flatMap((register) => register.items.map((item) => item.name));
+  check(
+    'the sampler opens from the bands with every name standing still',
+    sampler.open && sampler.names.length === every.length && every.every((name) => sampler.names.includes(name)),
+    `${sampler.names.length} of ${every.length} names`,
+  );
+  check(
+    'a tab for all of it and one for each register',
+    sampler.tabs === stackRegisters.length + 1,
+    `${sampler.tabs} tabs`,
+  );
+  // All six stand across the sheet on a desk. Narrower than that the strip
+  // scrolls and says so with a faded edge, but a register cut in half on a
+  // full-size screen is a register nobody knows is there.
+  const strip = await page.evaluate(() => {
+    const el = document.querySelector('.sampler__tabs');
+    return { over: el.scrollWidth - el.clientWidth, width: el.clientWidth };
+  });
+  check(
+    'and the whole toggle stands across the sheet',
+    strip.over === 0,
+    strip.over ? `${strip.over}px past the edge` : `${strip.width}px, all six`,
+  );
+  check('and the whole sheet stands inside the glass', sampler.inside);
+  // The toggle takes the list down to one register, and says which.
+  await page.locator('.sampler__tab').nth(2).click();
+  await page.waitForTimeout(250);
+  const one = await page.evaluate(() => ({
+    names: document.querySelectorAll('.sampler__who').length,
+    chosen: document.querySelectorAll('.sampler__tab[aria-selected="true"]').length,
+    heading: document.querySelector('.sampler__regname')?.firstChild?.textContent.trim(),
+  }));
+  check(
+    'the toggle takes the list down to one register at a time',
+    one.names === stackRegisters[1].items.length && one.chosen === 1,
+    `${one.names} names under ${one.heading}`,
+  );
+  // The cursor is drawn by the page, so it can be invisible on the thing it
+  // is pointing at. Three controls, each a different case: the toggle,
+  // which only changes its own ink; the quiet control on bare parchment;
+  // and a selvedge knot, which carries a word as well as a mark.
+  const reticle = {
+    tab: await reticleShows(page, page.locator('.sampler__tab').nth(1)),
+  };
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(350);
+  reticle.quiet = await reticleShows(page, page.locator('.stack .quietbtn'));
+  reticle.knot = await reticleShows(page, page.locator('.warp__knot').first());
+  check(
+    'the cursor can be seen on everything it is pointing at',
+    Object.values(reticle).every((n) => n >= 60),
+    Object.entries(reticle)
+      .map(([name, n]) => `${name} ${n}px`)
+      .join(', '),
+  );
+  check(
+    'the sampler closes and gives the page back',
+    !(await page.evaluate(() => document.querySelector('.sampler')?.open)) &&
+      !(await page.evaluate(() => document.body.dataset.locked)),
+  );
 
   // --- the warp -----------------------------------------------------------
   // The page's one thread fills as the reader weaves: nothing at the top,
@@ -1341,6 +1598,82 @@ const browser = await chromium.launch();
     recordM.shown && recordM.fits && recordM.clear && recordM.rows === chronology.length,
     `${recordM.rows} rows, ${recordM.fits ? 'fits' : 'overflows'}`,
   );
+
+  // The account of an entry is the one cell the phone's record cannot
+  // carry, so the row carries it instead: every row is a control here, and
+  // what it opens is the entry in full, in the writer's own words.
+  const where = await page.evaluate(() => scrollY);
+  const last = chronology.length - 1;
+  await page.locator('.roll__row').nth(last).locator('.roll__tap').click();
+  await page.waitForTimeout(400);
+  const leaf = await page.evaluate(() => {
+    const sheet = document.querySelector('.leaf__sheet')?.getBoundingClientRect();
+    return {
+      open: Boolean(document.querySelector('.leaf')?.open),
+      detail: document.querySelector('.leaf__detail')?.textContent.trim(),
+      role: document.querySelector('.leaf__role')?.textContent.trim(),
+      inside: Boolean(sheet) && sheet.left >= -1 && sheet.right <= innerWidth + 1 && sheet.bottom <= innerHeight + 1,
+      taps: document.querySelectorAll('.roll__tap').length,
+    };
+  });
+  const latest = [...chronology].sort((a, b) => a.from - b.from).at(-1);
+  check(
+    'a row of the record opens the entry in full on a phone',
+    leaf.open && leaf.taps === chronology.length && leaf.detail === latest.detail && leaf.role === latest.role,
+    leaf.open ? `${leaf.role}, ${leaf.detail?.length ?? 0} characters` : 'nothing opened',
+  );
+  check('and the whole sheet stands inside the glass', leaf.inside);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  const after = await page.evaluate(() => ({
+    open: Boolean(document.querySelector('.leaf')?.open),
+    locked: Boolean(document.body.dataset.locked),
+    y: scrollY,
+  }));
+  check(
+    'and closes, leaving the reader where they were in the record',
+    !after.open && !after.locked && Math.abs(after.y - where) < 4,
+    `${Math.round(after.y - where)}px moved`,
+  );
+
+  // The account opens on a phone too, where it is the whole glass, and the
+  // head of the sheet drops where he is rather than spending three lines
+  // of a small screen on something 01's own register already says.
+  await page.evaluate(() => scrollTo(0, document.getElementById('about').offsetTop));
+  await scrollSettled(page);
+  await page.locator('.about__more').click();
+  await page.waitForTimeout(400);
+  const glossM = await page.evaluate(() => {
+    const sheet = document.querySelector('.gloss__sheet')?.getBoundingClientRect();
+    const read = document.querySelector('.gloss__read');
+    const where = document.querySelector('.gloss__where');
+    return {
+      open: Boolean(document.querySelector('.gloss')?.open),
+      paras: document.querySelectorAll('.gloss__para').length,
+      inside:
+        Boolean(sheet) &&
+        sheet.left >= -1 &&
+        sheet.right <= innerWidth + 1 &&
+        sheet.top >= -1 &&
+        sheet.bottom <= innerHeight + 1,
+      scrolls: read.scrollHeight > read.clientHeight + 1,
+      byline: getComputedStyle(where).display,
+      head: Math.round(document.querySelector('.gloss__bar').getBoundingClientRect().height),
+      glass: innerHeight,
+    };
+  });
+  check(
+    'the account opens on a phone, whole, inside the glass',
+    glossM.open && glossM.paras === profile.bio.length && glossM.inside && glossM.scrolls,
+    `${glossM.paras} paragraphs, ${glossM.inside ? 'inside' : 'OUT'}`,
+  );
+  check(
+    'and its head keeps to a fifth of the glass, where he is left off it',
+    glossM.byline === 'none' && glossM.head < glossM.glass / 5,
+    `${glossM.head}px of ${glossM.glass}`,
+  );
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
 
   // The colophon wraps on a phone, and a dot left at either end of a line
   // is a separator separating nothing.

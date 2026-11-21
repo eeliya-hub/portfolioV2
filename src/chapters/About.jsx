@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import Announce from '../components/Announce.jsx';
 import Icon from '../components/Icon.jsx';
 import { Khatam, Shamsa } from '../components/Ornament.jsx';
@@ -78,6 +80,135 @@ function opening(text) {
   return [words.slice(0, RUBRIC).join(' '), ` ${words.slice(RUBRIC).join(' ')}`];
 }
 
+/* --- The gloss --------------------------------------------------------------
+   A gloss is the long note written beside a short line, and that is exactly
+   the relation here. The blurb is one sentence, which is all a reader
+   passing through owes themselves; a reader who stops is owed the whole
+   account, and the whole account cannot live in the band. This band is
+   composed around three plates standing on one baseline against a register
+   that ends level with them, and five paragraphs set underneath would be
+   the one thing in 01 that has to be scrolled.
+
+   So it stands behind a quiet control and opens as its own leaf: set at a
+   reading measure, nothing else on the glass, and the paragraphs
+   rubricated and ruled the way the band they came out of is. The copy is
+   profile.bio, in src/data/profile.js, and the last paragraph is drawn
+   apart because it is the one a reader is meant to act on.                 */
+
+function Gloss({ open, onClose }) {
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+
+  const close = useCallback(() => {
+    const node = ref.current;
+    if (!node?.open) return onClose();
+    setShown(false);
+    return setTimeout(() => node.close(), 200);
+  }, [onClose]);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return undefined;
+
+    if (open && !node.open) {
+      node.showModal();
+      document.body.dataset.locked = 'true';
+      requestAnimationFrame(() => setShown(true));
+    }
+
+    // Escape is given the same 200ms as the close button rather than
+    // taking the sheet off the glass in one frame.
+    const onCancel = (event) => {
+      event.preventDefault();
+      close();
+    };
+    const onClosed = () => {
+      delete document.body.dataset.locked;
+      onClose();
+    };
+
+    node.addEventListener('cancel', onCancel);
+    node.addEventListener('close', onClosed);
+    return () => {
+      node.removeEventListener('cancel', onCancel);
+      node.removeEventListener('close', onClosed);
+    };
+  }, [open, close, onClose]);
+
+  useEffect(() => () => delete document.body.dataset.locked, []);
+
+  const last = profile.bio.length - 1;
+
+  return (
+    <dialog
+      className="gloss"
+      ref={ref}
+      data-shown={shown ? 'true' : undefined}
+      aria-labelledby="gloss-title"
+      onClick={(event) => {
+        if (event.target === ref.current) close();
+      }}
+    >
+      <article className="gloss__sheet">
+        <header className="gloss__bar">
+          <Shamsa className="gloss__mark" />
+          <div>
+            <h2 className="gloss__title" id="gloss-title">
+              The longer version
+            </h2>
+            {/* The byline. Where he is goes with it on a sheet wide enough
+                to carry it on one line, and is dropped on a phone rather
+                than spending three lines of the head on something the
+                register below already says. */}
+            <p className="gloss__figure label">
+              {profile.name}
+              <span className="gloss__where">
+                <span aria-hidden="true"> · </span>
+                {profile.location}
+              </span>
+            </p>
+          </div>
+          <button
+            type="button"
+            className="iconbtn"
+            onClick={close}
+            aria-label="Close the account"
+            data-cursor="close"
+          >
+            <Icon name="close" />
+          </button>
+        </header>
+
+        {/* Focusable, because it scrolls: a reader on a keyboard has to be
+            able to take the sheet down without a pointer. */}
+        <div className="gloss__read" tabIndex={0}>
+          {profile.bio.map((para, index) => {
+            if (index === 0) {
+              const [rubric, rest] = opening(para);
+              return (
+                <p className="gloss__para" key={para}>
+                  <span className="about__rubric">{rubric}</span>
+                  {rest}
+                </p>
+              );
+            }
+
+            return (
+              <p
+                className="gloss__para"
+                data-close={index === last ? 'true' : undefined}
+                key={para}
+              >
+                {para}
+              </p>
+            );
+          })}
+        </div>
+      </article>
+    </dialog>
+  );
+}
+
 function Plate({ photo, span, index, sizes }) {
   const image = picture(photo.stem);
   // Anything whose file is missing is dropped rather than drawn empty.
@@ -134,6 +265,8 @@ function Plate({ photo, span, index, sizes }) {
 
 export function About() {
   const [rubric, rest] = opening(profile.blurb);
+  const [open, setOpen] = useState(false);
+  const shut = useCallback(() => setOpen(false), []);
 
   return (
     <section className="chapter chapter--sand about" id="about" aria-labelledby="about-heading">
@@ -143,9 +276,26 @@ export function About() {
         <div className="about__body">
           <div className="about__say">
             <Shamsa className="about__mark" />
+            {/* The control is set in the sentence, after its full stop, not
+                under it: a word on the last line costs the band no height
+                and asks for none of the reader's attention until they have
+                finished reading. Inside the <p> so it travels with the
+                text — where the sentence ends is where it is. */}
             <p className="about__blurb reveal">
               <span className="about__rubric">{rubric}</span>
-              {rest}
+              {rest}{' '}
+              <button
+                type="button"
+                className="quietbtn about__more"
+                onClick={() => setOpen(true)}
+                data-cursor="control"
+              >
+                More
+                {/* The word on the page is the start of the name a screen
+                    reader hears, not a different one: 'More' alone says
+                    nothing about what of. */}
+                <span className="visually-hidden"> about me: the longer version</span>
+              </button>
             </p>
           </div>
 
@@ -175,6 +325,8 @@ export function About() {
           </dl>
         </div>
       </div>
+
+      <Gloss open={open} onClose={shut} />
     </section>
   );
 }

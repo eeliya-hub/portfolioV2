@@ -70,6 +70,17 @@
         background: var(--ground, #f1e9d9);
       }
 
+      /* The cartoon and the ring are struck from one centre, so they stack
+         in a single cell rather than standing one above the other. */
+      .overture__plan {
+        display: grid;
+        place-items: center;
+      }
+
+      .overture__plan > * {
+        grid-area: 1 / 1;
+      }
+
       /* The squared paper the mark is knotted on: the weaver's cartoon, a
          cell to a knot, fading out past the mark. */
       .overture__cartoon {
@@ -82,11 +93,28 @@
         mask-image: radial-gradient(closest-side, #000 40%, transparent);
       }
 
-      .overture__cartoon path {
+      /* The frame of a shamsa, struck around the mark: the figure a page of
+         this kind is opened with, in construction lines. */
+      .overture__ring {
+        width: calc(var(--mark-knot) * 13.5);
+        height: calc(var(--mark-knot) * 13.5);
+        overflow: visible;
+        color: var(--ink, #1a1512);
+        opacity: 0.22;
+      }
+
+      .overture__cartoon path,
+      .overture__ring path {
         fill: none;
         stroke: currentcolor;
         stroke-width: 1px;
         vector-effect: non-scaling-stroke;
+        /* Every line is normalised to a length of one, so the whole figure
+           draws on with a single offset and no measuring. The resting
+           value is the finished figure: with the animations off, there is
+           nothing undrawn. */
+        stroke-dasharray: 1;
+        stroke-dashoffset: 0;
       }
 
       .overture__flight {
@@ -113,26 +141,74 @@
         background: var(--ground, #121010);
       }
 
-      [data-theme='night'] .overture__cartoon {
+      [data-theme='night'] .overture__cartoon,
+      [data-theme='night'] .overture__ring {
         color: var(--ink, #f0e5d1);
+      }
+
+      /* --- The overture, in order -----------------------------------------
+         The loom is dressed, the name is knotted on it, the figure is
+         struck around it, and then it turns. Every figure is drawn rather
+         than faded up: one offset, running the length of the path, which
+         strings the uprights one after another from the left and then runs
+         the crossings through them from the top. The whole of it is timed
+         against the same clock Overture.jsx lands the mark by. PLAY, there,
+         is the one knob for how long this stands.                        */
+
+      /* The warp, strung left to right. */
+      [data-overture='play'] .overture__warp {
+        animation: overture-draw 700ms linear 60ms both;
+      }
+
+      /* The weft, run through it top to bottom. */
+      [data-overture='play'] .overture__weft {
+        animation: overture-draw 820ms linear 420ms both;
       }
 
       /* ایلیا is written in from the right, a column of knots at a time, the
          way the name is written: the lone alef, the break after it, then the
          joined run to the last alef. */
       [data-overture='play'] .overture__knots {
-        animation: overture-write 450ms steps(9, end) both;
+        animation: overture-write 440ms steps(9, end) 620ms both;
       }
 
-      /* Then it turns, slowly at first, and is spinning at full speed by the
-         end of its first revolution. It goes on spinning until the page is
-         ready; Overture.jsx takes it from wherever it is and lands it on the
-         E. The spin-up is a quadratic ease-in over two periods, so it leaves
-         the first revolution at exactly the speed the spin runs at. */
+      /* The figure is struck around the finished name, and then turns the
+         other way: eight points, so a turn of an eighth brings it back to
+         itself and the loop never shows a seam. */
+      [data-overture='play'] .overture__ring path {
+        animation: overture-draw 740ms cubic-bezier(0.3, 0, 0.2, 1) 900ms both;
+      }
+
+      [data-overture='play'] .overture__ring {
+        animation: overture-counter 3s linear 900ms infinite;
+      }
+
+      /* Then the mark turns, slowly at first, and is spinning at full speed
+         by the end of its first revolution. It goes on spinning until the
+         page is ready; Overture.jsx takes it from wherever it is and lands
+         it on the E. The spin-up is a quadratic ease-in over two periods, so
+         it leaves the first revolution at exactly the speed the spin runs
+         at. */
       [data-overture='play'] .overture__spin {
         animation:
-          overture-spin-up 2400ms cubic-bezier(0.333, 0, 0.667, 0.333) 600ms both,
-          overture-spin 1200ms linear 3000ms infinite;
+          overture-spin-up 760ms cubic-bezier(0.333, 0, 0.667, 0.333) 1000ms both,
+          overture-spin 760ms linear 1760ms infinite;
+      }
+
+      @keyframes overture-draw {
+        from {
+          stroke-dashoffset: 1;
+        }
+      }
+
+      @keyframes overture-counter {
+        from {
+          rotate: 0deg;
+        }
+
+        to {
+          rotate: -45deg;
+        }
       }
 
       @keyframes overture-write {
@@ -171,10 +247,15 @@
         }
       }
 
-      /* Still: the E, standing, for as long as the page takes. */
+      /* Still: the E, standing on a finished plan, for as long as the page
+         takes. Nothing is drawn on and nothing turns. */
       @media (prefers-reduced-motion: reduce) {
         .overture .overture__knots,
-        .overture .overture__spin {
+        .overture .overture__spin,
+        .overture .overture__warp,
+        .overture .overture__weft,
+        .overture .overture__ring,
+        .overture .overture__ring path {
           animation: none !important;
         }
 
@@ -329,16 +410,24 @@
       carrying its provenance.
     -->
 
-    <!-- The overture: ایلیا, written in knots and turned a quarter to stand
-         as the E, spinning on the cartoon while the page it is waiting for
-         arrives, then home to the square at the top left. Its paths are
-         filled in at build from src/lib/mark.js (vite.config.js), its rules
-         are in the head, and Overture.jsx lands it. -->
+    <!-- The overture: the loom dressed warp then weft, ایلیا knotted on it
+         and turned a quarter to stand as the E, a shamsa's frame struck
+         around it, and the mark spinning there while the page it is waiting
+         for arrives, then home to the square at the top left. Its paths are
+         filled in at build from src/lib/mark.js and src/lib/girih.js
+         (vite.config.js), its rules are in the head, and Overture.jsx lands
+         it. -->
     <div class="overture" id="overture" aria-hidden="true">
       <div class="overture__ground">
-        <svg class="overture__cartoon" viewBox="-4 -4 17 17" focusable="false">
-          <path data-mark="cartoon" />
-        </svg>
+        <div class="overture__plan">
+          <svg class="overture__cartoon" viewBox="-4 -4 17 17" focusable="false">
+            <path class="overture__warp" pathLength="1" data-mark="warp" />
+            <path class="overture__weft" pathLength="1" data-mark="weft" />
+          </svg>
+          <svg class="overture__ring" viewBox="0 0 100 100" focusable="false">
+            <path pathLength="1" data-mark="ring" />
+          </svg>
+        </div>
       </div>
       <div class="overture__flight">
         <div class="overture__spin">

@@ -2,14 +2,24 @@ import { useEffect, useRef, useState } from 'react';
 
 const SEEN = 'overture';
 
-// The landing, in one place. The writing and the spin before it belong to
-// the page itself (index.html, in the head), because they run before this
-// file has arrived; everything from the moment the page is ready is here.
-const WHIRL = 1200; // from a standing start: once round and a quarter, into the E
-const BRAKE = 1000; // from a spin already under way: on round, slowing into the E
-const REST = 260; // the E standing on the cartoon before it goes home
-const FLIGHT = 820; // home to the square at the top left
-const LIFT = 640; // the ground dissolving off the hero
+// The landing, in one place. The dressing of the loom, the writing and the
+// spin before it belong to the page itself (index.html, in the head),
+// because they run before this file has arrived; everything from the moment
+// the page is ready is here.
+//
+// PLAY is the one knob: how long the mark stands on the glass, measured
+// from the first frame drawn to the moment it leaves for the top left.
+// Everything in the head is timed to finish inside it, and STRIKE is simply
+// what is left once the landing has been paid for. A page that takes longer
+// than PLAY to be ready goes on spinning and lands when it is ready, which
+// is the one thing here that is not on a clock.
+const PLAY = 3000; // the mark's time on the glass
+const BRAKE = 860; // from a spin already under way: slowing into the E
+const WHIRL = 1150; // from a standing start: once round and a quarter, into the E
+const REST = 220; // the E standing on the cartoon before it goes home
+const STRIKE = PLAY - BRAKE - REST; // when the landing begins
+const FLIGHT = 720; // home to the square at the top left
+const LIFT = 600; // the ground dissolving off the hero
 const CLEAR = 260; // how fast an interruption clears it all away
 const PATIENCE = 6000; // the longest the faces and the portrait are waited for
 
@@ -148,18 +158,20 @@ export function Overture() {
         return;
       }
 
-      // Let the name finish being written, and the beat after it run out.
+      // Let the name finish being written, and then hold until the mark has
+      // had its time. The clock is the page's own: the write animation
+      // started on the frame the stage was first drawn, so the time since
+      // it started is the time the reader has been looking at this.
       const [write] = knots.getAnimations();
+      const began = Number(write?.startTime ?? document.timeline.currentTime);
       await write?.finished.catch(() => {});
-      const css = Object.fromEntries(spin.getAnimations().map((a) => [a.animationName, a]));
-      const spinUp = css['overture-spin-up'];
-      if (spinUp) {
-        const beat = spinUp.effect.getTiming().delay - spinUp.currentTime;
-        if (beat > 0) await pause(beat);
-      }
+      if (state !== 'running') return;
+      const waited = Number(document.timeline.currentTime) - began;
+      if (waited < STRIKE) await pause(STRIKE - waited);
       if (state !== 'running') return;
 
       // Where it is and how fast it is going, read off two frames.
+      const css = Object.fromEntries(spin.getAnimations().map((a) => [a.animationName, a]));
       const steady = css['overture-spin'];
       const spinning = Boolean(steady) && steady.currentTime >= steady.effect.getTiming().delay;
       const t1 = await frame();

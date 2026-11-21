@@ -30,12 +30,28 @@ export const profile = {
   // src/styles/chapters.css. Widen that and it takes fewer lines; narrow it
   // and it takes more.
   blurb:
-    'First Class Computer Science graduate, working across mobile, web and backend, and most interested in where a system stops being a diagram and starts being something a person can use.',
+    'First Class Computer Science graduate, born in Iran, I build beautiful, finished products across mobile, web and backend. I work where systems, people and useful products meet.',
 
+  // The long account, read in the gloss: the sheet 01 opens from the `More`
+  // set in the blurb. Eeliya's own words, in his own order, and the only
+  // place on the site where he speaks at length rather than in evidence —
+  // the degree and the subjects are also in `credentials` and in the
+  // chapters, the jobs in src/data/journey.js, the projects in
+  // src/data/projects.js, but this is the one that is written rather than
+  // listed. It took over a three-sentence `bio` that sat in this file and
+  // was rendered nowhere.
+  //
+  // Any number of paragraphs: the gloss sets what it is given. The last one
+  // is drawn apart, ruled off and marked in the margin, so the account ends
+  // on whatever a reader is meant to do next. And the first two words are
+  // struck in madder, the same rubrication the blurb takes above it, so an
+  // opening worth striking earns its place.
   bio: [
-    'I am a software developer and a First Class Computer Science graduate of the University of Westminster. I work across mobile, web and backend, and I care most about the part of the job where a system stops being a diagram and starts being something a person can use.',
-    'The work keeps returning to three subjects: AI, travel technology and aviation. They sit where systems, people and useful products meet, which is the only place I have found where the engineering and the reason for it are the same problem.',
-    'I am open to graduate roles, internships, junior positions, freelance builds and collaboration.',
+    'I was born in Iran and grew up in the UK, two places that have both shaped who I am. My Iranian heritage is an important part of my identity, and something I have always wanted to stay connected to. Growing up between different cultures has given me a broader perspective, an appreciation for different ways of thinking, and a curiosity about the world around me.',
+    'I am a software developer and First Class Computer Science graduate from the University of Westminster. I enjoy working across mobile, web and backend development, particularly when technology can solve everyday problems or create something genuinely useful. My interests have increasingly centred around AI, travel technology and aviation, three areas where I see plenty of opportunities to build products that bring people and technology together.',
+    'My projects reflect these interests. Traverse, my final-year project, explored how flight search, hotels, itineraries and budgeting could come together in one travel assistant. PulseOS is a personal productivity dashboard designed to bring everyday tools and information into one place. I also worked on Pit Wall during a Cognizant and Aston Martin F1 ideathon, where our team explored how AI could help fans understand race strategy through an interactive race engineer. Each project has given me the opportunity to take an idea from its early stages through to something tangible.',
+    'Alongside my studies, I have worked at B&Q since 2021, balancing employment with A-Levels, university and personal projects. I have also gained experience working with a startup team at FounderMatcha, collaborating with designers and developers to build Flutter interfaces from Figma designs. During the F1 ideathon, I helped lead a team of five, coordinating responsibilities, keeping development on track and presenting our work to Aston Martin F1 and Cognizant stakeholders. These experiences have taught me the importance of communication, adaptability and working towards a shared goal.',
+    'I am now looking forward to the next stage of my career, where I can continue developing my technical skills, learn from experienced people and contribute to meaningful projects. I am open to graduate and junior software development roles, internships, freelance opportunities and collaborations.',
   ],
 
   // Each row carries a label, the matter of record itself, and the line that

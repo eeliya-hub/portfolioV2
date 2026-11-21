@@ -611,6 +611,76 @@ a:hover {
   height: 1.1rem;
 }
 
+/* --- The quiet control ----------------------------------------------------
+   No cartouche, no ink: the label itself, set on the one rule it stands on.
+   (`.quiet` is taken: it is the type utility above, and one class name may
+   only ever mean one thing.)
+   For the thing a reader may want and must never be sold — the way into a
+   list they can already see running past. It asks for a word of the page's
+   attention, where a cartouche asks for the eye.
+
+   The rule under it is the control: it is drawn in the ground's own grey
+   until the control is wanted, and strikes madder, full width, from the
+   leading edge, the way every other rule on this site draws on.            */
+
+.quietbtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.5rem 0.1rem 0.55rem;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font-family: var(--display);
+  font-size: var(--t-label);
+  font-weight: 650;
+  font-stretch: 96%;
+  line-height: 1;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--t2) var(--ease-soft);
+}
+
+.quietbtn::before {
+  content: '';
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: var(--rule-strong);
+}
+
+.quietbtn::after {
+  content: '';
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  height: 1px;
+  background: var(--accent);
+  scale: 0 1;
+  transform-origin: left center;
+  transition: scale var(--t2) var(--ease-weave);
+}
+
+.quietbtn:hover,
+.quietbtn:focus-visible {
+  color: var(--ink);
+}
+
+.quietbtn:hover::after,
+.quietbtn:focus-visible::after {
+  scale: 1 1;
+}
+
+.quietbtn svg {
+  width: 1.1em;
+  height: 1.1em;
+  flex: none;
+  color: var(--accent);
+}
+
 /* --- Reveals --------------------------------------------------------------
    One grammar, three forms. Everything starts visible-by-default for a
    reader who asked for stillness; the classes below only apply while motion
