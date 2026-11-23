@@ -1,0 +1,197 @@
+  <style>
+    /* THE SCORE: the name, inlaid
+       The hero's arrangement of the name exactly, at a little over half
+       its size, set round the star: EELIYA and ایلیا above it, نیری and
+       NAYERI below. Every letter is inlaid with the field's girih in the
+       colour of the page, the way a name is set in a tiled wall, and the
+       girih goes on moving through the letters while they stand. At the
+       handoff every word flies to its place on the hero, growing as it
+       goes, and the inlay dissolves out of the letters on the way until
+       they are the hero's plain ink: the tilework becomes the type. The
+       flight is src/lib/nameflight.js.
+
+       0.30  the given name, both scripts, each written in its direction
+       0.60  the family name, both scripts
+       all   the girih moving through the letters                        */
+
+    @property --spread {
+      syntax: '<length>';
+      inherits: false;
+      initial-value: 0px;
+    }
+
+    .s-inlay {
+      --tile: 150px;
+      --grain: GROUND-TILE-DAY;
+      --grain-size: 40px;
+      --size: clamp(2rem, 6.6vw, 5.2rem);
+      --clear-in: calc(var(--figure) * 0.235);
+      --clear-out: calc(var(--figure) * 0.3);
+    }
+
+    [data-theme='night'] .s-inlay {
+      --grain: GROUND-TILE-NIGHT;
+    }
+
+    @media (max-width: 40rem) {
+      .s-inlay {
+        --tile: 108px;
+        --grain-size: 26px;
+        --size: 1.9rem;
+      }
+    }
+
+    .s-inlay__ground {
+      position: fixed;
+      inset: 0;
+      background: var(--o-line);
+      --spread: 160vmax;
+      -webkit-mask-image: var(--o-field-tile),
+        radial-gradient(circle at 50% 50%, #000 var(--spread), transparent calc(var(--spread) + 36vmin)),
+        radial-gradient(circle at 50% 50%, transparent var(--clear-in), #000 var(--clear-out));
+      mask-image: var(--o-field-tile),
+        radial-gradient(circle at 50% 50%, #000 var(--spread), transparent calc(var(--spread) + 36vmin)),
+        radial-gradient(circle at 50% 50%, transparent var(--clear-in), #000 var(--clear-out));
+      -webkit-mask-size: var(--tile) var(--tile), 100% 100%, 100% 100%;
+      mask-size: var(--tile) var(--tile), 100% 100%, 100% 100%;
+      -webkit-mask-repeat: repeat, no-repeat, no-repeat;
+      mask-repeat: repeat, no-repeat, no-repeat;
+      -webkit-mask-position: center, center, center;
+      mask-position: center, center, center;
+      -webkit-mask-composite: source-in, source-in;
+      mask-composite: intersect, intersect;
+      opacity: 0.24;
+      animation:
+        s-inlay-spread 1500ms cubic-bezier(0.22, 1, 0.36, 1) 420ms both,
+        s-inlay-weight 2900ms linear both;
+    }
+
+    @keyframes s-inlay-spread {
+      from {
+        --spread: -36vmin;
+      }
+    }
+
+    @keyframes s-inlay-weight {
+      0%,
+      58% {
+        opacity: 0.46;
+      }
+    }
+
+    .s-inlay__fig {
+      width: calc(var(--figure) * 0.84);
+      height: calc(var(--figure) * 0.84);
+      --zoom: 0.84;
+    }
+
+    .s-inlay__star {
+      color: var(--o-ink);
+      --at: 380ms;
+      --step: 260ms;
+      --dur: 820ms;
+      --weight: 1.2;
+    }
+
+    .s-inlay__star .d + .d {
+      color: var(--o-pencil);
+      --weight: 0.9;
+    }
+
+    .s-inlay__seed {
+      color: var(--o-madder);
+      --at: 80ms;
+      --step: 120ms;
+      --dur: 380ms;
+      --weight: 1.5;
+      opacity: 0;
+      animation: s-inlay-seed 1360ms linear both;
+    }
+
+    @keyframes s-inlay-seed {
+      0%,
+      82% {
+        opacity: 1;
+      }
+    }
+
+    /* The hero's two lines: Latin flush to the left of the first and the
+       Persian to its right, the Persian to the left of the second and the
+       Latin to its right. */
+    .s-inlay__line {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      font-size: var(--size);
+    }
+
+    .s-inlay__line--first {
+      translate: 0 calc(var(--figure) * -0.64);
+    }
+
+    .s-inlay__line--second {
+      translate: 0 calc(var(--figure) * 0.64);
+    }
+
+    .s-inlay .o-word {
+      font-size: var(--size);
+      color: transparent;
+      background-image: var(--grain), linear-gradient(var(--letter), var(--letter));
+      background-size: var(--grain-size) var(--grain-size), 100% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      animation:
+        o-pen 820ms cubic-bezier(0.45, 0, 0.25, 1) var(--at) both,
+        s-inlay-flow 5200ms linear both;
+    }
+
+    .s-inlay .o-word--latin {
+      --letter: var(--ink, #1a1512);
+    }
+
+    .s-inlay .o-word--fa {
+      --letter: var(--o-madder);
+      font-size: calc(var(--size) * 1.3);
+    }
+
+    @keyframes s-inlay-flow {
+      from {
+        background-position: 0 0, 0 0;
+      }
+
+      to {
+        background-position: var(--grain-size) calc(var(--grain-size) / 2), 0 0;
+      }
+    }
+
+    .s-inlay [data-word='first-latin'] {
+      --at: 300ms;
+    }
+
+    .s-inlay [data-word='first-fa'] {
+      --at: 420ms;
+    }
+
+    .s-inlay [data-word='second-fa'] {
+      --at: 600ms;
+    }
+
+    .s-inlay [data-word='second-latin'] {
+      --at: 720ms;
+    }
+  </style>
+  <div class="s s-inlay">
+    <div class="s-inlay__ground"></div>
+    <svg class="s-inlay__fig" viewBox="0 0 100 100" aria-hidden="true">
+      <g class="s-inlay__star" data-fig="field-star"></g>
+      <g class="s-inlay__seed" data-fig="field-seed"></g>
+    </svg>
+    <div class="s-inlay__line s-inlay__line--first">
+      <p class="o-word o-word--latin o-word--first o-pen" data-word="first-latin">Eeliya</p>
+      <p class="o-word o-word--fa o-pen" data-word="first-fa" lang="fa" dir="rtl">ایلیا</p>
+    </div>
+    <div class="s-inlay__line s-inlay__line--second">
+      <p class="o-word o-word--fa o-pen" data-word="second-fa" lang="fa" dir="rtl">نیری</p>
+      <p class="o-word o-word--latin o-word--second o-pen" data-word="second-latin">Nayeri</p>
+    </div>
+  </div>

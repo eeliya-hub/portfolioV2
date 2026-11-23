@@ -44,16 +44,89 @@
          stylesheet, so they hold before the stylesheet and the script that
          would otherwise draw it have arrived. Its markup opens the body; the
          landing is Overture.jsx's. -->
-    <style>
+    <style id="overture-rules">
+      /* === THE STAGE =======================================================
+         The beats the overture is timed by, the palette it is drawn in, the
+         two ways a figure arrives, the type the name is set in, and the
+         mark. The score itself is overture/score.html, which the build
+         writes into the stage with its own rules. */
+
       .overture {
-        /* One knot of the mark, in whole pixels so it stands crisp at rest. */
+        /* === THE BEATS. Edit the overture here. ========================
+           These three numbers are the whole of its timing, and they are
+           the only place it is written down: Overture.jsx reads them off
+           this element rather than keeping its own copy.
+
+             --score   how long the score has the glass to itself before
+                       the name is written over it.
+             --write   how long ایلیا takes to be written, 9 columns of
+                       knots at a time. The steps(9) below is the 9.
+             --hold    how long it then STANDS, upright, as itself, before
+                       the quarter turn that makes it the E. Nothing about
+                       the name moves in it. Chosen at one second: long
+                       enough to be read as a word, short enough not to be
+                       waited through.
+
+           The score has the first 1.2 seconds to itself, and its last
+           beats settle behind the standing name. The landing's knobs are
+           at the top of src/components/Overture.jsx.                    */
+        --score: 1200ms;
+        --write: 440ms;
+        --hold: 1000ms;
+        --turn: calc(var(--score) + var(--write) + var(--hold));
+
+        /* One knot of the mark, in whole pixels so it stands crisp, and the
+           size a figure is struck at. The figure never falls below 28
+           knots, so on a phone the frame around the name is still a frame
+           and not a ring the name is too big for. */
         --mark-knot: 12px;
+        --figure: max(min(56vmin, 34rem), calc(var(--mark-knot) * 28));
+
+        /* A line's weight, in the units of a figure struck in a 100 box at
+           --figure. It is set per size of glass rather than left to the
+           browser: a line that does not scale with its figure is a line
+           whose dash is measured in the wrong space, and that is what
+           left the first overtures with pieces missing. Here it comes to
+           about 1.25 pixels everywhere. */
+        --hair: 0.25;
+
+        /* === THE PALETTE. Solid colours, every one of them: a figure that
+           recedes is drawn in a lighter colour, not in a fainter one, so
+           where two lines cross there is no darker knot of doubled ink. */
+        --o-ground: #f1e9d9;
+        --o-pencil: #b0a085;
+        --o-line: #6b5c4e;
+        --o-ink: #2a211b;
+        --o-madder: #8e1c24;
+
+        /* The tessellation the site is laid on, which the score spreads
+           round the name. Written in at build from src/lib/girih.js. */
+        --o-field-tile: FIELD-TILE;
+
         position: fixed;
         inset: 0;
         z-index: 400;
         display: grid;
         place-items: center;
-        color: var(--accent, #8e1c24);
+        color: var(--o-madder);
+      }
+
+      /* The night edition: a lacquered binding. Bone for ink, and madder at
+         the strength the page sets a line in at night, coral, exactly as
+         the hero sets the name. */
+      [data-theme='night'] .overture {
+        --o-ground: #121010;
+        --o-pencil: #4c4238;
+        --o-line: #9e8f7c;
+        --o-ink: #efe4cf;
+        --o-madder: #e08c7d;
+      }
+
+      @media (max-width: 40rem) {
+        .overture {
+          --mark-knot: 9px;
+          --hair: 0.5;
+        }
       }
 
       /* Later in the session the page comes from the cache, and there is
@@ -65,57 +138,187 @@
       .overture__ground {
         position: fixed;
         inset: 0;
-        display: grid;
-        place-items: center;
-        background: var(--ground, #f1e9d9);
+        overflow: hidden;
       }
 
-      /* The cartoon and the ring are struck from one centre, so they stack
-         in a single cell rather than standing one above the other. */
-      .overture__plan {
+      /* The ground itself. Its own element rather than the stage's
+         background, because the iris hands it over to eight petals of the
+         same colour at the handoff and needs something to hand over. */
+      .overture__fill {
+        position: absolute;
+        inset: 0;
+        background: var(--o-ground);
+      }
+
+      /* Where the score is put. A score is one element that stacks its own
+         layers in a single centred cell, the way a figure struck from one
+         centre is drawn. */
+      .overture__score,
+      .overture .s {
+        position: absolute;
+        inset: 0;
         display: grid;
+        /* One cell exactly the size of the glass. An auto track grows to
+           fit whatever is in it, and a figure larger than the glass then
+           sits in a track larger than the glass, aligned to its top: the
+           dome's crown was half a screen below the name. Held to the
+           glass, anything larger overflows it evenly on every side. */
+        grid-template: minmax(0, 1fr) / minmax(0, 1fr);
         place-items: center;
       }
 
-      .overture__plan > * {
+      .overture .s > * {
         grid-area: 1 / 1;
       }
 
-      /* The squared paper the mark is knotted on: the weaver's cartoon, a
-         cell to a knot, fading out past the mark. */
-      .overture__cartoon {
-        width: calc(var(--mark-knot) * 17);
-        height: calc(var(--mark-knot) * 17);
-        overflow: visible;
-        color: var(--ink, #1a1512);
-        opacity: 0.12;
-        -webkit-mask-image: radial-gradient(closest-side, #000 40%, transparent);
-        mask-image: radial-gradient(closest-side, #000 40%, transparent);
+      /* Every layer of a score is positioned, so they all paint in the
+         order they are written. Without it, a layer that clips or fades is
+         a stacking context and paints after every layer that does not,
+         wherever it stands in the order: the gold laid under the leaf's
+         rosette came up over its eye. Kept at no specificity, so a layer
+         that is fixed to the glass stays fixed. */
+      :where(.overture .s > *) {
+        position: relative;
       }
 
-      /* The frame of a shamsa, struck around the mark: the figure a page of
-         this kind is opened with, in construction lines. */
-      .overture__ring {
-        width: calc(var(--mark-knot) * 13.5);
-        height: calc(var(--mark-knot) * 13.5);
+      .overture svg {
+        display: block;
         overflow: visible;
-        color: var(--ink, #1a1512);
-        opacity: 0.22;
       }
 
-      .overture__cartoon path,
-      .overture__ring path {
+      /* === HOW A FIGURE ARRIVES =============================================
+         Drawn, never faded up. The score times its figures with three
+         numbers on whatever group holds them:
+
+           --at     when the first one starts
+           --step   how much later each one after it starts, by its --i,
+                    which the build writes on every path in the order it
+                    is meant to come
+           --dur    how long each one takes
+
+         and draws them at --weight times the hair, divided by --zoom when
+         its figure is struck larger than --figure. Every resting value is
+         the finished figure, so with the animations off nothing is
+         undrawn.                                                         */
+
+      .overture .d {
         fill: none;
         stroke: currentcolor;
-        stroke-width: 1px;
-        vector-effect: non-scaling-stroke;
-        /* Every line is normalised to a length of one, so the whole figure
-           draws on with a single offset and no measuring. The resting
-           value is the finished figure: with the animations off, there is
-           nothing undrawn. */
-        stroke-dasharray: 1;
+        stroke-width: calc(var(--hair) * var(--weight, 1) / var(--zoom, 1));
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        /* A dash the length of the path, and a gap a little longer than
+           it, started a little past the dash. A zero-length dash with a
+           round cap is a dot, so a stroke held at exactly its end shows a
+           dot where it will start: every figure not yet drawn had one. */
+        stroke-dasharray: 1 1.05;
         stroke-dashoffset: 0;
+        animation: o-draw var(--dur, 600ms) var(--ease, cubic-bezier(0.45, 0, 0.2, 1))
+          calc(var(--at, 0ms) + var(--i, 0) * var(--step, 0ms)) both;
       }
+
+      @keyframes o-draw {
+        from {
+          stroke-dashoffset: 1.02;
+        }
+      }
+
+      /* === THE NAME =========================================================
+         The score sets the name exactly as the hero does, so
+         that at the handoff each word can fly to its place on the page and
+         land on the hero's own word to the pixel: the same faces, the same
+         weights, the same widths, the same tracking. These numbers are the
+         hero's, in src/styles/chapters.css (.hero__latin, .hero__fa,
+         --first-stretch, --second-stretch, --fa-stretch), and if those
+         change these follow. The flight is src/lib/nameflight.js.
+
+         The faces are the site's own files, declared again because the
+         site's declarations swap: shown in a stand-in face until the real
+         one arrives. A name that changes its letters as it is being written
+         is worse than one that waits a moment to appear, so these block,
+         and the files are preloaded in the head. */
+
+      @font-face {
+        font-family: 'Archivo';
+        src: url('/fonts/archivo-var-latin.woff2') format('woff2-variations');
+        font-weight: 100 900;
+        font-stretch: 62% 125%;
+        font-display: block;
+      }
+
+      @font-face {
+        font-family: 'Vazirmatn';
+        src: url('/fonts/vazirmatn-arabic.woff2') format('woff2-variations');
+        font-weight: 100 900;
+        font-display: block;
+        unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF, U+200C-200D;
+      }
+
+      @property --pen {
+        syntax: '<percentage>';
+        inherits: false;
+        initial-value: 0%;
+      }
+
+      /* Padded so the box holds every mark of the word. The writing-in is a
+         mask, and a mask covers only the box it is set on: the hero's own
+         leading is shorter than the Persian's letters, so without the room
+         the dots under ی and ن were cut off. The padding is the same above
+         and below, so the word's centre, which the flight is measured from,
+         does not move. */
+      .overture .o-word {
+        display: block;
+        margin: 0;
+        padding: 0.32em 0.1em;
+        white-space: nowrap;
+      }
+
+      .overture .o-word--latin {
+        font-family: 'Archivo', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: -0.047em;
+        line-height: 0.84;
+        color: var(--ink, #1a1512);
+      }
+
+      .overture .o-word--first {
+        font-stretch: 125%;
+      }
+
+      .overture .o-word--second {
+        font-stretch: 118.5%;
+      }
+
+      .overture .o-word--fa {
+        font-family: 'Vazirmatn', sans-serif;
+        font-weight: 700;
+        line-height: 0.69;
+        color: var(--o-madder);
+        scale: 1.22 1;
+      }
+
+      /* A word written in, in the direction its script is written: a pen
+         with a soft edge, left to right for the Latin and right to left
+         for the Persian. --at is when. */
+      .overture .o-pen {
+        --pen: 120%;
+        -webkit-mask-image: linear-gradient(var(--way, to right), #000 calc(var(--pen) - 20%), transparent var(--pen));
+        mask-image: linear-gradient(var(--way, to right), #000 calc(var(--pen) - 20%), transparent var(--pen));
+        animation: o-pen var(--dur, 760ms) cubic-bezier(0.45, 0, 0.25, 1) var(--at, 0ms) both;
+      }
+
+      .overture .o-word--fa.o-pen {
+        --way: to left;
+      }
+
+      @keyframes o-pen {
+        from {
+          --pen: 0%;
+        }
+      }
+
+      /* === THE MARK ===================================================== */
 
       .overture__flight {
         position: relative;
@@ -133,82 +336,23 @@
         fill: currentcolor;
       }
 
-      [data-theme='night'] .overture {
-        color: var(--accent, #e08c7d);
+      /* ایلیا is written in from the right, a column of knots at a time,
+         the way the name is written: the lone alef, the break after it,
+         then the joined run to the last alef. Then it stands. */
+      .overture__knots {
+        animation: overture-write var(--write) steps(9, end) var(--score) both;
       }
 
-      [data-theme='night'] .overture__ground {
-        background: var(--ground, #121010);
-      }
-
-      [data-theme='night'] .overture__cartoon,
-      [data-theme='night'] .overture__ring {
-        color: var(--ink, #f0e5d1);
-      }
-
-      /* --- The overture, in order -----------------------------------------
-         The loom is dressed, the name is knotted on it, the figure is
-         struck around it, and then it turns. Every figure is drawn rather
-         than faded up: one offset, running the length of the path, which
-         strings the uprights one after another from the left and then runs
-         the crossings through them from the top. The whole of it is timed
-         against the same clock Overture.jsx lands the mark by. PLAY, there,
-         is the one knob for how long this stands.                        */
-
-      /* The warp, strung left to right. */
-      [data-overture='play'] .overture__warp {
-        animation: overture-draw 700ms linear 60ms both;
-      }
-
-      /* The weft, run through it top to bottom. */
-      [data-overture='play'] .overture__weft {
-        animation: overture-draw 820ms linear 420ms both;
-      }
-
-      /* ایلیا is written in from the right, a column of knots at a time, the
-         way the name is written: the lone alef, the break after it, then the
-         joined run to the last alef. */
-      [data-overture='play'] .overture__knots {
-        animation: overture-write 440ms steps(9, end) 620ms both;
-      }
-
-      /* The figure is struck around the finished name, and then turns the
-         other way: eight points, so a turn of an eighth brings it back to
-         itself and the loop never shows a seam. */
-      [data-overture='play'] .overture__ring path {
-        animation: overture-draw 740ms cubic-bezier(0.3, 0, 0.2, 1) 900ms both;
-      }
-
-      [data-overture='play'] .overture__ring {
-        animation: overture-counter 3s linear 900ms infinite;
-      }
-
-      /* Then the mark turns, slowly at first, and is spinning at full speed
-         by the end of its first revolution. It goes on spinning until the
-         page is ready; Overture.jsx takes it from wherever it is and lands
-         it on the E. The spin-up is a quadratic ease-in over two periods, so
-         it leaves the first revolution at exactly the speed the spin runs
-         at. */
-      [data-overture='play'] .overture__spin {
+      /* The spin is not part of the score. It is what the mark does if the
+         page is still not ready when the standing is over, and on any page
+         that is ready the landing cancels it before its first frame. The
+         spin-up is a quadratic ease-in over two periods, so a mark that
+         does go on spinning leaves its first revolution at exactly the
+         speed the steady spin runs at. */
+      .overture__spin {
         animation:
-          overture-spin-up 760ms cubic-bezier(0.333, 0, 0.667, 0.333) 1000ms both,
-          overture-spin 760ms linear 1760ms infinite;
-      }
-
-      @keyframes overture-draw {
-        from {
-          stroke-dashoffset: 1;
-        }
-      }
-
-      @keyframes overture-counter {
-        from {
-          rotate: 0deg;
-        }
-
-        to {
-          rotate: -45deg;
-        }
+          overture-spin-up 760ms cubic-bezier(0.333, 0, 0.667, 0.333) calc(var(--turn) + 60ms) both,
+          overture-spin 760ms linear calc(var(--turn) + 820ms) infinite;
       }
 
       @keyframes overture-write {
@@ -241,21 +385,14 @@
         }
       }
 
-      @media (max-width: 40rem) {
-        .overture {
-          --mark-knot: 10px;
-        }
-      }
-
-      /* Still: the E, standing on a finished plan, for as long as the page
-         takes. Nothing is drawn on and nothing turns. */
+      /* Still: the mark standing on a finished score, for as long as the
+         page takes. Nothing is drawn on and nothing turns, and because
+         every resting value is the finished figure, there is nothing to
+         restate. */
       @media (prefers-reduced-motion: reduce) {
-        .overture .overture__knots,
-        .overture .overture__spin,
-        .overture .overture__warp,
-        .overture .overture__weft,
-        .overture .overture__ring,
-        .overture .overture__ring path {
+        .overture *,
+        .overture *::before,
+        .overture *::after {
           animation: none !important;
         }
 
@@ -410,24 +547,15 @@
       carrying its provenance.
     -->
 
-    <!-- The overture: the loom dressed warp then weft, ایلیا knotted on it
-         and turned a quarter to stand as the E, a shamsa's frame struck
-         around it, and the mark spinning there while the page it is waiting
-         for arrives, then home to the square at the top left. Its paths are
-         filled in at build from src/lib/mark.js and src/lib/girih.js
-         (vite.config.js), its rules are in the head, and Overture.jsx lands
-         it. -->
+    <!-- The overture. Its stage is here and its rules are in the head; its
+         score, the name inlaid with girih, is overture/score.html, written
+         into the stage at build by vite.config.js with every figure in it
+         struck from src/lib/girih.js and src/lib/mark.js. Overture.jsx
+         lands the mark, flies the name to the hero and opens the iris. -->
     <div class="overture" id="overture" aria-hidden="true">
       <div class="overture__ground">
-        <div class="overture__plan">
-          <svg class="overture__cartoon" viewBox="-4 -4 17 17" focusable="false">
-            <path class="overture__warp" pathLength="1" data-mark="warp" />
-            <path class="overture__weft" pathLength="1" data-mark="weft" />
-          </svg>
-          <svg class="overture__ring" viewBox="0 0 100 100" focusable="false">
-            <path pathLength="1" data-mark="ring" />
-          </svg>
-        </div>
+        <span class="overture__fill"></span>
+        <div class="overture__score" id="overture-score"><!-- SCORE --></div>
       </div>
       <div class="overture__flight">
         <div class="overture__spin">

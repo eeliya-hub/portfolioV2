@@ -917,37 +917,75 @@ as the hero sets the name in both.
   the hero's solved widths, and one line under them reading outward from both margins — the
   role from the left, ایلیا نیری from the right — level with the mark's foot.
 
-**The overture is the loom being dressed, and then the mark, turning.** It is read in four
-movements. The warp is strung, upright by upright from the left; the weft runs through it,
-crossing by crossing from the top, and the squared paper the site is drawn on exists. ایلیا is
-knotted onto it from the right, a column at a time — the lone alef, the break, the joined run.
-A shamsa's frame is struck around the finished name and turns against it, eight-pointed, so an
-eighth of a turn brings it back to itself and the loop never shows a seam. Then the mark turns,
-slowly at first, gathering to a steady spin. Every figure is *drawn* rather than faded up: one
-`stroke-dashoffset` running the length of a path normalised to 1, which is why the uprights
-arrive one after another instead of all at once.
+**The overture is the name: written, standing, and handed to the page.** It is about five
+seconds, chosen from twenty-four scores and ten ways out by watching them, and it runs:
 
-Then it lands. The spin is taken from wherever it is and eased, at the speed it was going, into
-the next E; from a standing start it goes once round and a quarter, so even a page that was
-ready at once is seen to turn. It rests on the cartoon for a beat, then flies home to the empty
-square at the top left as the ground lifts and the hero, held behind it, arrives.
+1. **The field.** One madder knot is struck at the centre, the shamsa opens out of it, and the
+   tessellation the whole site is laid on spreads to the edges of the glass.
+2. **The name, inlaid.** The hero's own arrangement of it, at a little over half size, round the
+   star: EELIYA and ایلیا above, نیری and NAYERI below, each word written in the direction its
+   script is written. Every letter carries the field's girih in the colour of the page, the way
+   a name is set in a tiled wall, and the girih keeps moving through the letters.
+3. **The mark.** ایلیا is knotted on in the star from the right, a column at a time — the lone
+   alef, the break, the joined run — and then *stands*, upright and still, for a second: a name
+   before it is a monogram. Then once round and a quarter into the E, and a beat of rest.
+4. **The handoff.** The iris opens — eight petals of ground turning outward from the mark like a
+   lens — and as it does every word flies to its place on the hero, growing as it goes, the
+   inlay dissolving out of the letters on the way until they are the hero's plain ink. The
+   tilework becomes the type.
 
-- **`PLAY` in `Overture.jsx` is the whole of the timing.** It is how long the mark stands on
-  the glass, three seconds, measured from the first frame drawn; the landing is subtracted from
-  it to find the moment the brake comes on (`STRIKE`), and everything in the head's rules is
-  timed to finish inside it. A page slower than `PLAY` to be ready goes on spinning and lands
-  when it is ready: the one part of this not on a clock. `the mark stands for its three
-  seconds, then goes` holds it.
-- It lives in `index.html`, markup and rules both, not in the app: a loader has to be on the
-  glass before the script that would draw it. `Overture.jsx` only lands it. The writing and the
-  spin are timed in the head's rules; the landing's knobs are named at the top of the component.
-- Its paths are written in at build by `vite.config.js` from `mark.js` and `girih.js`, so the
-  loader's grid, name and rosette are the same drawings the page itself is made of.
+- **The beats are three numbers on `.overture` in `index.html`**: `--score` (1200ms),
+  `--write` (440ms) and `--hold` (1000ms). `Overture.jsx` reads them off the stage rather than
+  keeping a copy, so there is one place to change them. The landing's own knobs, the turn and
+  the rest, are at the top of the component. `ایلیا stands in its own orientation for a second
+  before it turns` measures the hold off the page.
+- **The score is `overture/score.html`.** It lives in `index.html`, not in the app, because a
+  loader has to be on the glass before the script that would draw it: `vite.config.js` writes it
+  into the stage at build and fills every figure in it from `overture/figures.js`, which strikes
+  them from `girih.js` and `mark.js`, so the loader is drawn with the same geometry as the page.
+- **The name lands on the hero to the pixel.** The overture sets it in the hero's own type —
+  faces, weights, widths, tracking, leading, ink, written out under `.overture .o-word` — so at
+  the handoff `src/lib/nameflight.js` can stand the hero's name in place invisibly, copy each
+  word in its own computed type, swap the copy for the overture's word on a single frame since
+  they are the same drawing, and fly it home onto the hero's word. An inlaid word is swapped for
+  a twin carrying the inlay, lined up with it, which dissolves into the plain copy in flight; the
+  first version faded the patterned word where it stood and left a ghost of it behind.
+  `every word of the name flies onto the hero, and nothing is left behind` measures every
+  landing: 0.23px at worst.
+- **The way out is `src/lib/iris.js`.** It clears the score round the name, but not the name;
+  with the name in flight the mark goes where it stands, and the bar's square is given its mark.
 - While it plays, `html[data-overture]` holds the hero's entrance paused and the bar's square
-  empty; the lift releases both.
-- Once a session. Any input clears it in a quarter of a second, and a second visit never shows
-  it. A reader who asked for stillness gets the E standing — no writing, no spin — until the
-  page is ready, and then the ground simply goes.
+  empty; the lift releases both. Once a session; any input clears it in a quarter of a second.
+  A reader who asked for stillness gets the score standing finished and the E already turned,
+  because every resting value in it is its finished figure.
+
+**How a figure is drawn, after the first overtures were found drawing them wrong.** Every rule
+here exists because it was broken once, in this overture or in one of the twenty-three it was
+chosen over, and a check now holds it.
+
+- **One stroke, one path.** A dash pattern restarts at every subpath, so eight lines in one path
+  drawn with one offset are all drawn at once, in the first eighth of the time. Anything meant
+  to arrive in an order is its own path with its own `--i`, staggered by `--at`, `--step` and
+  `--dur` on its group.
+- **No `non-scaling-stroke` on anything drawn.** `pathLength` normalises a dash in the path's own
+  units and `vector-effect: non-scaling-stroke` lays it out in the screen's; together they leave
+  chunks of every figure undrawn at rest. Strokes scale with their figure, and `--hair` sets
+  their weight per size of glass.
+- **Solid colours, never fainter ones.** The overture has its own palette, `--o-*`, in both
+  editions; a figure that recedes is drawn in a lighter colour rather than at a lower opacity, so
+  where two lines cross there is no darker knot of doubled ink.
+- **A gap longer than the dash.** A zero-length dash with a round cap is a dot, so a stroke held
+  at exactly its end shows one where it will start. The dash is `1 1.05` and starts at `1.02`.
+- **A mask covers only the box it is set on.** The muqarnas reached past its box and its
+  clock-wipe cut the outer tier into a rounded square; it is struck in a box a fifth larger.
+- **Every layer of a score is positioned**, so they paint in the order written. A clipped or
+  fading layer is a stacking context and otherwise paints over everything that is not.
+- **The score's grid is the size of the glass.** An auto track grows to fit a figure larger
+  than the glass and aligns it to its top: the dome sat half a screen low.
+- **A circle takes the short way round.** Its ends and its radius are rounded separately, so
+  told to take the long way each half bulges past 180° and the circle is a peanut.
+- **No class the site owns.** `no class in the overture is one the site already owns` holds it,
+  after the arabesque's palmettes were called `.leaf` and the journey's sheet hid every one.
 
 **Controls are double-ruled cartouches.** A squared panel, a 1px outer rule, a second rule
 inset by 3px, and ink that wipes up from the bottom edge on hover — the direction a carpet
@@ -1059,6 +1097,26 @@ brand logos, no emoji, no icon font.
   Damped and physical; the needle settles, it never snaps.
 - Reach past transform and opacity. `mask-image`, `clip-path` and `filter` are part of the
   palette here.
+- Give a pinned chapter weight on a desk. 02 and 03 are paced in screens of scroll, so one flick
+  of a trackpad is most of a plate, and once every frame was drawn it read as too quick. On a
+  desk the travel chases the scroll instead of standing on it, closing the distance by the same
+  fraction every millisecond: half of it in a tenth of a second, nine tenths in under half a
+  second. `SETTLE` in `src/lib/useLoom.js` is the knob, at 220ms; past about 300 it reads as lag.
+  A phone has none, because a finger already paces it. The chase *lands*: within half a pixel of
+  scroll it is set exactly on its target, after one that stopped at a fixed fraction of the leg
+  left the deck's plates four pixels short of square. `the band pins and the plates land square`
+  holds it, and the suite waits for the drawing to arrive rather than for a fixed time.
+- Write a scroll-driven number as far down the tree as the thing that reads it. The loom
+  writes `--travel` on 02's deck and 03's route, whose own stylesheets do the work, and
+  `--woven` on the warp's fill, which is the only element on the site that shows it. See the
+  note on the root below for what the alternative costs.
+- Let the browser skip what is off the glass where a band holds several full screens at once.
+  02 keeps all seven plates in one pinned frame and deals them sideways, so a phone restyles
+  seven screens of markup on every frame of the deal to draw the one in hand. `.piece` takes
+  `content-visibility: auto` under `64rem` and the frame's work falls to the plate being read:
+  33ms a frame down to 17 on a 390x844 screen at six times the usual processor cost, and the
+  deal is identical to the pixel at every station of its travel. Phones only — on a desk the
+  deal has the frames to spare, and this is a change in behaviour as well as in cost.
 - Run `npm run contrast`, `npm run check` and `npm run lint` before shipping. They fail, not
   warn.
 
@@ -1079,6 +1137,16 @@ brand logos, no emoji, no icon font.
   form; the background layer is `.weave`. A collision here made every form field a fixed
   full-viewport overlay.
 - Don't animate layout properties. The contact link's lean is a `translate`, not padding.
+- Don't write a custom property on the root. A custom property is inherited, so setting one
+  marks everything under it for a restyle — on the root, that is every element on the page,
+  on every frame of every scroll, however few of them read it. `--woven` was written there
+  and is read by exactly one rule: the `scaleY` on the warp's fill, a childless span at the
+  right edge. It cost a full-document recalculation per frame, about 33ms of it on a phone,
+  which is two frames in three missed in every chapter — including the ones that animate
+  nothing at all. Moved onto the span, the same passes hold 60fps, and the desk gained the
+  same frames it had been quietly losing. Two checks hold it: `the warp fills from nothing to
+  everything`, measured as the drawn thread against its own track rather than by reading the
+  number, and `and nothing is written on the root to do it`.
 - Don't let a panel whose height depends on what is chosen set the height of a framed chapter.
   The journey's leaf did, and the page jumped every time B&Q was picked. Size it by the thing
   beside it that does not change (`contain: size`), and check every entry fits.

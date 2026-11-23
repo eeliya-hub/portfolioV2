@@ -1,50 +1,49 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-import { GRID, UPRIGHT, outline } from './src/lib/mark.js';
-import { polygon, spokes } from './src/lib/girih.js';
+import { FIGS, MARKS, TILES } from './overture/figures.js';
 
 // The overture is in index.html rather than in the app, because a loader has
-// to be on the glass before the script that would draw it has arrived. Its
-// paths are written in here, at build, from the same rows and the same
-// compass work as every other drawing on the site — so there is still only
-// one drawing of each of them.
+// to be on the glass before the script that would draw it has arrived. This
+// is where it is put together, at build:
 //
-//   data-mark="knots"  ایلیا upright: the overture turns it into the E.
-//   data-mark="warp"   the uprights of the squared paper the mark is knotted
-//   data-mark="weft"   on, and its crossings, MARGIN cells past the mark on
-//                      every side. Two paths rather than one, because the
-//                      overture strings the warp and then runs the weft
-//                      through it: the loom being dressed. The page's
-//                      viewBox and the stage's size in cells are set to
-//                      match.
-//   data-mark="ring"   the frame of a shamsa struck around the mark: two
-//                      octagons and the ties between them, the figure's
-//                      construction without the star that would fight the
-//                      mark standing inside it.
-const MARGIN = 4;
+//   · overture/score.html is written into the stage where index.html says
+//     <!-- SCORE -->.
+//   · every <g data-fig="name"></g> in it is filled with that figure from
+//     overture/figures.js, and every data-mark="name" becomes a path's d.
+//   · every tile token in the rules becomes the data URL it names.
+//
+// So there is still only one drawing of everything: the geometry is struck
+// from src/lib/girih.js and src/lib/mark.js like the rest of the site's.
 
-const rule = (across) => {
-  const [lo, hi] = [-MARGIN, GRID + MARGIN];
-  const lines = [];
-  for (let at = lo; at <= hi; at += 1) lines.push(across ? `M${lo} ${at}H${hi}` : `M${at} ${lo}V${hi}`);
-  return lines.join('');
-};
+const SCORE = fileURLToPath(new URL('./overture/score.html', import.meta.url));
 
-const ring = () => {
-  const c = 50;
-  const r = 50;
-  return polygon(c, c, r * 0.97, 8) + polygon(c, c, r * 0.78, 8) + spokes(c, c, r * 0.78, r * 0.97, 8, 0.5 / 8);
-};
+const figures = (html) =>
+  html
+    .replace(/<g([^>]*?)\sdata-fig="([a-z0-9-]+)"([^>]*)><\/g>/g, (whole, before, name, after) =>
+      FIGS[name] ? `<g${before}${after}>${FIGS[name]()}</g>` : whole,
+    )
+    .replace(/data-mark="([a-z-]+)"/g, (whole, name) => (MARKS[name] ? `d="${MARKS[name]}"` : whole));
+
+const tiles = (html) => Object.entries(TILES).reduce((out, [token, url]) => out.replaceAll(token, url), html);
 
 const overture = () => ({
   name: 'overture',
-  transformIndexHtml: (html) =>
-    html
-      .replace('data-mark="knots"', `d="${outline(UPRIGHT)}"`)
-      .replace('data-mark="warp"', `d="${rule(false)}"`)
-      .replace('data-mark="weft"', `d="${rule(true)}"`)
-      .replace('data-mark="ring"', `d="${ring()}"`),
+  transformIndexHtml: (html) => tiles(figures(html.replace('<!-- SCORE -->', readFileSync(SCORE, 'utf8').trim()))),
+  // The score is not a module, so the dev server is told when it changes.
+  configureServer(server) {
+    server.watcher.add(SCORE);
+  },
+  handleHotUpdate({ file, server }) {
+    if (file === SCORE) {
+      server.ws.send({ type: 'full-reload' });
+      return [];
+    }
+    return undefined;
+  },
 });
 
 export default defineConfig({

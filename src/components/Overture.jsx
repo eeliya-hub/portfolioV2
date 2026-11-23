@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { openIris } from '../lib/iris.js';
+import { flyName } from '../lib/nameflight.js';
+
 const SEEN = 'overture';
 
 // The landing, in one place. The dressing of the loom, the writing and the
@@ -7,18 +10,45 @@ const SEEN = 'overture';
 // because they run before this file has arrived; everything from the moment
 // the page is ready is here.
 //
-// PLAY is the one knob: how long the mark stands on the glass, measured
-// from the first frame drawn to the moment it leaves for the top left.
-// Everything in the head is timed to finish inside it, and STRIKE is simply
-// what is left once the landing has been paid for. A page that takes longer
-// than PLAY to be ready goes on spinning and lands when it is ready, which
-// is the one thing here that is not on a clock.
-const PLAY = 3000; // the mark's time on the glass
-const BRAKE = 860; // from a spin already under way: slowing into the E
+// The overture is built forward from its beats rather than back from a
+// total, because the beat that matters is in the middle of it: the mark
+// stands as ایلیا, written the way it is written, before the quarter turn
+// that makes it the E. A reader who cannot read the Persian still sees a
+// word; a reader who can, reads it. Two seconds is long enough to do
+// either, which is why nothing is allowed to move in them.
+//
+// The first three beats are NOT here. They are --score, --write and --hold
+// on `.overture` in index.html, where the rules that draw them are, and
+// this file reads them off the stage. One number, one place, and no pair
+// of files to keep in step. The knobs below are the landing's own, which
+// is the part no stylesheet does.
+//
+//   0      --score: whatever is being struck, woven or constructed
+//   1200   --write: the name written in, 9 columns, right to left
+//   1640   --hold: it stands. The score's last beats settle behind it
+//   3640   the landing begins, from a standing start
+//   4790   it has come round to the E (and WHIRL)
+//   5010   the mark leaves for the top left (and REST)
+//   gone about a second later: the iris opens and the name flies to the
+//   hero together (src/lib/iris.js, src/lib/nameflight.js)
+
 const WHIRL = 1150; // from a standing start: once round and a quarter, into the E
-const REST = 220; // the E standing on the cartoon before it goes home
-const STRIKE = PLAY - BRAKE - REST; // when the landing begins
-const FLIGHT = 720; // home to the square at the top left
+const BRAKE = 860; // from a spin already under way: slowing into the E
+const REST = 220; // the E standing on the plan before it goes home
+
+// A beat off the stage, in milliseconds, whatever unit it was written in.
+const BEATS = { '--score': 1200, '--write': 440, '--hold': 2000 };
+const beats = (stage) => {
+  const style = getComputedStyle(stage);
+  let total = 0;
+  for (const [name, fallback] of Object.entries(BEATS)) {
+    const raw = style.getPropertyValue(name).trim();
+    const value = Number.parseFloat(raw);
+    if (!Number.isFinite(value)) total += fallback;
+    else total += raw.endsWith('ms') ? value : value * 1000;
+  }
+  return total;
+};
 const LIFT = 600; // the ground dissolving off the hero
 const CLEAR = 260; // how fast an interruption clears it all away
 const PATIENCE = 6000; // the longest the faces and the portrait are waited for
@@ -107,10 +137,15 @@ export function Overture() {
       return motion.finished;
     };
 
+    // The name's flight, when the score carries the name: what to do to
+    // finish it, whenever and however the overture ends.
+    let finishName = () => {};
+
     // Done: the stage is gone and the page is the reader's.
     function over() {
       if (state === 'over' || state === 'cancelled') return;
       state = 'over';
+      finishName();
       unlisten();
       stage.remove();
       delete root.dataset.overture;
@@ -149,6 +184,10 @@ export function Overture() {
     listen();
     setSkippable(true);
 
+    // When the landing begins: everything the stage says it will do before
+    // the mark may be touched.
+    const strike = beats(stage);
+
     const land = async () => {
       await pageReady();
       if (state !== 'running') return;
@@ -167,7 +206,7 @@ export function Overture() {
       await write?.finished.catch(() => {});
       if (state !== 'running') return;
       const waited = Number(document.timeline.currentTime) - began;
-      if (waited < STRIKE) await pause(STRIKE - waited);
+      if (waited < strike) await pause(strike - waited);
       if (state !== 'running') return;
 
       // Where it is and how fast it is going, read off two frames.
@@ -204,7 +243,7 @@ export function Overture() {
       await pause(REST);
       if (state !== 'running') return;
 
-      // Home, as the ground lifts and the hero arrives under it.
+      // And out, by the iris. See src/lib/iris.js.
       const home = document.querySelector('.monogram__knots');
       const there = home?.getBoundingClientRect();
       const here = flight.getBoundingClientRect();
@@ -212,34 +251,40 @@ export function Overture() {
       stage.style.pointerEvents = 'none';
       setSkippable(false);
 
-      const lifting = move(ground, [{ opacity: 1 }, { opacity: 0 }], {
-        duration: LIFT,
-        delay: 120,
-        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-      });
-      const flying = there?.width
-        ? Promise.all([
-            move(
-              flight,
-              [
-                { translate: '0px 0px', scale: 1 },
-                {
-                  translate: `${there.left + there.width / 2 - (here.left + here.width / 2)}px ${
-                    there.top + there.height / 2 - (here.top + here.height / 2)
-                  }px`,
-                  scale: there.width / here.width,
-                },
-              ],
-              { duration: FLIGHT, easing: 'cubic-bezier(0.7, 0, 0.2, 1)' },
-            ),
-            move(knots, [{ color: getComputedStyle(knots).color }, { color: getComputedStyle(home).color }], {
-              duration: FLIGHT,
-              easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-            }),
-          ])
-        : move(flight, [{ opacity: 1 }, { opacity: 0 }], { duration: LIFT });
+      let going;
+      if (there?.width) {
+        // What it takes to put the mark in the bar's square: the distance
+        // between the two centres, and the ratio of the two widths.
+        const corner = {
+          dx: there.left + there.width / 2 - (here.left + here.width / 2),
+          dy: there.top + there.height / 2 - (here.top + here.height / 2),
+          scale: there.width / here.width,
+        };
+        going = openIris({
+          ground,
+          flight,
+          knots,
+          home,
+          here,
+          corner,
+          glass: { w: window.innerWidth, h: window.innerHeight },
+          move,
+        });
+      } else {
+        // No square to go home to: the stage simply goes.
+        going = [
+          move(ground, [{ opacity: 1 }, { opacity: 0 }], { duration: LIFT }),
+          move(flight, [{ opacity: 1 }, { opacity: 0 }], { duration: LIFT }),
+        ];
+      }
 
-      await Promise.all([lifting, flying]);
+      // And if the score set the name, the name goes to the hero as the
+      // ground opens. See src/lib/nameflight.js.
+      const named = flyName({ stage, move });
+      finishName = named.finish;
+      going = [...going, ...named.going];
+
+      await Promise.all(going);
       if (state !== 'running') return;
       over();
     };
@@ -253,10 +298,15 @@ export function Overture() {
     return () => {
       unlisten();
       if (state === 'over') return;
+      finishName();
       state = 'cancelled';
       for (const motion of motions) motion.cancel();
       spin.style.removeProperty('animation');
       stage.style.removeProperty('pointer-events');
+      // What the ways out write on the stage as they go.
+      stage.style.removeProperty('transform-origin');
+      ground.style.removeProperty('--hx');
+      ground.style.removeProperty('--hy');
       root.dataset.overture = 'play';
       delete body.dataset.locked;
     };

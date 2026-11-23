@@ -213,15 +213,20 @@ export function TopBar({ active }) {
  *
  * A carpet is woven from one end of the loom to the other, and so is this
  * page — the thread fills with `--woven`, which the loom engine writes on
- * the root as the reader scrolls. Each band owns a knot on it; the knot of
- * the band you are in is struck open, and every knot is a control that
- * carries you there.
+ * the fill itself as the reader scrolls. On the fill, and not on the root:
+ * the fill is the only thing on the site that reads the number, and a
+ * custom property set on an element is inherited by everything under it,
+ * so writing this one on the root was asking the browser to restyle the
+ * whole page on every frame of every scroll. See lib/useLoom.js.
+ *
+ * Each band owns a knot on the thread; the knot of the band you are in is
+ * struck open, and every knot is a control that carries you there.
  */
 export function Warp({ active }) {
   return (
     <nav className="warp" aria-label="Progress" data-dusk={DUSK.has(active) ? 'true' : undefined}>
       <span className="warp__track" aria-hidden="true" />
-      <span className="warp__fill" aria-hidden="true" />
+      <span className="warp__fill" data-loom="woven" aria-hidden="true" />
       <ul className="warp__knots">
         {SECTIONS.map((section, index) => (
           <li key={section.id} style={{ '--i': index }}>

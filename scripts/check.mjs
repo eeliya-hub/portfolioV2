@@ -81,9 +81,32 @@ const scrollSettled = async (page, timeout = 5000) => {
   let last = null;
   while (Date.now() < until) {
     const y = await page.evaluate(() => Math.round(window.scrollY));
-    if (y === last) return;
+    if (y === last) return loomSettled(page);
     last = y;
     await page.waitForTimeout(100);
+  }
+  return loomSettled(page);
+};
+
+// And for the drawing to arrive. On a desk the pinned chapters are weighted
+// (src/lib/useLoom.js): their travel chases the scroll and arrives over about
+// two thirds of a second, which is the point of it, so a check that scrolls
+// and then measures has to wait for what it is measuring rather than for a
+// fixed time. Every travel is read every 50ms until three readings in a row
+// agree.
+const loomSettled = async (page, timeout = 4000) => {
+  const until = Date.now() + timeout;
+  let last = '';
+  let same = 0;
+  while (Date.now() < until && same < 2) {
+    const now = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-loom="travel"]')]
+        .map((node) => node.style.getPropertyValue('--travel'))
+        .join(','),
+    );
+    same = now === last ? same + 1 : 0;
+    last = now;
+    await page.waitForTimeout(50);
   }
 };
 
@@ -110,7 +133,8 @@ const dealTo = async (page, k) => {
     };
   });
   await page.evaluate((y) => scrollTo(0, y), at.top + at.span * (k / at.n));
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(150);
+  await loomSettled(page);
 };
 
 /** Every plate's left edge, and whether it has landed. */
@@ -131,7 +155,7 @@ const dealt = (page) =>
  * hero waited behind it. Runs in the page, as an init script.
  */
 const recordOverture = () => {
-  const seen = { phases: [], at: {}, knots: null, shown: null, first: null, landed: null, held: null, loom: null };
+  const seen = { phases: [], at: {}, knots: null, shown: null, first: null, landed: null, held: null, score: null, wrote: 0, turned: 0, iris: false, flight: null };
   window.__overture = seen;
   const note = () => {
     const phase = document.documentElement?.dataset.overture ?? 'gone';
@@ -149,16 +173,40 @@ const recordOverture = () => {
     // own tag is parsed, before the paths inside it are.
     const knots = stage?.querySelector('.overture__knots path')?.getAttribute('d');
     if (knots && !seen.knots) seen.knots = knots;
-    // The loom the name is knotted on: uprights strung first, crossings run
-    // through them after. Both are read off the markup, once they exist.
-    const warp = stage?.querySelector('.overture__warp')?.getAttribute('d');
-    const weft = stage?.querySelector('.overture__weft')?.getAttribute('d');
-    const ring = stage?.querySelector('.overture__ring path')?.getAttribute('d');
-    if (warp && weft && ring && !seen.loom) seen.loom = { warp, weft, ring };
+    // What the score drew: every figure, and the four words of the name.
+    // Read at the lift, when the page has long been parsed: read the first
+    // time the slot had anything in it, it was sometimes read while the
+    // score was still arriving, with its rules in and none of its figures.
+    const slot = document.getElementById('overture-score');
+    if (phase === 'lift' && slot && !seen.score) {
+      const figures = [...slot.querySelectorAll('path')];
+      seen.score = {
+        figures: figures.length,
+        empty: figures.filter((n) => !/\d/.test(n.getAttribute('d') ?? '')).length,
+        unfilled: stage.querySelectorAll('[data-fig], [data-mark]').length,
+        words: [...slot.querySelectorAll('[data-word]')].map((w) => `${w.dataset.word}:${w.textContent.trim()}`),
+      };
+    }
     if (spin && seen.first === null) {
       seen.first = { rotate: getComputedStyle(spin).rotate, animations: spin.getAnimations().length };
     }
+    // The two ends of the hold: the moment ایلیا is finished being written
+    // and the moment it first moves. What is between them is how long it
+    // stands as a name rather than as a monogram.
+    const written = stage?.querySelector('.overture__knots')?.getAnimations()[0];
+    if (written?.playState === 'finished' && !seen.wrote) seen.wrote = performance.now();
+    if (spin && !seen.turned && Math.abs(parseFloat(getComputedStyle(spin).rotate) || 0) > 0.5) {
+      seen.turned = performance.now();
+    }
     if (phase === 'lift' && spin && seen.landed === null) seen.landed = getComputedStyle(spin).rotate;
+    if (phase === 'lift' && stage?.querySelector('.overture__petals')) seen.iris = true;
+    if (phase === 'gone' && seen.flight === null && window.__nameFlight) {
+      seen.flight = {
+        off: window.__nameFlight,
+        shown: [...document.querySelectorAll('.hero__row')].every((row) => getComputedStyle(row).opacity === '1'),
+        left: Boolean(document.querySelector('.overture__flown')),
+      };
+    }
     return phase;
   };
   // Every change as it happens, not once a frame: on a warm second visit the
@@ -199,7 +247,7 @@ const browser = await chromium.launch();
 
   // The overture plays once a session, then gets out of the way.
   const overtureGone = await page
-    .waitForSelector('.overture', { state: 'detached', timeout: 6000 })
+    .waitForSelector('.overture', { state: 'detached', timeout: 9000 })
     .then(() => true)
     .catch(() => false);
   check('overture clears itself', overtureGone);
@@ -216,23 +264,88 @@ const browser = await chromium.launch();
   );
   check('it comes to rest on the E', Math.round(parseFloat(journey.landed)) % 360 === 90, journey.landed);
   check('the hero waits behind it and arrives as it lifts', journey.held === true);
-  // The loom is dressed before anything is knotted on it: the uprights are
-  // strung, and the crossings run through them. Two paths, each in one
-  // direction only, from the same grid the mark is drawn on.
+  // The score is the name, inlaid, and every figure in it was struck at
+  // build: a placeholder the build never filled shows as nothing at all
+  // rather than as something wrong.
   check(
-    'the loom is dressed, warp one way and weft the other',
-    Boolean(journey.loom) &&
-      /^[M\d\s.V-]+$/.test(journey.loom.warp) &&
-      /^[M\d\s.H-]+$/.test(journey.loom.weft) &&
-      journey.loom.ring.length > 0,
-    journey.loom ? `${journey.loom.warp.split('M').length - 1} up, ${journey.loom.weft.split('M').length - 1} across` : 'no loom',
+    'the score is drawn whole, every figure struck at build',
+    Boolean(journey.score) && journey.score.empty === 0 && journey.score.unfilled === 0 && journey.score.figures >= 5,
+    journey.score ? `${journey.score.figures} figures, ${journey.score.empty} empty, ${journey.score.unfilled} unfilled` : 'no score',
   );
-  // It is meant to be watched, not waited out: the mark stands on the glass
-  // for the three seconds PLAY sets in Overture.jsx, and leaves. The upper
-  // bound is loose on purpose — a page that is slow to be ready goes on
-  // spinning until it is, which is the one part of this not on a clock.
-  const stood = Math.round(journey.at.lift - journey.at.play);
-  check('the mark stands for its three seconds, then goes', stood >= 2800 && stood < 4600, `${stood}ms`);
+  // And it sets the name in both its scripts, a word for each word the
+  // hero sets, spelled as the hero spells it.
+  const NAME = ['first-latin:Eeliya', 'first-fa:ایلیا', 'second-fa:نیری', 'second-latin:Nayeri'];
+  check(
+    'and it sets the name in both scripts, ایلیا نیری and Eeliya Nayeri',
+    NAME.every((w) => journey.score?.words.includes(w)),
+    journey.score?.words.join(' ') ?? 'no words',
+  );
+  // No class in the overture is one the site already owns. The overture
+  // shares the document with the site's stylesheets, so a figure that
+  // borrows a name takes the site's rules with it: the arabesque's
+  // palmettes were called .leaf, which is the journey's sheet, and the site
+  // hides every closed one.
+  const clashes = await page.evaluate(() => {
+    const own = new Set();
+    for (const sheet of document.styleSheets) {
+      const node = sheet.ownerNode;
+      if (node && (node.id === 'overture-rules' || node.closest?.('#overture') || node.parentNode?.nodeName === '#document-fragment')) continue;
+      let rules;
+      try {
+        rules = sheet.cssRules;
+      } catch {
+        continue;
+      }
+      const walk = (list) => {
+        for (const rule of list) {
+          if (rule.selectorText) for (const m of rule.selectorText.matchAll(/\.([a-zA-Z][\w-]*)/g)) own.add(m[1]);
+          if (rule.cssRules) walk(rule.cssRules);
+        }
+      };
+      walk(rules);
+    }
+    const used = new Set();
+    const collect = (root) => root.querySelectorAll('[class]').forEach((el) => {
+      for (const c of (el.getAttribute('class') ?? '').split(/\s+/)) if (c) used.add(c);
+    });
+    const stage = document.getElementById('overture');
+    if (stage) collect(stage);
+    return [...used].filter((c) => own.has(c) && !c.startsWith('overture'));
+  });
+  check('no class in the overture is one the site already owns', clashes.length === 0, clashes.join(', ') || 'none');
+  // The beat the overture is built around: ایلیا stands as itself, written
+  // and still, before the quarter turn that makes it the E for the rest of
+  // the visit. --hold on the stage is the second; this
+  // is measured off the page, from the frame the writing finishes to the
+  // frame the mark first moves, so the stage and the landing cannot drift
+  // apart without saying so.
+  const stood = Math.round(journey.turned - journey.wrote);
+  check(
+    'ایلیا stands in its own orientation for a second before it turns',
+    journey.wrote > 0 && journey.turned > 0 && stood >= 900 && stood < 1400,
+    `${stood}ms`,
+  );
+  // The name is handed to the hero: every word flies from where the
+  // overture set it and lands on the hero's own word, so exactly that the
+  // one is swapped for the other with nothing to see. Measured as the
+  // widest gap at any edge between each word that flew and the word it
+  // landed on.
+  const flown = journey.flight;
+  check(
+    'every word of the name flies onto the hero, and nothing is left behind',
+    Boolean(flown) && flown.off.length === 4 && Math.max(...flown.off) <= 1 && flown.shown && !flown.left,
+    flown ? `4 words, ${Math.max(...flown.off).toFixed(2)}px at worst` : 'no flight',
+  );
+
+  // It is meant to be watched, not waited out: the whole of it, from the
+  // first frame to the glass being the reader's. The upper bound is loose
+  // on purpose — a page that is slow to be ready goes on spinning until it
+  // is, which is the one part of this not on a clock.
+  const whole = Math.round(journey.at.gone - journey.at.play);
+  check('and the whole of it runs and goes', whole >= 4300 && whole < 6400, `${whole}ms`);
+  // And it leaves by the iris, which was chosen: petals of ground turning
+  // outward from the mark.
+  check('it leaves by the iris', journey.iris === true);
   await instant(page);
 
   // The colour arc: sand, parchment, sand, parchment, madder. The scroll has
@@ -832,7 +945,8 @@ const browser = await chromium.launch();
   });
   const phaseAt = async (f) => {
     await page.evaluate(([y]) => scrollTo(0, y), [routeBox.top + (routeBox.h - 900) * f]);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(150);
+    await loomSettled(page);
     return page.evaluate(() => {
       const track = document.querySelector('.route__track');
       const glass = document.querySelector('.route__window').getBoundingClientRect().width;
@@ -1182,13 +1296,41 @@ const browser = await chromium.launch();
   // --- the warp -----------------------------------------------------------
   // The page's one thread fills as the reader weaves: nothing at the top,
   // everything at the fringe, and a knot for each band that carries you.
+  //
+  // Measured as the drawn thread against its own track, rather than by
+  // reading the number the engine writes: where that number is written is
+  // the engine's business and has moved once already, and a thread that
+  // fills is the thing being promised.
+  const filled = () =>
+    page.evaluate(() => {
+      const fill = document.querySelector('.warp__fill')?.getBoundingClientRect().height ?? 0;
+      const track = document.querySelector('.warp__track')?.getBoundingClientRect().height ?? 0;
+      return track ? Math.round((fill / track) * 1000) / 1000 : -1;
+    });
   await page.evaluate(() => scrollTo(0, 0));
   await page.waitForTimeout(400);
-  const wovenTop = await page.evaluate(() => parseFloat(document.documentElement.style.getPropertyValue('--woven') || '0'));
+  const wovenTop = await filled();
   await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
   await page.waitForTimeout(400);
-  const wovenFoot = await page.evaluate(() => parseFloat(document.documentElement.style.getPropertyValue('--woven') || '0'));
-  check('the warp fills from nothing to everything', wovenTop < 0.02 && wovenFoot > 0.98, `${wovenTop} → ${wovenFoot}`);
+  const wovenFoot = await filled();
+  check(
+    'the warp fills from nothing to everything',
+    wovenTop < 0.02 && wovenFoot > 0.98,
+    `${wovenTop} → ${wovenFoot}`,
+  );
+  // And the page pays for it once, not everywhere. A custom property set on
+  // the root is inherited by every element under it, so each write of one
+  // restyles the whole document: --woven was written there, on every frame
+  // of every scroll, and it cost two frames in three on a phone before any
+  // chapter had animated anything. The engine writes a number as far down
+  // the tree as the thing that reads it, and the root is left alone.
+  // Custom properties only: this harness puts `scroll-behavior` on the root
+  // itself, and a plain property written once is not what costs anything.
+  const onRoot = await page.evaluate(() =>
+    [...document.documentElement.style].filter((name) => name.startsWith('--')).join(', '),
+  );
+  check('and nothing is written on the root to do it', onRoot === '', onRoot || 'clean');
+
   const knots = await page.locator('.warp__knot').count();
   check('a knot for every band', knots === 5, `${knots}`);
   await page.locator('.warp__knot').nth(2).click();

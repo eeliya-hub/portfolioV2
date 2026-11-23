@@ -30,7 +30,11 @@
   --bar: max(var(--k4), calc(2.4rem + 2 * var(--knot)));
 
   /* The page's progress, 0 at the top of the cloth and 1 at the fringe.
-     Written by the loom engine; everything that shows progress reads it. */
+     Declared here as the resting value, which is what a reader who asked
+     for stillness keeps: the loom writes the live number on `.warp__fill`
+     itself, the one element that shows it, and never on the root. A custom
+     property is inherited, so a number written on the root restyles the
+     whole page every time it changes. */
   --woven: 0;
 
   /* The horizontal knot run — the border a carpet carries between its
@@ -2334,6 +2338,27 @@ html[data-overture='play']
 }
 
 @media (max-width: 64rem) {
+  /* Only the plate being read is drawn. The deal is driven by one number
+     inherited by the whole band, and a custom property that changes
+     restyles everything under the element it is set on: all seven plates
+     and everything on them, on every frame of the deal. Six of the seven
+     are off the glass at any moment on a phone, so the browser is told it
+     may skip the ones that are not near it, and the frame's work falls to
+     the plate in hand. Measured on a 390x844 screen at six times the usual
+     processor cost: 33ms a frame, which is half the frames missed, down to
+     17ms, which is not.
+
+     Each plate's box is set by its own insets inside the pinned frame, so
+     nothing collapses when it is skipped, and a skipped plate is still
+     found by find-in-page, which draws it to show it.
+
+     Phones only. On a desk the deal has the frames to spare, and this is
+     a change in behaviour and not only in cost, so it is spent where the
+     frames are short. */
+  .piece {
+    content-visibility: auto;
+  }
+
   .piece__inner {
     /* minmax(0, …), not a bare 1fr: a bare 1fr is never narrower than
        its longest word, and a title too wide for the phone took the
