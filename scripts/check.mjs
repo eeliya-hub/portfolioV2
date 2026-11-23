@@ -18,7 +18,7 @@ import { stackRegisters } from '../src/data/stack.js';
 import { UPRIGHT, outline } from '../src/lib/mark.js';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
+const { chromium, webkit, devices } = require('playwright');
 const sharp = require('sharp');
 
 const BASE = process.argv[2] ?? 'http://localhost:4317';
@@ -1867,5 +1867,100 @@ const browser = await chromium.launch();
 }
 
 await browser.close();
+
+// ------------------------------------------------------------ safari (iPhone)
+// Everything above runs in Chromium, and three things reached an iPhone
+// broken that Chromium drew perfectly: the name written one column short,
+// plates landing blank or stale with their screens arriving seconds later,
+// and a tab strip that scrolled a pixel up and down. Safari's engine, on the
+// phone they were found on, holds all three. Needs WebKit for Playwright:
+// `npx playwright install webkit`.
+{
+  console.log('\nSAFARI (WebKit), iPhone 14 Pro Max');
+  let safari = null;
+  try {
+    safari = await webkit.launch();
+  } catch {
+    check('Safari\'s engine is installed to check against', false, 'run: npx playwright install webkit');
+  }
+  if (safari) {
+    const context = await safari.newContext({ ...devices['iPhone 14 Pro Max'] });
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+
+    // The name is written to its last column. Safari works out the end of
+    // an animation in seconds, and nine steps that end at the end came out
+    // a hair short of it and drew eight columns of nine.
+    await page.goto(BASE, { waitUntil: 'load' });
+    await page.waitForFunction(() => document.querySelector('.overture__knots')?.getAnimations()[0]?.playState === 'finished', null, { timeout: 10000 }).catch(() => {});
+    const clip = await page.evaluate(() => {
+      const knots = document.querySelector('.overture__knots');
+      return knots ? getComputedStyle(knots).clipPath : 'gone';
+    });
+    check('ایلیا is written to its last column on an iPhone', /inset\(0px( 0px){0,3}( 0%)?\)|none/.test(clip) && !/[1-9]\d*\.?\d*%/.test(clip), clip);
+    await page.waitForSelector('.overture', { state: 'detached', timeout: 15000 }).catch(() => {});
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = 'auto';
+    });
+
+    // Every plate lands drawn, with its screen in it, and nothing past the
+    // glass. Come up to the deck through the chapter before it, as a reader
+    // does, and look at each plate the moment it has landed.
+    const deck = await page.evaluate(() => {
+      const d = document.querySelector('.deck');
+      return { top: d.getBoundingClientRect().top + scrollY, span: d.offsetHeight - innerHeight, n: document.querySelectorAll('.piece').length };
+    });
+    await page.evaluate((y) => scrollTo(0, y), Math.max(0, deck.top - 0.9 * (await page.viewportSize()).height));
+    await page.waitForTimeout(1200);
+    const landed = [];
+    for (let k = 0; k < deck.n; k += 1) {
+      await page.evaluate((y) => scrollTo(0, y), deck.top + deck.span * (k / deck.n) + 4);
+      await page.waitForTimeout(250);
+      landed.push(
+        await page.evaluate((i) => {
+          const piece = document.querySelectorAll('.piece')[i];
+          const img = piece.querySelector('.capture img');
+          const title = piece.querySelector('.piece__title span');
+          const range = document.createRange();
+          range.selectNodeContents(title);
+          const lines = new Set([...range.getClientRects()].filter((b) => b.width > 2).map((b) => Math.round(b.top))).size;
+          return {
+            name: title.textContent.trim(),
+            screen: Boolean(img?.complete && img.naturalWidth),
+            drawn: lines > 0,
+            over: Math.round(Math.max(0, range.getBoundingClientRect().right - innerWidth)),
+          };
+        }, k),
+      );
+    }
+    const short = landed.filter((p) => !p.screen || !p.drawn || p.over > 0);
+    check(
+      'every plate lands on an iPhone with its title in the glass and its screen in it',
+      short.length === 0,
+      short.length
+        ? short.map((p) => `${p.name}: ${!p.drawn ? 'not drawn' : ''}${!p.screen ? ' no screen' : ''}${p.over ? ` ${p.over}px over` : ''}`.trim()).join(', ')
+        : `all ${landed.length}`,
+    );
+
+    // The full stack's tabs scroll sideways and only sideways.
+    await page.evaluate(() => document.getElementById('stack').scrollIntoView());
+    await page.waitForTimeout(600);
+    await page.locator('#stack button').filter({ hasText: /all|view/i }).first().click().catch(() => {});
+    await page.waitForTimeout(700);
+    const tabs = await page.evaluate(() => {
+      const strip = document.querySelector('dialog[open] .sampler__tabs');
+      return strip ? { x: strip.scrollWidth > strip.clientWidth, y: strip.scrollHeight - strip.clientHeight } : null;
+    });
+    check(
+      'and the full stack\'s tabs scroll sideways and nowhere else',
+      Boolean(tabs) && tabs.x && tabs.y <= 0,
+      tabs ? `${tabs.y}px of vertical play` : 'no sheet',
+    );
+    check('no errors on an iPhone', errors.length === 0, errors.join(' | ').slice(0, 200));
+    await safari.close();
+  }
+}
+
 console.log(failures ? `\n${failures} check(s) failed.` : '\nEvery check passed.');
 process.exit(failures ? 1 : 0);

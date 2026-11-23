@@ -59,8 +59,9 @@
 
              --score   how long the score has the glass to itself before
                        the name is written over it.
-             --write   how long ایلیا takes to be written, 9 columns of
-                       knots at a time. The steps(9) below is the 9.
+             --write   how long ایلیا takes to be written, a column of
+                       knots at a time. The steps(10) below is its 9
+                       columns and the moment before the first.
              --hold    how long it then STANDS, upright, as itself, before
                        the quarter turn that makes it the E. Nothing about
                        the name moves in it. Chosen at one second: long
@@ -338,9 +339,19 @@
 
       /* ایلیا is written in from the right, a column of knots at a time,
          the way the name is written: the lone alef, the break after it,
-         then the joined run to the last alef. Then it stands. */
+         then the joined run to the last alef. Then it stands.
+
+         Ten steps that include both ends, not nine that end at the end:
+         nothing, then one column, two, and so on to all nine, each held a
+         tenth of the time. Nine steps ending at the end only draw the last
+         column at the instant the write finishes, and Safari works that
+         instant out in seconds, where 1.64 less 1.2 is not quite 0.44: the
+         write finished 0.9999999999999999 of the way through, nine of that
+         rounded down to eight, and on every iPhone the last alef was never
+         drawn. With the whole name on a step of its own, a hair short of
+         the end is still the whole name. */
       .overture__knots {
-        animation: overture-write var(--write) steps(9, end) var(--score) both;
+        animation: overture-write var(--write) steps(10, jump-none) var(--score) both;
       }
 
       /* The spin is not part of the score. It is what the mark does if the

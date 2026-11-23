@@ -984,6 +984,11 @@ chosen over, and a check now holds it.
   than the glass and aligns it to its top: the dome sat half a screen low.
 - **A circle takes the short way round.** Its ends and its radius are rounded separately, so
   told to take the long way each half bulges past 180° and the circle is a peanut.
+- **A stepped animation puts its last step on a step of its own.** `steps(9, end)` draws the
+  last of nine only at the instant the animation ends, and Safari works that instant out in
+  seconds: 1.64 less 1.2 is not quite 0.44, the write ended 0.9999999999999999 of the way
+  through, and on every iPhone ایلیا was drawn one column short. The write is
+  `steps(10, jump-none)`, where a hair short of the end is still the whole name.
 - **No class the site owns.** `no class in the overture is one the site already owns` holds it,
   after the arabesque's palmettes were called `.leaf` and the journey's sheet hid every one.
 
@@ -1110,13 +1115,14 @@ brand logos, no emoji, no icon font.
   writes `--travel` on 02's deck and 03's route, whose own stylesheets do the work, and
   `--woven` on the warp's fill, which is the only element on the site that shows it. See the
   note on the root below for what the alternative costs.
-- Let the browser skip what is off the glass where a band holds several full screens at once.
-  02 keeps all seven plates in one pinned frame and deals them sideways, so a phone restyles
-  seven screens of markup on every frame of the deal to draw the one in hand. `.piece` takes
-  `content-visibility: auto` under `64rem` and the frame's work falls to the plate being read:
-  33ms a frame down to 17 on a 390x844 screen at six times the usual processor cost, and the
-  deal is identical to the pixel at every station of its travel. Phones only — on a desk the
-  deal has the frames to spare, and this is a change in behaviour as well as in cost.
+- Fetch a pinned band's pictures before its plates arrive. 02's plates stand off the left edge
+  of the pinned frame until they are dealt, so to a browser each screen is off the glass until
+  its plate is already crossing it, and `loading="lazy"` fetched every one too late: on a phone
+  over a network the plate landed with an empty frame that filled seconds later. Once the deck
+  is a screen away, all seven are set eager and decoded together (`Work.jsx`).
+- Check what ships to a phone in Safari's engine as well as Chromium's. `npm run check` ends
+  with a WebKit pass on an iPhone 14 Pro Max, after three things reached an iPhone broken that
+  Chromium drew perfectly; each check there was shown to fail on the broken build first.
 - Run `npm run contrast`, `npm run check` and `npm run lint` before shipping. They fail, not
   warn.
 
@@ -1137,6 +1143,15 @@ brand logos, no emoji, no icon font.
   form; the background layer is `.weave`. A collision here made every form field a fixed
   full-viewport overlay.
 - Don't animate layout properties. The contact link's lean is a `translate`, not padding.
+- Don't skip a pinned plate's rendering with `content-visibility: auto`. It halved the cost of
+  02's deal on a slow phone in Chromium, but Safari does not draw a skipped plate again as it
+  arrives: on an iPhone the first plate landed blank and the rest landed stale, a title on one
+  line running off the glass, for seconds, and never the same twice. Every plate is drawn now,
+  and the deal holds 60fps at the speed of a current iPhone.
+- Don't let anything hang a pixel out of a strip that scrolls one way. A scroller's other axis
+  becomes scrollable too, so the full stack's tab strip, a pixel taller than itself under the
+  chosen tab's underline, scrolled up and down. Its rule is drawn inside it now, the underline
+  lies on it, and `overflow-y` is hidden besides.
 - Don't write a custom property on the root. A custom property is inherited, so setting one
   marks everything under it for a restyle — on the root, that is every element on the page,
   on every frame of every scroll, however few of them read it. `--woven` was written there

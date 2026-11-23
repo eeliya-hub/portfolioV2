@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 import Announce from '../components/Announce.jsx';
 import { Capture } from '../components/Capture.jsx';
 import Icon from '../components/Icon.jsx';
@@ -161,6 +163,34 @@ function Piece({ project, index, onOpen }) {
 }
 
 export function Work({ onOpen }) {
+  const deck = useRef(null);
+
+  // The screens are fetched lazily, which everywhere else means as they come
+  // near the glass. In a deal that is too late: every plate stands in the
+  // pinned frame off the left edge until it is dealt, so to the browser each
+  // screen is off the glass until its plate is already crossing it, and the
+  // plate landed with an empty frame that filled seconds later, on a phone
+  // over a network a different number of seconds every time. So once the
+  // deck is a screen away, all seven are fetched and decoded together, and
+  // every plate arrives with its screen already in it.
+  useEffect(() => {
+    const node = deck.current;
+    if (!node || !('IntersectionObserver' in window)) return undefined;
+    const watcher = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        watcher.disconnect();
+        for (const img of node.querySelectorAll('img')) {
+          img.loading = 'eager';
+          img.decode?.().catch(() => {});
+        }
+      },
+      { rootMargin: '100% 0px' },
+    );
+    watcher.observe(node);
+    return () => watcher.disconnect();
+  }, []);
+
   return (
     <section className="chapter works" id="work" aria-labelledby="work-heading">
       <div className="chapter__inner works__head">
@@ -170,7 +200,7 @@ export function Work({ onOpen }) {
       {/* The pinned leg. `--n` is the one figure the deal needs: how many
           plates there are to get through, which sets both the leg's height
           and each plate's slice of the travel. */}
-      <div className="deck" data-loom="travel" style={{ '--n': projects.length }}>
+      <div className="deck" data-loom="travel" style={{ '--n': projects.length }} ref={deck}>
         <div className="deck__pin" data-loom="deck-x">
           {projects.map((project, index) => (
             <Piece key={project.id} project={project} index={index} onOpen={onOpen} />
